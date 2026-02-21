@@ -10,6 +10,6 @@ AssetOrigin:
   serializedVersion: 1
   productId: 287711
   packageName: 'FishNet Pro: Networking Evolved'
-  packageVersion: 4.6.19R Pro
-  assetPath: Assets/FishNet/Demos/Prediction/Rigidbody/Materials/GreenMat.mat
-  uploadId: 846900
+  packageVersion: 4.6.20R Pro
+  assetPath: Assets/Plugins/FishNet/Demos/Prediction/Rigidbody/Materials/GreenMat.mat
+  uploadId: 850496

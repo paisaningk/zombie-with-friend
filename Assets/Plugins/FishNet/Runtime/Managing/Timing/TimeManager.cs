@@ -1084,7 +1084,7 @@ namespace FishNet.Managing.Timing
             using (_pm_PhysicsSimulate.Auto())
                 Physics.Simulate(delta);
             using (_pm_Physics2DSimulate.Auto())
-                Physics2D.SyncTransforms();
+                Physics2D.Simulate(delta);
         }
 
         /// <summary>
