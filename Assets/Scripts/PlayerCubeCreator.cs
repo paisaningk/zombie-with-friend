@@ -5,7 +5,7 @@ public class PlayerCubeCreator : NetworkBehaviour
 {
     public NetworkObject CubePrefab;
 
-    private void Update()
+    void Update()
     {
         // Only the local player object should perform these actions.
         if (!IsOwner)
@@ -20,6 +20,7 @@ public class PlayerCubeCreator : NetworkBehaviour
     private void SpawnCube()
     {
         NetworkObject obj = Instantiate(CubePrefab, transform.position, Quaternion.identity);
+        obj.GetComponent<SyncMaterialColor>().Color.Value = Random.ColorHSV();
         Spawn(obj); // NetworkBehaviour shortcut for ServerManager.Spawn(obj);
     }
 }
