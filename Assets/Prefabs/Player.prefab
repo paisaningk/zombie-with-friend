@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4749763200712426903
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3832648189946085887}
+  m_Layer: 0
+  m_Name: Cube (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3832648189946085887
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4749763200712426903}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0.725}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
+  m_ConstrainProportionsScale: 1
+  m_Children: []
+  m_Father: {fileID: 1184785498361524589}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4780757547661239698
 GameObject:
   m_ObjectHideFlags: 0
@@ -216,9 +247,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5fb845253bd14d8d870cf39a079d0c14, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _componentIndexCache: 3
+  _componentIndexCache: 5
   _addedNetworkObject: {fileID: 5738819235587161346}
-  _networkObjectCache: {fileID: 0}
+  _networkObjectCache: {fileID: 5738819235587161346}
   CinemachineCamera: {fileID: 4762977174644142192}
 --- !u!1 &8446928096559664053
 GameObject:
@@ -237,10 +268,11 @@ GameObject:
   - component: {fileID: 5903140171842550392}
   - component: {fileID: 8458327974489042994}
   - component: {fileID: 7118011573638494271}
-  - component: {fileID: 1140193884591156919}
+  - component: {fileID: 7133092593591934447}
+  - component: {fileID: 2720942649904229083}
   m_Layer: 0
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -260,6 +292,7 @@ Transform:
   m_Children:
   - {fileID: 9124571334662110557}
   - {fileID: 7237945855368439736}
+  - {fileID: 3832648189946085887}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &5723845655369902788
@@ -276,7 +309,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _componentIndexCache: 0
   _addedNetworkObject: {fileID: 5738819235587161346}
-  _networkObjectCache: {fileID: 0}
+  _networkObjectCache: {fileID: 5738819235587161346}
   _componentConfiguration: 2
   _synchronizeParent: 0
   _packing:
@@ -326,7 +359,13 @@ MonoBehaviour:
   <ComponentIndex>k__BackingField: 0
   <PredictedSpawn>k__BackingField: {fileID: 0}
   <PredictedOwner>k__BackingField: {fileID: 0}
-  NetworkBehaviours: []
+  NetworkBehaviours:
+  - {fileID: 5723845655369902788}
+  - {fileID: 5903140171842550392}
+  - {fileID: 8458327974489042994}
+  - {fileID: 7133092593591934447}
+  - {fileID: 2720942649904229083}
+  - {fileID: 2658344774028530720}
   InitializedParentNetworkBehaviour: {fileID: 0}
   InitializedNestedNetworkObjects: []
   RuntimeParentNetworkBehaviour: {fileID: 0}
@@ -337,7 +376,7 @@ MonoBehaviour:
   _initializeOrder: 0
   _preventDespawnOnDisconnect: 0
   _defaultDespawnType: 0
-  _initializedTimestamp: 0
+  _initializedTimestamp: -8584288798713638461
   NetworkObserver: {fileID: 0}
   _enablePrediction: 0
   _predictionType: 1
@@ -353,15 +392,15 @@ MonoBehaviour:
   _spectatorInterpolation: 2
   _enableTeleport: 0
   _teleportThreshold: 1
-  <PrefabId>k__BackingField: 65535
+  <PrefabId>k__BackingField: 0
   <SpawnableCollectionId>k__BackingField: 0
-  <AssetPathHash>k__BackingField: 3127767274982672596
+  <AssetPathHash>k__BackingField: 2092870565765373345
   SceneId: 0
   SerializedTransformProperties:
     Position: {x: 0, y: 0, z: 0}
-    Rotation: {x: 0, y: 0, z: 0, w: 0}
-    Scale: {x: 0, y: 0, z: 0}
-    IsValid: 0
+    Rotation: {x: 0, y: 0, z: 0, w: 1}
+    Scale: {x: 1, y: 1, z: 1}
+    IsValid: 1
 --- !u!33 &5264258430287599936
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -450,7 +489,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _componentIndexCache: 1
   _addedNetworkObject: {fileID: 5738819235587161346}
-  _networkObjectCache: {fileID: 0}
+  _networkObjectCache: {fileID: 5738819235587161346}
 --- !u!114 &8458327974489042994
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -465,7 +504,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _componentIndexCache: 2
   _addedNetworkObject: {fileID: 5738819235587161346}
-  _networkObjectCache: {fileID: 0}
+  _networkObjectCache: {fileID: 5738819235587161346}
   CubePrefab: {fileID: 6294629343607866315, guid: 5e2f94fbada7c604c82c6dc4d89143d6, type: 3}
 --- !u!54 &7118011573638494271
 Rigidbody:
@@ -494,7 +533,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &1140193884591156919
+--- !u!114 &7133092593591934447
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -503,12 +542,30 @@ MonoBehaviour:
   m_GameObject: {fileID: 8446928096559664053}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1ce69c409c184123812243bc48fcbc1f, type: 3}
+  m_Script: {fileID: 11500000, guid: 44b18356d611464d8dc9adf379166a80, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _componentIndexCache: 255
+  _componentIndexCache: 3
   _addedNetworkObject: {fileID: 5738819235587161346}
-  _networkObjectCache: {fileID: 0}
+  _networkObjectCache: {fileID: 5738819235587161346}
+  muzzle: {fileID: 3832648189946085887}
+  projectilePrefab: {fileID: 5213625977848984770, guid: 2514e2137e748b6448f8f0ca08a7caad, type: 3}
+  fireCooldown: 0.1
+--- !u!114 &2720942649904229083
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8446928096559664053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6946e7f365774fb468bcf1ae664804ce, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _componentIndexCache: 4
+  _addedNetworkObject: {fileID: 5738819235587161346}
+  _networkObjectCache: {fileID: 5738819235587161346}
   maxSpeed: 7
   accel: 28
   decel: 40
@@ -518,3 +575,5 @@ MonoBehaviour:
   minAngleDelta: 0.35
   aimPointSmooth: 0.04
   minAimMove: 0.01
+  knockbackDamping: 18
+  knockbackMaxSpeed: 20

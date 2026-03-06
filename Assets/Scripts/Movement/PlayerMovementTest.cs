@@ -2,7 +2,7 @@ using FishNet.Object;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
-public sealed class PlayerMovementTest : NetworkBehaviour
+public sealed class PlayerMovementTest : NetworkBehaviour, IHitReceiver
 {
     [Header("Move (Owner Only)")]
     public float maxSpeed = 7f;
@@ -17,6 +17,10 @@ public sealed class PlayerMovementTest : NetworkBehaviour
     public float aimPointSmooth = 0.04f;  // seconds (0.02–0.08)
     public float minAimMove = 0.01f;      // meters (กัน jitter)
 
+    [Header("Knockback")]
+    public float knockbackDamping = 18f;  // ยิ่งมากยิ่งหายเร็ว
+    public float knockbackMaxSpeed = 20f; // cap
+
     Rigidbody rb;
 
     // owner input
@@ -30,12 +34,8 @@ public sealed class PlayerMovementTest : NetworkBehaviour
     bool hasTargetRot;
     Quaternion targetRot;
 
-    // remote state
-    Vector3 netPos;
-    Quaternion netRot;
-    bool netInitialized;
-
-    float nextSendTime;
+    // knockback (owner-sim)
+    Vector3 knockbackVel;
 
     void Awake()
     {
@@ -52,22 +52,20 @@ public sealed class PlayerMovementTest : NetworkBehaviour
         if (IsOwner && cam == null)
             cam = Camera.main;
 
-        // Non-owner: ให้เป็น kinematic แล้วเลื่อนตาม net state (ลดฟิสิกส์ตีกัน)
+        // Non-owner: ให้เป็น kinematic แล้วเลื่อนตาม net state (คุณทำต่อได้ตามระบบ sync ของคุณ)
         if (!IsOwner)
             rb.isKinematic = true;
     }
 
     void Update()
     {
-        if (IsOwner)
-        {
-            // input
-            moveInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+        if (!IsOwner)
+            return;
 
-            // aim
-            CacheAimPointPlane();
-            ComputeTargetRotation();
-        }
+        moveInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+
+        CacheAimPointPlane();
+        ComputeTargetRotation();
     }
 
     void FixedUpdate()
@@ -75,8 +73,33 @@ public sealed class PlayerMovementTest : NetworkBehaviour
         if (!IsOwner)
             return;
 
+        // decay knockback -> 0
+        float t = 1f - Mathf.Exp(-knockbackDamping * Time.fixedDeltaTime);
+        knockbackVel = Vector3.Lerp(knockbackVel, Vector3.zero, t);
+
         DoMovePhysics();
         ApplyAimRotation();
+    }
+
+    // ---------------- Hit / Knockback ----------------
+
+    public void ReceiveHit(in HitInfo hit)
+    {
+        // NOTE: ถ้าคุณทำ server-authoritative จริง ๆ ให้เรียก AddKnockback เฉพาะ owner ผ่าน RPC
+        AddKnockback(hit.Direction, hit.KnockbackImpulse);
+    }
+
+    public void AddKnockback(Vector3 dir, float impulse)
+    {
+        dir.y = 0f;
+        if (dir.sqrMagnitude < 0.0001f) return;
+        dir.Normalize();
+
+        knockbackVel += dir * impulse;
+
+        float m = knockbackVel.magnitude;
+        if (m > knockbackMaxSpeed)
+            knockbackVel = (knockbackVel / m) * knockbackMaxSpeed;
     }
 
     // ---------------- Move ----------------
@@ -89,19 +112,23 @@ public sealed class PlayerMovementTest : NetworkBehaviour
         Vector3 v = rb.linearVelocity;
         Vector3 vXZ = new Vector3(v.x, 0f, v.z);
 
+        // baseVel = ความเร็วเดินจริง ๆ (ตัดส่วน knockback ออก)
+        Vector3 baseVel = vXZ - knockbackVel;
+
         Vector3 target = wishDir * maxSpeed;
         float a = (wishDir.sqrMagnitude > 0f) ? accel : decel;
 
-        if (wishDir.sqrMagnitude > 0f && vXZ.sqrMagnitude > 0.01f)
+        if (wishDir.sqrMagnitude > 0f && baseVel.sqrMagnitude > 0.01f)
         {
-            float dot = Vector3.Dot(vXZ.normalized, wishDir);
+            float dot = Vector3.Dot(baseVel.normalized, wishDir);
             if (dot < 0.0f) a = Mathf.Max(a, turnAccel);
         }
 
         float maxDelta = a * Time.fixedDeltaTime;
-        Vector3 newVXZ = Vector3.MoveTowards(vXZ, target, maxDelta);
+        Vector3 newBaseVel = Vector3.MoveTowards(baseVel, target, maxDelta);
 
-        rb.linearVelocity = new Vector3(newVXZ.x, v.y, newVXZ.z);
+        Vector3 finalXZ = newBaseVel + knockbackVel;
+        rb.linearVelocity = new Vector3(finalXZ.x, v.y, finalXZ.z);
     }
 
     // ---------------- Aim (Plane-only) ----------------
@@ -112,15 +139,13 @@ public sealed class PlayerMovementTest : NetworkBehaviour
         if (!cam) return false;
 
         Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-
-        // plane ผ่านตำแหน่งตัวละคร: เสถียรสุดสำหรับ top-down
         Plane plane = new Plane(Vector3.up, rb.position);
 
         if (!plane.Raycast(ray, out float enter))
             return false;
 
         worldPoint = ray.GetPoint(enter);
-        worldPoint.y = rb.position.y; // lock y ให้ตรงตัวละคร
+        worldPoint.y = rb.position.y;
         return true;
     }
 
@@ -134,8 +159,7 @@ public sealed class PlayerMovementTest : NetworkBehaviour
         rawAimPoint = p;
         hasAim = true;
 
-        // smooth aimpoint (กันสั่น)
-        if (smoothAimPoint == default && !hasTargetRot) // ครั้งแรก
+        if (smoothAimPoint == default && !hasTargetRot)
         {
             smoothAimPoint = rawAimPoint;
             return;
