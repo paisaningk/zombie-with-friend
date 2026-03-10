@@ -29,22 +29,18 @@ namespace Bullet
         [ServerRpc]
         private void ServerFire(Vector3 pos, Vector3 dir)
         {
-            // ชัด ๆ ว่าตอนนี้ server active ไหม
-            bool serverStarted = InstanceFinder.ServerManager != null && InstanceFinder.ServerManager.Started;
-            Debug.Log($"[ServerFire] IsServer={IsServer} ServerStarted={serverStarted} ObjSpawned={base.IsSpawned}");
-
-            if (!serverStarted) return;
-
             dir.y = 0f;
             if (dir.sqrMagnitude < 0.0001f) return;
             dir.Normalize();
 
             var rot = Quaternion.LookRotation(dir, Vector3.up);
             NetworkProjectile p = Instantiate(projectilePrefab, pos, rot);
+            
+            
+            Spawn(p.NetworkObject);
+         
+            // we should set server init after spawn
             p.ServerInit(dir);
-
-            // Spawn แบบชัวร์ ๆ
-            InstanceFinder.ServerManager.Spawn(p.NetworkObject);
         }
     }
 }
