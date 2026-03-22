@@ -18,7 +18,7 @@ GameObject:
   - component: {fileID: -4134807937332130448}
   - component: {fileID: -7120732720588403123}
   - component: {fileID: 5213625977848984770}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Bullet
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -136,6 +136,7 @@ MonoBehaviour:
   - {fileID: -1614414077979194434}
   - {fileID: -4134807937332130448}
   - {fileID: -7120732720588403123}
+  - {fileID: 5213625977848984770}
   InitializedParentNetworkBehaviour: {fileID: 0}
   InitializedNestedNetworkObjects: []
   RuntimeParentNetworkBehaviour: {fileID: 0}
@@ -146,7 +147,7 @@ MonoBehaviour:
   _initializeOrder: 0
   _preventDespawnOnDisconnect: 0
   _defaultDespawnType: 0
-  _initializedTimestamp: -8584288799319273834
+  _initializedTimestamp: -8584274254047035718
   NetworkObserver: {fileID: 0}
   _enablePrediction: 0
   _predictionType: 0
@@ -162,7 +163,7 @@ MonoBehaviour:
   _spectatorInterpolation: 2
   _enableTeleport: 0
   _teleportThreshold: 1
-  <PrefabId>k__BackingField: 2
+  <PrefabId>k__BackingField: 1
   <SpawnableCollectionId>k__BackingField: 0
   <AssetPathHash>k__BackingField: 4086663663084549645
   SceneId: 0
@@ -287,9 +288,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: daadf8a4c85246d08c97459e23283a87, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _componentIndexCache: 255
+  _componentIndexCache: 3
   _addedNetworkObject: {fileID: 6294629343607866315}
-  _networkObjectCache: {fileID: 0}
+  _networkObjectCache: {fileID: 6294629343607866315}
   speed: 30
   lifeTime: 2.5
   damage: 10

@@ -58,6 +58,8 @@ public sealed class NetworkProjectile : NetworkBehaviour
         }
 
         Despawn();
+        
+        Debug.Log(other.gameObject.name);
     }
 
     [Server]
