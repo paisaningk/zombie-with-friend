@@ -1,6 +1,7 @@
-#if UNITY_2021_2_OR_NEWER
+#if UNITY_2021_3_OR_NEWER
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using SingularityGroup.HotReload.Editor.Localization;
 using UnityEditor.Overlays;
 using UnityEngine.UIElements;
@@ -119,27 +120,13 @@ namespace SingularityGroup.HotReload.Editor {
         /// Create Hot Reload overlay panel.
         /// </summary>
         public override VisualElement CreatePanelContent() {
-            var root = new VisualElement() { name = Translations.UI.OverlayPanelName };
-            root.style.flexDirection = FlexDirection.Row;
-            
-            indicationIcon = new Image() { image = GUIHelper.GetLocalIcon(EditorIndicationState.greyIconPath) };
-            indicationIcon.style.height = 30;
-            indicationIcon.style.width = 30;
-            indicationIcon.style.marginLeft = 2;
-            indicationIcon.style.marginTop = 1;
-            indicationIcon.style.marginRight = 5;
-            
-            indicationText = new Label(){text = EditorIndicationState.IndicationStatusText};
-            indicationText.style.paddingTop = 9;
-            indicationText.style.marginLeft = new StyleLength(StyleKeyword.Auto);
-            indicationText.style.marginRight = new StyleLength(StyleKeyword.Auto);
-            
-            root.Add(indicationIcon);
-            root.Add(indicationText);
-            root.style.width = 190;
-            root.style.height = 32;
-            initialized = true;
-            return root;
+#if UNITY_2022_1_OR_NEWER
+            return CreateContent(Layout.HorizontalToolbar);
+#elif UNITY_2021_3_OR_NEWER
+            return (VisualElement)typeof(Overlay).GetMethod("CreateContent", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public, null, new Type[] {typeof(Layout)}, null)?.Invoke(this, new object[] {
+                Layout.HorizontalToolbar,
+            });
+#endif
         }
 
         static bool _repaint;

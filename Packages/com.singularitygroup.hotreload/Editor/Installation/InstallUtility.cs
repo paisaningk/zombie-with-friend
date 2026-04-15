@@ -30,7 +30,7 @@ namespace SingularityGroup.HotReload.Editor {
                 EditorCodePatcher.DownloadAndRun().Forget();
             }
             
-            RequestHelper.RequestEditorEventWithRetry(new Stat(StatSource.Client, StatLevel.Debug, StatFeature.Editor, StatEventType.Start)).Forget();
+            EditorCodePatcher.SendEditorTelemetryIfEnabled(new Stat(StatSource.Client, StatLevel.Debug, StatFeature.Editor, StatEventType.Start));
         }
 
         public static void CheckForNewInstall() {
@@ -57,6 +57,7 @@ namespace SingularityGroup.HotReload.Editor {
             if (HotReloadCli.CanOpenInBackground) {
                 HotReloadPrefs.DisableConsoleWindow = true;
             }
+            HotReloadSuggestionsHelper.SetSuggestionsShown(HotReloadSuggestionKind.TelemetryCollection);
         }
     }
 }

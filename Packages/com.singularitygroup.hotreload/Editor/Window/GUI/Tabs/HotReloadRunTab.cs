@@ -1079,6 +1079,16 @@ namespace SingularityGroup.HotReload.Editor {
                 OpenURLButton.Render(errInfo.supportButtonText, Constants.ContactURL);
             }
             if (currentState.loginStatus?.lastLicenseError != null) {
+                var email = _pendingEmail;
+                var password = HotReloadPrefs.LicensePassword;
+                
+                if (currentState.loginStatus.canResetRemotely && !string.IsNullOrEmpty(email)) {
+                    using (new EditorGUI.DisabledScope(EditorCodePatcher.RequestingResetAndLogin)) {
+                        if (GUILayout.Button(Translations.License.ResetLicenseRemotely)) {
+                            EditorCodePatcher.RemoteResetAndLogin(email, password).Forget();
+                        }
+                    }
+                }
                 var text = HotReloadAboutTab.reportIssueButton.text;
                 
                 if (GUILayout.Button(new GUIContent(text.StartsWith(" ") ? text : " " + text))) {
@@ -1248,17 +1258,7 @@ namespace SingularityGroup.HotReload.Editor {
                         } else if (string.IsNullOrEmpty(_pendingPassword)) {
                             _activateInfoMessage = new Tuple<string, MessageType>(Translations.Errors.ErrorEnterPassword, MessageType.Warning);
                         } else {
-                            HotReloadWindow.Current.SelectTab(typeof(HotReloadRunTab));
-
-                            _activateInfoMessage = null;
-                            if (RedeemLicenseHelper.I.RedeemStage == RedeemStage.Login) {
-                                RedeemLicenseHelper.I.FinishRegistration(RegistrationOutcome.Indie);
-                            }
-                            if (!EditorCodePatcher.RequestingDownloadAndRun && !EditorCodePatcher.Running) {
-                                LoginOnDownloadAndRun(new LoginData(email: _pendingEmail, password: _pendingPassword)).Forget();
-                            } else {
-                                EditorCodePatcher.RequestLogin(_pendingEmail, _pendingPassword).Forget();
-                            }
+                            FinishLogin(_pendingEmail, _pendingPassword);
                         }
                     }
                     if (renderLogout) {
@@ -1271,6 +1271,19 @@ namespace SingularityGroup.HotReload.Editor {
             }
         }
 
+        public static void FinishLogin(string email, string password) {
+            HotReloadWindow.Current.SelectTab(typeof(HotReloadRunTab));
+
+            _activateInfoMessage = null;
+            if (RedeemLicenseHelper.I.RedeemStage == RedeemStage.Login || RedeemLicenseHelper.I.RedeemStage == RedeemStage.Redeem) {
+                RedeemLicenseHelper.I.FinishRegistration(RegistrationOutcome.Indie);
+            }
+            if (!EditorCodePatcher.RequestingDownloadAndRun && !EditorCodePatcher.Running) {
+                LoginOnDownloadAndRun(new LoginData(email: email, password: password)).Forget();
+            } else {
+                EditorCodePatcher.RequestLogin(email, password).Forget();
+            }
+        }
         public static string ValidateEmail(string email) {
             if (string.IsNullOrEmpty(email)) {
                 return Translations.Errors.ErrorEnterEmail;

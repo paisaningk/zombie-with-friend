@@ -132,6 +132,7 @@ namespace SingularityGroup.HotReload.Editor {
         internal static readonly OpenURLButton featuresDocumentationButton = new OpenURLButton(Translations.Suggestions.ButtonDocs, Constants.FeaturesDocumentationURL);
         internal static readonly OpenURLButton multipleEditorsDocumentationButton = new OpenURLButton(Translations.Suggestions.ButtonDocs, Constants.MultipleEditorsURL);
         internal static readonly OpenURLButton debuggerDocumentationButton = new OpenURLButton(Translations.Suggestions.ButtonMoreInfo, Constants.DebuggerURL);
+        internal static readonly OpenURLButton securityDocumentationButton = new OpenURLButton(Translations.Suggestions.ButtonMoreInfo, Constants.SecurityURL);
         public static Dictionary<HotReloadSuggestionKind, AlertEntry> suggestionMap = new Dictionary<HotReloadSuggestionKind, AlertEntry> {
             { HotReloadSuggestionKind.UnityBestDevelopmentToolAward2023, new AlertEntry(
                 AlertType.Suggestion, 
@@ -144,6 +145,23 @@ namespace SingularityGroup.HotReload.Editor {
                             Application.OpenURL(Constants.VoteForAwardURL);
                             SetSuggestionInactive(HotReloadSuggestionKind.UnityBestDevelopmentToolAward2023);
                         }
+                        GUILayout.FlexibleSpace();
+                    }
+                },
+                timestamp: DateTime.Now,
+                entryType: EntryType.Foldout
+            )},
+            { HotReloadSuggestionKind.TelemetryCollection, new AlertEntry(
+                AlertType.Suggestion, 
+                Translations.Suggestions.TelemetryCollectionTitle, 
+                Translations.Suggestions.TelemetryCollectionMessage,
+                actionData: () => {
+                    GUILayout.Space(10f);
+                    using (new EditorGUILayout.HorizontalScope()) {
+                        if (GUILayout.Button(Translations.Suggestions.ButtonOK)) {
+                            SetSuggestionInactive(HotReloadSuggestionKind.TelemetryCollection);
+                        }
+                        securityDocumentationButton.OnGUI();
                         GUILayout.FlexibleSpace();
                     }
                 },

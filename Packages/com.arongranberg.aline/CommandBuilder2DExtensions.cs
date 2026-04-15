@@ -337,6 +337,26 @@ namespace Drawing {
 			SolidTriangle(xy ? new float3(a, 0) : new float3(a.x, 0, a.y), xy ? new float3(b, 0) : new float3(b.x, 0, b.y), xy ? new float3(c, 0) : new float3(c.x, 0, c.y));
 		}
 
+		/// <summary>\copydocref{CommandBuilder.WireRing(float3,quaternion,float,float,float,float)}</summary>
+		public void WireRing (float3 center, quaternion rotation, float innerRadius, float outerRadius, float startAngle = 0f, float endAngle = 2 * Mathf.PI) {
+			draw.WireRing(center, rotation, innerRadius, outerRadius, startAngle, endAngle);
+		}
+
+		/// <summary>\copydocref{CommandBuilder.WireRing(float3,quaternion,float,float,float,float)}</summary>
+		public void WireRing (float2 center, quaternion rotation, float innerRadius, float outerRadius, float startAngle = 0f, float endAngle = 2 * Mathf.PI) {
+			WireRing(xy ? new float3(center, 0) : new float3(center.x, 0, center.y), rotation, innerRadius, outerRadius, startAngle, endAngle);
+		}
+
+		/// <summary>\copydocref{CommandBuilder.SolidRing(float3,quaternion,float,float,float,float)}</summary>
+		public void SolidRing (float3 center, quaternion rotation, float innerRadius, float outerRadius, float startAngle = 0f, float endAngle = 2 * Mathf.PI) {
+			draw.SolidRing(center, rotation, innerRadius, outerRadius, startAngle, endAngle);
+		}
+
+		/// <summary>\copydocref{CommandBuilder.SolidRing(float3,quaternion,float,float,float,float)}</summary>
+		public void SolidRing (float2 center, quaternion rotation, float innerRadius, float outerRadius, float startAngle = 0f, float endAngle = 2 * Mathf.PI) {
+			SolidRing(xy ? new float3(center, 0) : new float3(center.x, 0, center.y), rotation, innerRadius, outerRadius, startAngle, endAngle);
+		}
+
 		/// <summary>\copydocref{CommandBuilder.Label2D(float3,string,float)}</summary>
 		public void Label2D (float3 position, string text, float sizeInPixels = 14) {
 			draw.Label2D(position, text, sizeInPixels);
@@ -690,6 +710,46 @@ namespace Drawing {
 			SolidTriangle(xy ? new float3(a, 0) : new float3(a.x, 0, a.y), xy ? new float3(b, 0) : new float3(b.x, 0, b.y), xy ? new float3(c, 0) : new float3(c.x, 0, c.y), color);
 		}
 
+		/// <summary>\copydocref{WireRing(float3,quaternion,float,float,float,float)}</summary>
+		public void WireRing (float3 center, quaternion rotation, float innerRadius, float outerRadius, float startAngle, float endAngle, Color color) {
+			draw.WireRing(center, rotation, innerRadius, outerRadius, startAngle, endAngle, color);
+		}
+
+		/// <summary>\copydocref{WireRing(float3,quaternion,float,float,float,float)}</summary>
+		public void WireRing (float3 center, quaternion rotation, float innerRadius, float outerRadius, Color color) {
+			WireRing(center, rotation, innerRadius, outerRadius, 0f, 2 * Mathf.PI, color);
+		}
+
+		/// <summary>\copydocref{WireRing(float2,quaternion,float,float,float,float)}</summary>
+		public void WireRing (float2 center, quaternion rotation, float innerRadius, float outerRadius, float startAngle, float endAngle, Color color) {
+			WireRing(xy ? new float3(center, 0) : new float3(center.x, 0, center.y), rotation, innerRadius, outerRadius, startAngle, endAngle, color);
+		}
+
+		/// <summary>\copydocref{WireRing(float2,quaternion,float,float,float,float)}</summary>
+		public void WireRing (float2 center, quaternion rotation, float innerRadius, float outerRadius, Color color) {
+			WireRing(center, rotation, innerRadius, outerRadius, 0f, 2 * Mathf.PI, color);
+		}
+
+		/// <summary>\copydocref{SolidRing(float3,quaternion,float,float,float,float)}</summary>
+		public void SolidRing (float3 center, quaternion rotation, float innerRadius, float outerRadius, float startAngle, float endAngle, Color color) {
+			draw.SolidRing(center, rotation, innerRadius, outerRadius, startAngle, endAngle, color);
+		}
+
+		/// <summary>\copydocref{SolidRing(float3,quaternion,float,float,float,float)}</summary>
+		public void SolidRing (float3 center, quaternion rotation, float innerRadius, float outerRadius, Color color) {
+			SolidRing(center, rotation, innerRadius, outerRadius, 0f, 2 * Mathf.PI, color);
+		}
+
+		/// <summary>\copydocref{SolidRing(float2,quaternion,float,float,float,float)}</summary>
+		public void SolidRing (float2 center, quaternion rotation, float innerRadius, float outerRadius, float startAngle, float endAngle, Color color) {
+			SolidRing(xy ? new float3(center, 0) : new float3(center.x, 0, center.y), rotation, innerRadius, outerRadius, startAngle, endAngle, color);
+		}
+
+		/// <summary>\copydocref{SolidRing(float2,quaternion,float,float,float,float)}</summary>
+		public void SolidRing (float2 center, quaternion rotation, float innerRadius, float outerRadius, Color color) {
+			SolidRing(center, rotation, innerRadius, outerRadius, 0f, 2 * Mathf.PI, color);
+		}
+
 		/// <summary>\copydocref{Label2D(float3,string,float)}</summary>
 		public void Label2D (float3 position, string text, float sizeInPixels, Color color) {
 			draw.Label2D(position, text, sizeInPixels, color);
@@ -855,7 +915,6 @@ namespace Drawing {
 			Circle(center, radius, 0f, 2 * math.PI, color);
 		}
 		/// <summary>\copydocref{Circle(float3,float,float,float)}</summary>
-		/// <param name="color">Color of the object</param>
 		public void Circle (float3 center, float radius, float startAngle, float endAngle, Color color) {
 			draw.PushColor(color);
 			if (xy) {
@@ -868,7 +927,6 @@ namespace Drawing {
 			draw.PopColor();
 		}
 		/// <summary>\copydocref{Circle(float3,float,float,float)}</summary>
-		/// <param name="color">Color of the object</param>
 		public void Circle (float3 center, float radius, Color color) {
 			Circle(center, radius, 0f, 2 * math.PI, color);
 		}
@@ -1027,7 +1085,7 @@ namespace Drawing {
 		}
 		/// <summary>\copydocref{SolidRectangle(Rect)}</summary>
 		public void SolidRectangle (Rect rect, Color color) {
-			draw.SolidPlane(new float3(rect.center.x, rect.center.y, 0.0f), xy ? XY_TO_XZ_ROTATION : XZ_TO_XZ_ROTATION, new float2(rect.width, rect.height), color);
+			draw.SolidPlane(xy ? new float3(rect.center.x, rect.center.y, 0.0f) : new float3(rect.center.x, 0, rect.center.y), xy ? XY_TO_XZ_ROTATION : XZ_TO_XZ_ROTATION, new float2(rect.width, rect.height), color);
 		}
 
 		/// <summary>\copydocref{WireGrid(float2,int2,float2)}</summary>
@@ -1039,6 +1097,57 @@ namespace Drawing {
 		/// <param name="color">Color of the object</param>
 		public void WireGrid (float3 center, int2 cells, float2 totalSize, Color color) {
 			draw.WireGrid(center, xy ? XY_TO_XZ_ROTATION : XZ_TO_XZ_ROTATION, cells, totalSize, color);
+		}
+		/// <summary>\copydocref{WireRing(float2,float,float,float,float)}</summary>
+		/// <param name="color">Color of the object</param>
+		public void WireRing (float2 center, float innerRadius, float outerRadius, float startAngle, float endAngle, Color color) {
+			WireRing(xy ? new float3(center, 0) : new float3(center.x, 0, center.y), innerRadius, outerRadius, startAngle, endAngle, color);
+		}
+
+		/// <summary>\copydocref{WireRing(float2,float,float,float,float)}</summary>
+		/// <param name="color">Color of the object</param>
+		public void WireRing (float2 center, float innerRadius, float outerRadius, Color color) {
+			WireRing(center, innerRadius, outerRadius, 0f, 2 * math.PI, color);
+		}
+
+		/// <summary>\copydocref{WireRing(float3,float,float,float,float)}</summary>
+		public void WireRing (float3 center, float innerRadius, float outerRadius, float startAngle, float endAngle, Color color) {
+			draw.WireRing(center, xy ? XY_TO_XZ_ROTATION : XZ_TO_XZ_ROTATION, innerRadius, outerRadius, startAngle, endAngle, color);
+		}
+
+		/// <summary>\copydocref{WireRing(float3,float,float,float,float)}</summary>
+		public void WireRing (float3 center, float innerRadius, float outerRadius, Color color) {
+			WireRing(center, innerRadius, outerRadius, 0f, 2 * math.PI, color);
+		}
+
+		/// <summary>\copydocref{SolidRing(float2,float,float,float,float)}</summary>
+		/// <param name="color">Color of the object</param>
+		public void SolidRing (float2 center, float innerRadius, float outerRadius, float startAngle, float endAngle, Color color) {
+			SolidRing(xy ? new float3(center, 0) : new float3(center.x, 0, center.y), innerRadius, outerRadius, startAngle, endAngle, color);
+		}
+
+		/// <summary>\copydocref{SolidRing(float2,float,float,float,float)}</summary>
+		/// <param name="color">Color of the object</param>
+		public void SolidRing (float2 center, float innerRadius, float outerRadius, Color color) {
+			SolidRing(center, innerRadius, outerRadius, 0f, 2 * math.PI, color);
+		}
+
+		/// <summary>\copydocref{SolidRing(float3,float,float,float,float)}</summary>
+		public void SolidRing (float3 center, float innerRadius, float outerRadius, float startAngle, float endAngle, Color color) {
+			draw.PushColor(color);
+			if (xy) {
+				draw.PushMatrix(XZ_TO_XY_MATRIX);
+				draw.SolidRingXZInternal(new float3(center.x, center.z, center.y), innerRadius, outerRadius, startAngle, endAngle);
+				draw.PopMatrix();
+			} else {
+				draw.SolidRingXZInternal(center, innerRadius, outerRadius, startAngle, endAngle);
+			}
+			draw.PopColor();
+		}
+
+		/// <summary>\copydocref{SolidRing(float3,float,float,float,float)}</summary>
+		public void SolidRing (float3 center, float innerRadius, float outerRadius, Color color) {
+			SolidRing(center, innerRadius, outerRadius, 0f, 2 * math.PI, color);
 		}
 	}
 }

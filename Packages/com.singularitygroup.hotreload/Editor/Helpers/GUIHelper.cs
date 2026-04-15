@@ -80,6 +80,10 @@ namespace SingularityGroup.HotReload.Editor {
                 // therefore if its dark mode we should invert them
                 if (HotReloadWindowStyles.IsDarkMode) {
                     iconTexture = InvertTextureColor(iconTexture);
+                    // Prevent Unity from destroying this during play mode exit
+                    if (iconTexture) {
+                        iconTexture.hideFlags = HideFlags.HideAndDontSave;
+                    }
                 }
 
                 cache[type] = iconTexture;
@@ -88,6 +92,10 @@ namespace SingularityGroup.HotReload.Editor {
                 if (invertibleIcon == InvertibleIcon.LogoNew || invertibleIcon == InvertibleIcon.EventsNew) {
                     var redDot = Resources.Load<Texture2D>("Hot_Reload_red_dot");
                     iconTexture = CombineImages(iconTexture, redDot);
+                    // Same here — this texture is programmatically created
+                    if (iconTexture) {
+                        iconTexture.hideFlags = HideFlags.HideAndDontSave;
+                    }
                     cache[invertibleIcon] = iconTexture;
                 }
             }

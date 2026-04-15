@@ -125,7 +125,7 @@ namespace SingularityGroup.HotReload.Editor {
                     { StatKey.Errors, new List<string>(errors) },
                 };
                 // sending telemetry requires server to be running so we only attempt after server is downloaded
-                RequestHelper.RequestEditorEventWithRetry(new Stat(StatSource.Client, StatLevel.Error, StatFeature.Editor, StatEventType.Download), data).Forget();
+                EditorCodePatcher.SendEditorTelemetryIfEnabled(new Stat(StatSource.Client, StatLevel.Error, StatFeature.Editor, StatEventType.Download), data);
                 Log.Info(Translations.Errors.ErrorDownloadSucceeded);
             }
             

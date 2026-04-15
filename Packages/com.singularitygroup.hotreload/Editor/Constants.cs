@@ -24,6 +24,7 @@ namespace SingularityGroup.HotReload.Editor {
         public const string FeaturesDocumentationURL = DocumentationURL + "/features";
         public const string MultipleEditorsURL = DocumentationURL + "/multiple-editors";
         public const string DebuggerURL = DocumentationURL + "/debugger";
+        public const string SecurityURL = DocumentationURL + "/security";
         public const string UndetectedChangesURL = DocumentationURL + "/getting-started#undetected-changes";
         public const string VoteForAwardURL = "https://awards.unity.com/#best-development-tool";
         public const string UnityStoreRateAppURL = "https://assetstore.unity.com/packages/slug/254358#reviews";

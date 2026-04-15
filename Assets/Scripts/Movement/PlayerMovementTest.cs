@@ -74,7 +74,7 @@ public sealed class PlayerMovementTest : NetworkBehaviour, IHitReceiver
             return;
 
         // decay knockback -> 0
-        float t = 1f - Mathf.Exp(-knockbackDamping * Time.fixedDeltaTime);
+        var t = 1f - Mathf.Exp(-knockbackDamping * Time.fixedDeltaTime);
         knockbackVel = Vector3.Lerp(knockbackVel, Vector3.zero, t);
 
         DoMovePhysics();
@@ -86,7 +86,7 @@ public sealed class PlayerMovementTest : NetworkBehaviour, IHitReceiver
     public void ReceiveHit(in HitInfo hit)
     {
         // NOTE: ถ้าคุณทำ server-authoritative จริง ๆ ให้เรียก AddKnockback เฉพาะ owner ผ่าน RPC
-        AddKnockback(hit.Direction, hit.KnockbackImpulse);
+        //AddKnockback(hit.Direction, hit.KnockbackImpulse);
     }
 
     public void AddKnockback(Vector3 dir, float impulse)
@@ -97,7 +97,7 @@ public sealed class PlayerMovementTest : NetworkBehaviour, IHitReceiver
 
         knockbackVel += dir * impulse;
 
-        float m = knockbackVel.magnitude;
+        var m = knockbackVel.magnitude;
         if (m > knockbackMaxSpeed)
             knockbackVel = (knockbackVel / m) * knockbackMaxSpeed;
     }
@@ -106,28 +106,28 @@ public sealed class PlayerMovementTest : NetworkBehaviour, IHitReceiver
 
     void DoMovePhysics()
     {
-        Vector3 wishDir = new Vector3(moveInput.x, 0f, moveInput.y);
+        var wishDir = new Vector3(moveInput.x, 0f, moveInput.y);
         wishDir = Vector3.ClampMagnitude(wishDir, 1f);
 
-        Vector3 v = rb.linearVelocity;
-        Vector3 vXZ = new Vector3(v.x, 0f, v.z);
+        var v = rb.linearVelocity;
+        var vXZ = new Vector3(v.x, 0f, v.z);
 
         // baseVel = ความเร็วเดินจริง ๆ (ตัดส่วน knockback ออก)
-        Vector3 baseVel = vXZ - knockbackVel;
+        var baseVel = vXZ - knockbackVel;
 
-        Vector3 target = wishDir * maxSpeed;
-        float a = (wishDir.sqrMagnitude > 0f) ? accel : decel;
+        var target = wishDir * maxSpeed;
+        var a = (wishDir.sqrMagnitude > 0f) ? accel : decel;
 
         if (wishDir.sqrMagnitude > 0f && baseVel.sqrMagnitude > 0.01f)
         {
-            float dot = Vector3.Dot(baseVel.normalized, wishDir);
+            var dot = Vector3.Dot(baseVel.normalized, wishDir);
             if (dot < 0.0f) a = Mathf.Max(a, turnAccel);
         }
 
-        float maxDelta = a * Time.fixedDeltaTime;
-        Vector3 newBaseVel = Vector3.MoveTowards(baseVel, target, maxDelta);
+        var maxDelta = a * Time.fixedDeltaTime;
+        var newBaseVel = Vector3.MoveTowards(baseVel, target, maxDelta);
 
-        Vector3 finalXZ = newBaseVel + knockbackVel;
+        var finalXZ = newBaseVel + knockbackVel;
         rb.linearVelocity = new Vector3(finalXZ.x, v.y, finalXZ.z);
     }
 
@@ -138,10 +138,10 @@ public sealed class PlayerMovementTest : NetworkBehaviour, IHitReceiver
         worldPoint = default;
         if (!cam) return false;
 
-        Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-        Plane plane = new Plane(Vector3.up, rb.position);
+        var ray = cam.ScreenPointToRay(Input.mousePosition);
+        var plane = new Plane(Vector3.up, rb.position);
 
-        if (!plane.Raycast(ray, out float enter))
+        if (!plane.Raycast(ray, out var enter))
             return false;
 
         worldPoint = ray.GetPoint(enter);
@@ -153,7 +153,7 @@ public sealed class PlayerMovementTest : NetworkBehaviour, IHitReceiver
     {
         hasAim = false;
 
-        if (!TryGetMousePointOnPlane(out Vector3 p))
+        if (!TryGetMousePointOnPlane(out var p))
             return;
 
         rawAimPoint = p;
@@ -168,7 +168,7 @@ public sealed class PlayerMovementTest : NetworkBehaviour, IHitReceiver
         if ((rawAimPoint - smoothAimPoint).sqrMagnitude < (minAimMove * minAimMove))
             return;
 
-        float t = 1f - Mathf.Exp(-Time.deltaTime / Mathf.Max(0.0001f, aimPointSmooth));
+        var t = 1f - Mathf.Exp(-Time.deltaTime / Mathf.Max(0.0001f, aimPointSmooth));
         smoothAimPoint = Vector3.Lerp(smoothAimPoint, rawAimPoint, t);
     }
 
@@ -177,7 +177,7 @@ public sealed class PlayerMovementTest : NetworkBehaviour, IHitReceiver
         hasTargetRot = false;
         if (!hasAim) return;
 
-        Vector3 dir = smoothAimPoint - rb.position;
+        var dir = smoothAimPoint - rb.position;
         dir.y = 0f;
         if (dir.sqrMagnitude < 0.0001f) return;
 
@@ -189,10 +189,10 @@ public sealed class PlayerMovementTest : NetworkBehaviour, IHitReceiver
     {
         if (!hasTargetRot) return;
 
-        float angle = Quaternion.Angle(rb.rotation, targetRot);
+        var angle = Quaternion.Angle(rb.rotation, targetRot);
         if (angle < minAngleDelta) return;
 
-        float maxDeg = turnSpeed * Time.fixedDeltaTime;
+        var maxDeg = turnSpeed * Time.fixedDeltaTime;
         rb.MoveRotation(Quaternion.RotateTowards(rb.rotation, targetRot, maxDeg));
     }
 }

@@ -276,7 +276,7 @@ namespace SingularityGroup.HotReload.Editor {
                 using (new EditorGUILayout.HorizontalScope()) {
                     HotReloadGUIHelper.HelpBox(Translations.Miscellaneous.RateAppQuestion, MessageType.Info, 11);
                     if (GUILayout.Button(Translations.Common.ButtonHide, NonExpandableLayout)) {
-                        RequestHelper.RequestEditorEventWithRetry(new Stat(StatSource.Client, StatLevel.Debug, StatFeature.RateApp), new EditorExtraData { { "dismissed", true } }).Forget();
+                        EditorCodePatcher.SendEditorTelemetryIfEnabled(new Stat(StatSource.Client, StatLevel.Debug, StatFeature.RateApp), new EditorExtraData { { "dismissed", true } });
                         HotReloadPrefs.RateAppShown = true;
                     }
                 }
@@ -292,13 +292,13 @@ namespace SingularityGroup.HotReload.Editor {
                             data.Add("opened_url", openedUrl);
                         }
                         data.Add("enjoy_app", true);
-                        RequestHelper.RequestEditorEventWithRetry(new Stat(StatSource.Client, StatLevel.Debug, StatFeature.RateApp), data).Forget();
+                        EditorCodePatcher.SendEditorTelemetryIfEnabled(new Stat(StatSource.Client, StatLevel.Debug, StatFeature.RateApp), data);
                     }
                     if (GUILayout.Button(Translations.Common.ButtonNo)) {
                         HotReloadPrefs.RateAppShown = true;
                         var data = new EditorExtraData();
                         data.Add("enjoy_app", false);
-                        RequestHelper.RequestEditorEventWithRetry(new Stat(StatSource.Client, StatLevel.Debug, StatFeature.RateApp), data).Forget();
+                        EditorCodePatcher.SendEditorTelemetryIfEnabled(new Stat(StatSource.Client, StatLevel.Debug, StatFeature.RateApp), data);
                         ReportWindowAPI.OpenFeedback();
                     }
                 }

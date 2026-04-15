@@ -51,7 +51,8 @@ namespace SingularityGroup.HotReload.Editor.Cli {
 #if UNITY_EDITOR_WIN
                 useWatchman: HotReloadPrefs.UseWatchman,
 #endif
-                detailedErrorReporting: !HotReloadPrefs.DisableDetailedErrorReporting
+                detailedErrorReporting: !HotReloadPrefs.DisableDetailedErrorReporting,
+                disableTelemetry: HotReloadPrefs.DisableTelemetry
             );
         }
         
@@ -61,6 +62,7 @@ namespace SingularityGroup.HotReload.Editor.Cli {
             bool createNoWindow, 
             bool isReleaseMode, 
             bool detailedErrorReporting, 
+            bool disableTelemetry,
 #if UNITY_EDITOR_WIN 
             bool useWatchman = true,
 #endif
@@ -79,6 +81,7 @@ namespace SingularityGroup.HotReload.Editor.Cli {
                     createNoWindow, 
                     isReleaseMode, 
                     detailedErrorReporting, 
+                    disableTelemetry,
                     loginData, 
                     port, 
 #if UNITY_EDITOR_WIN 
@@ -112,6 +115,7 @@ namespace SingularityGroup.HotReload.Editor.Cli {
             bool createNoWindow, 
             bool isReleaseMode, 
             bool detailedErrorReporting, 
+            bool disableTelemetry,
             LoginData loginData, 
             int port, 
 #if UNITY_EDITOR_WIN 
@@ -169,6 +173,9 @@ namespace SingularityGroup.HotReload.Editor.Cli {
             var cliArguments = $@"-u ""{unityProjDir}"" -s ""{slnPath}"" -t ""{cliTempDir}"" -a ""{searchAssemblies}"" -ver ""{PackageConst.Version}"" -proc ""{Process.GetCurrentProcess().Id}"" -assets ""{allAssetChanges}"" -p ""{port}"" -r {isReleaseMode} -detailed-error-reporting {detailedErrorReporting} -default-locale {PackageConst.DefaultLocale}";
             if (loginData != null) {
                 cliArguments += $@" -email ""{loginData.email}"" -pass ""{loginData.password}""";
+            }
+            if (disableTelemetry) {
+                cliArguments += $@" -disableTelemetry true";
             }
             #if UNITY_EDITOR_WIN
             cliArguments += $@" -w ""{useWatchman}""";

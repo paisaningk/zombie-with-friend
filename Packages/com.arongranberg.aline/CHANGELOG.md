@@ -1,3 +1,22 @@
+## 1.7.9 (2026-02-19)
+    - Fixed WithDuration not working on the first frame of the game.
+    - Got rid of some small GC allocations.
+    - UPM packages are now signed with the Unity package signing system for improved security and authenticity verification.
+    - Fixed a memory leak in the Unity Editor caused by prefab references sometimes being kept in memory even though they shouldn't.
+    - Fixed ALINE not working when using foveated rendering in VR with URP.
+    - Added \reflink{Draw.WireRing} to draw ring (annulus) outlines in 3D.
+        \shadowimage{rendered/wirering.png}
+    - Added \reflink{Draw.SolidRing} to draw filled rings (annuli) in 3D.
+        \shadowimage{rendered/solidring.png}
+    - Added \reflink{Draw.xz.WireRing} to draw ring outlines in 2D.
+        \shadowimage{rendered/wirering2d.png}
+    - Added \reflink{Draw.xz.SolidRing} to draw filled rings in 2D.
+        \shadowimage{rendered/solidring2d.png}
+    - Added a new example scene showing off various drawing primitives in an animated sci-fi interface style.
+        \shadowimage{scifi_interface.png}
+    - Fixed compatibility with URP 17.4.
+    - Increased minimum Unity version to 2022.3.61f2.
+
 ## 1.7.8 (2025-05-06)
     - Fixed a minor GC allocation happening every frame when using URP.
     - Improved performance in standalone builds when nothing is being rendered.

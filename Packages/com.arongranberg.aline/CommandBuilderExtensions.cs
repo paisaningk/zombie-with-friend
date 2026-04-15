@@ -805,6 +805,98 @@ namespace Drawing {
 			PopMatrix();
 			PopColor();
 		}
+		/// <summary>\copydocref{WireRing(float3,float3,float,float)}</summary>
+		/// <param name="color">Color of the object</param>
+		public void WireRing (float3 center, float3 normal, float innerRadius, float outerRadius, Color color) {
+			if (innerRadius < 0) throw new System.ArgumentOutOfRangeException(nameof(innerRadius), "Inner radius must be non-negative");
+			if (outerRadius < 0) throw new System.ArgumentOutOfRangeException(nameof(outerRadius), "Outer radius must be non-negative");
+			if (innerRadius > outerRadius) throw new System.ArgumentException("Inner radius cannot be larger than outer radius");
+			PushColor(color);
+
+			Circle(center, normal, innerRadius);
+			Circle(center, normal, outerRadius);
+			PopColor();
+		}
+
+		/// <summary>\copydocref{SolidRing(float3,float3,float,float)}</summary>
+		/// <param name="color">Color of the object</param>
+		public void SolidRing (float3 center, float3 normal, float innerRadius, float outerRadius, Color color) {
+			if (innerRadius < 0) throw new System.ArgumentOutOfRangeException(nameof(innerRadius), "Inner radius must be non-negative");
+			if (outerRadius < 0) throw new System.ArgumentOutOfRangeException(nameof(outerRadius), "Outer radius must be non-negative");
+			if (innerRadius > outerRadius) throw new System.ArgumentException("Inner radius cannot be larger than outer radius");
+
+			// If the ring has a zero normal then just ignore it
+			if (math.all(normal == 0)) return;
+			PushColor(color);
+
+			// Convert normal to rotation: rotate from (0,1,0) to the desired normal
+			// This makes the ring lie in the plane perpendicular to the normal
+			var rotation = Quaternion.FromToRotation(new float3(0, 1, 0), normal);
+
+			PushMatrix(float4x4.TRS(center, rotation, Vector3.one));
+			SolidRingXZInternal(float3.zero, innerRadius, outerRadius, 0f, 2 * Mathf.PI);
+			PopMatrix();
+			PopColor();
+		}
+
+		/// <summary>\copydocref{WireRing(float3,quaternion,float,float,float,float)}</summary>
+		/// <param name="color">Color of the object</param>
+		public void WireRing (float3 center, quaternion rotation, float innerRadius, float outerRadius, float startAngle, float endAngle, Color color) {
+			if (innerRadius < 0) throw new System.ArgumentOutOfRangeException(nameof(innerRadius), "Inner radius must be non-negative");
+			if (outerRadius < 0) throw new System.ArgumentOutOfRangeException(nameof(outerRadius), "Outer radius must be non-negative");
+			if (innerRadius > outerRadius) throw new System.ArgumentException("Inner radius cannot be larger than outer radius");
+			PushColor(color);
+
+			PushMatrix(float4x4.TRS(center, rotation, Vector3.one));
+
+			// Draw inner and outer arcs
+			CircleXZInternal(float3.zero, innerRadius, startAngle, endAngle);
+			CircleXZInternal(float3.zero, outerRadius, startAngle, endAngle);
+
+			// If not a full circle, draw connectors between the arc endpoints
+			if (math.abs(endAngle - startAngle) < 2 * Mathf.PI - 0.001f) {
+				math.sincos(startAngle, out float sinStart, out float cosStart);
+				math.sincos(endAngle, out float sinEnd, out float cosEnd);
+
+				var innerStart = new float3(cosStart * innerRadius, 0, sinStart * innerRadius);
+				var outerStart = new float3(cosStart * outerRadius, 0, sinStart * outerRadius);
+				var innerEnd = new float3(cosEnd * innerRadius, 0, sinEnd * innerRadius);
+				var outerEnd = new float3(cosEnd * outerRadius, 0, sinEnd * outerRadius);
+
+				Line(innerStart, outerStart);
+				Line(innerEnd, outerEnd);
+			}
+
+			PopMatrix();
+			PopColor();
+		}
+
+		/// <summary>\copydocref{WireRing(float3,quaternion,float,float,float,float)}</summary>
+		/// <param name="color">Color of the object</param>
+		public void WireRing (float3 center, quaternion rotation, float innerRadius, float outerRadius, Color color) {
+			WireRing(center, rotation, innerRadius, outerRadius, 0f, 2 * Mathf.PI, color);
+		}
+
+		/// <summary>\copydocref{SolidRing(float3,quaternion,float,float,float,float)}</summary>
+		/// <param name="color">Color of the object</param>
+		public void SolidRing (float3 center, quaternion rotation, float innerRadius, float outerRadius, float startAngle, float endAngle, Color color) {
+			if (innerRadius < 0) throw new System.ArgumentOutOfRangeException(nameof(innerRadius), "Inner radius must be non-negative");
+			if (outerRadius < 0) throw new System.ArgumentOutOfRangeException(nameof(outerRadius), "Outer radius must be non-negative");
+			if (innerRadius > outerRadius) throw new System.ArgumentException("Inner radius cannot be larger than outer radius");
+			PushColor(color);
+
+			PushMatrix(float4x4.TRS(center, rotation, Vector3.one));
+			SolidRingXZInternal(float3.zero, innerRadius, outerRadius, startAngle, endAngle);
+			PopMatrix();
+			PopColor();
+		}
+
+		/// <summary>\copydocref{SolidRing(float3,quaternion,float,float,float,float)}</summary>
+		/// <param name="color">Color of the object</param>
+		public void SolidRing (float3 center, quaternion rotation, float innerRadius, float outerRadius, Color color) {
+			SolidRing(center, rotation, innerRadius, outerRadius, 0f, 2 * Mathf.PI, color);
+		}
+
 		/// <summary>\copydocref{Label3D(float3,quaternion,string,float)}</summary>
 		/// <param name="color">Color of the object</param>
 		public void Label3D (float3 position, quaternion rotation, string text, float size, Color color) {

@@ -19,19 +19,29 @@ namespace Drawing.Examples {
 		}
 
 		void Update () {
+#if MODULE_INPUT_SYSTEM
+			var mousePosition = UnityEngine.InputSystem.Mouse.current.position.ReadValue();
+			var isMousePressed = UnityEngine.InputSystem.Mouse.current.leftButton.isPressed;
+			var isMouseClick = UnityEngine.InputSystem.Mouse.current.leftButton.wasPressedThisFrame;
+#else
+			var mousePosition = Input.mousePosition;
+			var isMousePressed = Input.GetKey(KeyCode.Mouse0);
+			var isMouseClick = Input.GetKeyDown(KeyCode.Mouse0);
+#endif
+
 			// Add a new control point when clicking
-			if (Input.GetKeyDown(KeyCode.Mouse0)) {
+			if (isMouseClick) {
 				curves.Add(new CurvePoint {
-					position = (Vector2)Input.mousePosition,
+					position = (Vector2)mousePosition,
 					controlPoint0 = Vector2.zero,
 					controlPoint1 = Vector2.zero,
 				});
 			}
 
 			// Keep adjusting the position of the control point while the mouse is pressed
-			if (curves.Count > 0 && Input.GetKey(KeyCode.Mouse0) && ((Vector2)Input.mousePosition - curves[curves.Count - 1].position).magnitude > 2*2) {
+			if (curves.Count > 0 && isMousePressed && ((Vector2)mousePosition - curves[curves.Count - 1].position).magnitude > 2*2) {
 				var point = curves[curves.Count - 1];
-				point.controlPoint1 = (Vector2)Input.mousePosition - point.position;
+				point.controlPoint1 = (Vector2)mousePosition - point.position;
 				point.controlPoint0 = -point.controlPoint1;
 			}
 

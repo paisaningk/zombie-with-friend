@@ -17,6 +17,7 @@ namespace SingularityGroup.HotReload.Editor.Localization {
             public static string DialogMessageRestartAssetRefresh;
             public static string DialogMessageRestartConsoleWindow;
             public static string DialogMessageRestartErrorReporting;
+            public static string DialogMessageRestartTelemetry;
             public static string DialogButtonRestartHotReload;
             public static string DialogButtonRestartServer;
             public static string DialogButtonDontRestart;
@@ -75,6 +76,7 @@ namespace SingularityGroup.HotReload.Editor.Localization {
                 DialogMessageRestartAssetRefresh = "When changing 'Asset refresh', the Hot Reload server must be restarted for this to take effect.\nDo you want to restart it now?";
                 DialogMessageRestartConsoleWindow = "When changing 'Hide console window on start', the Hot Reload server must be restarted for this to take effect.\nDo you want to restart it now?";
                 DialogMessageRestartErrorReporting = "When changing 'Disable Detailed Error Reporting', the Hot Reload server must be restarted for this to take effect.\nDo you want to restart it now?";
+                DialogMessageRestartTelemetry = "When changing 'Disable Telemetry', the Hot Reload server must be restarted for this to take effect.\nDo you want to restart it now?";
                 DialogButtonRestartHotReload = "Restart Hot Reload";
                 DialogButtonRestartServer = "Restart server";
                 DialogButtonDontRestart = "Don't restart";
@@ -134,6 +136,7 @@ namespace SingularityGroup.HotReload.Editor.Localization {
                 DialogMessageRestartAssetRefresh = "更改“资源刷新”时，必须重新启动 Hot Reload 服务器才能生效。\n您希望现在重新启动吗？";
                 DialogMessageRestartConsoleWindow = "更改“启动时隐藏控制台窗口”时，必须重新启动 Hot Reload 服务器才能生效。\n您希望现在重新启动吗？";
                 DialogMessageRestartErrorReporting = "更改“禁用详细错误报告”时，必须重新启动 Hot Reload 服务器才能生效。\n您希望现在重新启动吗？";
+                DialogMessageRestartTelemetry = "更改“禁用遥测”时，必须重新启动 Hot Reload 服务器才能生效。\n您希望现在重新启动吗？";
                 DialogButtonRestartHotReload = "重新启动 Hot Reload";
                 DialogButtonRestartServer = "重新启动服务器";
                 DialogButtonDontRestart = "不重新启动";

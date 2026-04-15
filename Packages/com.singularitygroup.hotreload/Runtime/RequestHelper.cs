@@ -287,6 +287,21 @@ namespace SingularityGroup.HotReload {
             return null;
         }
         
+        public static async Task<RemoteLicenseResetRespone> RequestRemoteLicenseReset(string email, string password, int timeoutSeconds) {
+            var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutSeconds));
+            var json = SerializeRequestBody(new RemoteLicenseResetRequest(email, password));
+            var resp = await PostJson(url + "/remoteLicenseReset", json, timeoutSeconds, cts.Token);
+            if (resp.statusCode == HttpStatusCode.OK) {
+                try {
+                    return JsonConvert.DeserializeObject<RemoteLicenseResetRespone>(resp.responseText);
+                } catch (Exception e){
+                    return new RemoteLicenseResetRespone(error: $"{e.GetType().Name} {e.Message}");
+                }
+            } else {
+                return new RemoteLicenseResetRespone(error: resp.responseText ?? Localization.Translations.Logging.RequestTimeout);
+            }
+        }
+        
         public static async Task<LoginStatusResponse> RequestLogin(string email, string password, int timeoutSeconds) {
             var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutSeconds));
             var json = SerializeRequestBody(new Dictionary<string, object> {
@@ -362,6 +377,9 @@ namespace SingularityGroup.HotReload {
                     return;
                 }
                 await Task.Delay(TimeSpan.FromMilliseconds(200));
+                if (CodePatcher.I.disableTelemetry) {
+                    break;
+                }
             } while (attempt++ < 10000);
         }
         
@@ -491,10 +509,11 @@ namespace SingularityGroup.HotReload {
             await ThreadUtility.SwitchToThreadPool();
             
             try {
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-                using(var resp = await httpClient.PostAsync(uri, content, token).ConfigureAwait(false)) {
-                    var str = await resp.Content.ReadAsStringAsync().ConfigureAwait(false);
-                    return new HttpResponse(resp.StatusCode, null, str);
+                using (var content = new StringContent(json, Encoding.UTF8, "application/json")) {
+                    using(var resp = await httpClient.PostAsync(uri, content, token).ConfigureAwait(false)) {
+                        var str = await resp.Content.ReadAsStringAsync().ConfigureAwait(false);
+                        return new HttpResponse(resp.StatusCode, null, str);
+                    }
                 }
             } catch(Exception ex) {
                 return new HttpResponse(0, ex, null);

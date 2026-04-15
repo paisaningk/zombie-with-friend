@@ -13,13 +13,15 @@ namespace SingularityGroup.HotReload.Editor {
         public readonly string[] omittedProjects;
         public readonly bool batchMode;
         public readonly string locale;
+        public readonly bool disableTelemetry;
 
-        public BuildInfoInput(string allDefineSymbols, BuildTarget activeBuildTarget, string[] omittedProjects, bool batchMode, string locale) {
+        public BuildInfoInput(string allDefineSymbols, BuildTarget activeBuildTarget, string[] omittedProjects, bool batchMode, string locale, bool disableTelemetry) {
             this.allDefineSymbols = allDefineSymbols;
             this.activeBuildTarget = activeBuildTarget;
             this.omittedProjects = omittedProjects;
             this.batchMode = batchMode;
             this.locale = locale;
+            this.disableTelemetry = disableTelemetry;
         }
     }
     
@@ -28,6 +30,7 @@ namespace SingularityGroup.HotReload.Editor {
             var buildTarget = EditorUserBuildSettings.activeBuildTarget;
             var activeDefineSymbols = EditorUserBuildSettings.activeScriptCompilationDefines;
             var batchMode = Application.isBatchMode;
+            var disableTelemetry = HotReloadPrefs.DisableTelemetry;
             var allDefineSymbols = await Task.Run(() => {
                 return GetAllAndroidMonoBuildDefineSymbolsThreaded(activeDefineSymbols);
             });
@@ -40,7 +43,8 @@ namespace SingularityGroup.HotReload.Editor {
                 activeBuildTarget: buildTarget,
                 omittedProjects: omittedProjects,
                 batchMode: batchMode,
-                locale: locale
+                locale: locale,
+                disableTelemetry: disableTelemetry
             );
         }
 
@@ -55,7 +59,8 @@ namespace SingularityGroup.HotReload.Editor {
                 activeBuildTarget: buildTarget, 
                 omittedProjects: AssemblyOmission.GetOmittedProjects(allDefineSymbols),
                 batchMode: Application.isBatchMode,
-                locale: PackageConst.DefaultLocale
+                locale: PackageConst.DefaultLocale,
+                disableTelemetry: HotReloadPrefs.DisableTelemetry
             ));
         }
 
@@ -77,7 +82,8 @@ namespace SingularityGroup.HotReload.Editor {
                 buildMachinePort = RequestHelper.port,
                 activeBuildTarget = input.activeBuildTarget.ToString(),
                 buildMachineRequestOrigin = RequestHelper.origin,
-                locale = input.locale
+                locale = input.locale,
+                disableTelemetry = input.disableTelemetry,
             };
         }
 

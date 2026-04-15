@@ -1176,6 +1176,58 @@ namespace Drawing {
 		}
 
 		/// <summary>
+		/// \copydocref{Drawing::CommandBuilder::WireRing(float3,float3,float,float)}
+		/// Warning: This method cannot be used inside of Burst jobs. See job-system (view in online documentation for working links) instead.
+		/// </summary>
+		[BurstDiscard]
+		public static void WireRing (float3 center, float3 normal, float innerRadius, float outerRadius) {
+#if UNITY_EDITOR
+			DrawingManager.Init();
+			builder.WireRing(center, normal, innerRadius, outerRadius);
+#endif
+		}
+
+
+		/// <summary>
+		/// \copydocref{Drawing::CommandBuilder::SolidRing(float3,float3,float,float)}
+		/// Warning: This method cannot be used inside of Burst jobs. See job-system (view in online documentation for working links) instead.
+		/// </summary>
+		[BurstDiscard]
+		public static void SolidRing (float3 center, float3 normal, float innerRadius, float outerRadius) {
+#if UNITY_EDITOR
+			DrawingManager.Init();
+			builder.SolidRing(center, normal, innerRadius, outerRadius);
+#endif
+		}
+
+
+		/// <summary>
+		/// \copydocref{Drawing::CommandBuilder::WireRing(float3,quaternion,float,float,float,float)}
+		/// Warning: This method cannot be used inside of Burst jobs. See job-system (view in online documentation for working links) instead.
+		/// </summary>
+		[BurstDiscard]
+		public static void WireRing (float3 center, quaternion rotation, float innerRadius, float outerRadius, float startAngle = 0f, float endAngle = 2 * Mathf.PI) {
+#if UNITY_EDITOR
+			DrawingManager.Init();
+			builder.WireRing(center, rotation, innerRadius, outerRadius, startAngle, endAngle);
+#endif
+		}
+
+
+		/// <summary>
+		/// \copydocref{Drawing::CommandBuilder::SolidRing(float3,quaternion,float,float,float,float)}
+		/// Warning: This method cannot be used inside of Burst jobs. See job-system (view in online documentation for working links) instead.
+		/// </summary>
+		[BurstDiscard]
+		public static void SolidRing (float3 center, quaternion rotation, float innerRadius, float outerRadius, float startAngle = 0f, float endAngle = 2 * Mathf.PI) {
+#if UNITY_EDITOR
+			DrawingManager.Init();
+			builder.SolidRing(center, rotation, innerRadius, outerRadius, startAngle, endAngle);
+#endif
+		}
+
+
+		/// <summary>
 		/// \copydocref{Drawing::CommandBuilder::Label3D(float3,quaternion,string,float)}
 		/// Warning: This method cannot be used inside of Burst jobs. See job-system (view in online documentation for working links) instead.
 		/// </summary>
@@ -2353,6 +2405,84 @@ namespace Drawing {
 			builder.SolidBox(center, rotation, size, color);
 #endif
 		}
+
+		/// <summary>
+		/// \copydocref{Drawing::CommandBuilder::WireRing(float3,float3,float,float,Color)}
+		/// Warning: This method cannot be used inside of Burst jobs. See job-system (view in online documentation for working links) instead.
+		/// </summary>
+		[BurstDiscard]
+		public static void WireRing (float3 center, float3 normal, float innerRadius, float outerRadius, Color color) {
+#if UNITY_EDITOR
+			DrawingManager.Init();
+			builder.WireRing(center, normal, innerRadius, outerRadius, color);
+#endif
+		}
+
+
+		/// <summary>
+		/// \copydocref{Drawing::CommandBuilder::SolidRing(float3,float3,float,float,Color)}
+		/// Warning: This method cannot be used inside of Burst jobs. See job-system (view in online documentation for working links) instead.
+		/// </summary>
+		[BurstDiscard]
+		public static void SolidRing (float3 center, float3 normal, float innerRadius, float outerRadius, Color color) {
+#if UNITY_EDITOR
+			DrawingManager.Init();
+			builder.SolidRing(center, normal, innerRadius, outerRadius, color);
+#endif
+		}
+
+
+		/// <summary>
+		/// \copydocref{Drawing::CommandBuilder::WireRing(float3,quaternion,float,float,float,float,Color)}
+		/// Warning: This method cannot be used inside of Burst jobs. See job-system (view in online documentation for working links) instead.
+		/// </summary>
+		[BurstDiscard]
+		public static void WireRing (float3 center, quaternion rotation, float innerRadius, float outerRadius, float startAngle, float endAngle, Color color) {
+#if UNITY_EDITOR
+			DrawingManager.Init();
+			builder.WireRing(center, rotation, innerRadius, outerRadius, startAngle, endAngle, color);
+#endif
+		}
+
+
+		/// <summary>
+		/// \copydocref{Drawing::CommandBuilder::WireRing(float3,quaternion,float,float,Color)}
+		/// Warning: This method cannot be used inside of Burst jobs. See job-system (view in online documentation for working links) instead.
+		/// </summary>
+		[BurstDiscard]
+		public static void WireRing (float3 center, quaternion rotation, float innerRadius, float outerRadius, Color color) {
+#if UNITY_EDITOR
+			DrawingManager.Init();
+			builder.WireRing(center, rotation, innerRadius, outerRadius, color);
+#endif
+		}
+
+
+		/// <summary>
+		/// \copydocref{Drawing::CommandBuilder::SolidRing(float3,quaternion,float,float,float,float,Color)}
+		/// Warning: This method cannot be used inside of Burst jobs. See job-system (view in online documentation for working links) instead.
+		/// </summary>
+		[BurstDiscard]
+		public static void SolidRing (float3 center, quaternion rotation, float innerRadius, float outerRadius, float startAngle, float endAngle, Color color) {
+#if UNITY_EDITOR
+			DrawingManager.Init();
+			builder.SolidRing(center, rotation, innerRadius, outerRadius, startAngle, endAngle, color);
+#endif
+		}
+
+
+		/// <summary>
+		/// \copydocref{Drawing::CommandBuilder::SolidRing(float3,quaternion,float,float,Color)}
+		/// Warning: This method cannot be used inside of Burst jobs. See job-system (view in online documentation for working links) instead.
+		/// </summary>
+		[BurstDiscard]
+		public static void SolidRing (float3 center, quaternion rotation, float innerRadius, float outerRadius, Color color) {
+#if UNITY_EDITOR
+			DrawingManager.Init();
+			builder.SolidRing(center, rotation, innerRadius, outerRadius, color);
+#endif
+		}
+
 
 		/// <summary>
 		/// \copydocref{Drawing::CommandBuilder::Label3D(float3,quaternion,string,float,Color)}

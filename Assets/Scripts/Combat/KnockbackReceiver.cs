@@ -18,12 +18,12 @@ namespace Bullet
         public void ReceiveHit(in HitInfo hit)
         {
             // ทิศผลัก: ไปตามทิศกระสุน (หรือจะใช้ (transform.position - shooterPos) ก็ได้)
-            Vector3 dir = hit.Direction;
+            var dir = hit.Direction;
             dir.y = 0f;
             dir.Normalize();
 
             // เพิ่มแรงขึ้นเล็กน้อยถ้าต้องการ
-            Vector3 impulse = dir * hit.KnockbackImpulse + Vector3.up * _maxUp;
+            var impulse = dir * hit.KnockbackImpulse + Vector3.up * _maxUp;
             impulse *= _massCompensation;
 
             // ล้างความเร็วบางส่วนเพื่อให้ผลเด้งชัดขึ้น (เลือกทำ/ไม่ทำ)
