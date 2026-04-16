@@ -97,7 +97,7 @@ namespace Networking
 
         public List<string> GetPlayerList()
         {
-            //return Transport.GetPlayersInLobby();
+            return Transport.GetPlayersInLobby();
             return new List<string>();
         }
 

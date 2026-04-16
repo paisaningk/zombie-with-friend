@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using FishNet;
 using Sirenix.OdinInspector;
 using Steamworks;
+using Steamworks.Data;
 using UnityEngine;
 
 namespace Networking.TransportProvider
@@ -13,18 +15,16 @@ namespace Networking.TransportProvider
     public class SteamTransportProvider : MonoBehaviour, ITransportProvider
     {
         // stage
-        [ShowInInspector] [ReadOnly] private SteamId currentLobbyId;
-        [ShowInInspector] [ReadOnly] private string hostSteamId;
+        [ShowInInspector] [ReadOnly] private Lobby currentLobby;
 
         public event Action<List<string>> OnPlayerListChanged;
         public event Action OnDisconnect;
         public event Action<string> OnError;
 
-        private UniTaskCompletionSource<bool> joinLobbyTcs;
-
         public async UniTask<string> CreateLobby(CancellationToken ct = default)
         {
-            var lobby = await SteamMatchmaking.CreateLobbyAsync(4);
+            ct.ThrowIfCancellationRequested();
+            var lobby = await SteamMatchmaking.CreateLobbyAsync(4).AsUniTask().AttachExternalCancellation(ct);;
 
             if (lobby == null)
             {
@@ -33,38 +33,40 @@ namespace Networking.TransportProvider
                 return string.Empty;
             }
 
-            lobby.Value.SetPrivate();
+            currentLobby = lobby.Value;
+            currentLobby.SetPrivate();
+            currentLobby.SetMemberData("name", "Test1");
 
-            // เก็บ LobbyID ไว้ใช้
-            currentLobbyId = lobby.Value.Id;
-
-            lobby.Value.SetMemberData("name", "Test1");
-            //lobby.Value.SetMemberData("map", "level_01");
-
-            return currentLobbyId.ToString();
+            return currentLobby.ToString();
         }
 
-        public UniTask JoinLobby(string lobbyCode, CancellationToken ct = default)
+        public async UniTask<bool> JoinLobby(string lobbyCode, CancellationToken ct = default)
         {
-            joinLobbyTcs = new UniTaskCompletionSource<bool>();
-
             if (!ulong.TryParse(lobbyCode, out var id))
             {
-                joinLobbyTcs.TrySetException(new Exception("ID ไม่ถูกต้อง"));
                 OnError?.Invoke("JoinLobby lobbyCode Error");
-                return joinLobbyTcs.Task;
+                return false;
             }
+            
+            ct.ThrowIfCancellationRequested();
+            var lobby = await SteamMatchmaking.JoinLobbyAsync(id).AsUniTask().AttachExternalCancellation(ct);
 
-            currentLobbyId = new CSteamID(id);
-            SteamMatchmaking.JoinLobby(currentLobbyId);
-            return joinLobbyTcs.Task.Timeout(TimeSpan.FromSeconds(10));
-
+            if (lobby == null)
+            {
+                OnError?.Invoke("Join Lobby Failed");
+                return false;
+            }
+            
+            currentLobby = lobby.Value;
+            return true;
         }
 
         public void Disconnect()
         {
-            if (currentLobbyId.IsValid())
-                SteamMatchmaking.LeaveLobby(currentLobbyId);
+            if (currentLobby.Id.IsValid)
+            {
+                currentLobby.Leave();
+            }
 
             OnDisconnect?.Invoke();
         }
@@ -72,69 +74,18 @@ namespace Networking.TransportProvider
         public List<string> GetPlayersInLobby()
         {
             var players = new List<string>();
-            var memberCount = SteamMatchmaking.GetNumLobbyMembers(currentLobbyId);
+            
+            if (!currentLobby.Id.IsValid)
+                return players;
 
-            for (var i = 0; i < memberCount; i++)
-            {
-                var memberId = SteamMatchmaking.GetLobbyMemberByIndex(
-                    currentLobbyId, i
-                );
-                var name = SteamFriends.GetFriendPersonaName(memberId);
-                players.Add(name);
-            }
+            players.AddRange(currentLobby.Members.Select(member => member.Name));
 
             return players;
         }
 
-        private void OnLobbyCreated(LobbyCreated_t result)
+        public SteamId GetCurrentLobbyId()
         {
-            if (result.m_eResult != EResult.k_EResultOK)
-            {
-                Debug.Log("สร้างห้องไม่สำเร็จ");
-                OnError?.Invoke("On Lobby Created Error");
-                return;
-            }
-
-            Debug.Log("aaaa");
-
-            var lobbyId = new CSteamID(result.m_ulSteamIDLobby);
-
-            // เก็บ LobbyID ไว้ใช้
-            currentLobbyId = lobbyId;
-
-            // เก็บข้อมูลใน Lobby Data — client อื่นดึงได้
-            SteamMatchmaking.SetLobbyData(lobbyId, "name", "ห้องของเรา");
-            SteamMatchmaking.SetLobbyData(lobbyId, "map", "level_01");
-
-            InstanceFinder.ServerManager.StartConnection();
-            InstanceFinder.ClientManager.StartConnection();
-
-            createLobbyTcs?.TrySetResult(currentLobbyId.m_SteamID.ToString());
-        }
-
-        private void OnLobbyEnter(LobbyEnter_t result)
-        {
-            currentLobbyId = new CSteamID(result.m_ulSteamIDLobby);
-
-            hostSteamId = SteamMatchmaking.GetLobbyOwner(currentLobbyId).m_SteamID.ToString();
-
-            joinLobbyTcs?.TrySetResult(true);
-        }
-
-        private void LobbyChatUpdate(LobbyChatUpdate_t param)
-        {
-            // ui update callback
-            OnPlayerListChanged?.Invoke(GetPlayersInLobby());
-        }
-
-        public string GetCurrentLobbyId()
-        {
-            return currentLobbyId.ToString();
-        }
-
-        public string GetHostSteamId()
-        {
-            return hostSteamId;
+            return currentLobby.Id;
         }
     }
 }

@@ -7,7 +7,7 @@ namespace Networking.TransportProvider
     public interface ITransportProvider
     {
         UniTask<string> CreateLobby(CancellationToken ct = default); // return code/id
-        UniTask JoinLobby(string code, CancellationToken ct = default);
-        void Disconnect();
+        UniTask<bool>   JoinLobby(string code, CancellationToken ct = default);
+        void            Disconnect();
     }
 }
