@@ -28,6 +28,7 @@ namespace Networking
         {
             try
             {
+                
                 var lobbyID = await Transport.CreateLobby(cts.Token);
 
                 if (string.IsNullOrEmpty(lobbyID))
@@ -39,6 +40,8 @@ namespace Networking
 
                 InstanceFinder.ServerManager.StartConnection();
                 InstanceFinder.ClientManager.StartConnection();
+
+                Debug.Log(lobbyID);
 
                 OnLobbyCreated?.Invoke(lobbyID);
 
@@ -68,9 +71,9 @@ namespace Networking
             {
                 await Transport.JoinLobby(lobbyID, cts.Token);
 
-                // InstanceFinder.ClientManager.StartConnection(Transport.GetHostSteamId());
-                //
-                // OnLobbyJoined?.Invoke(Transport.GetCurrentLobbyId());
+                InstanceFinder.ClientManager.StartConnection(Transport.GetHostSteamId().Id.ToString());
+
+                OnLobbyJoined?.Invoke(lobbyID);
             }
             catch (OperationCanceledException)
             {
@@ -127,7 +130,7 @@ namespace Networking
             cts?.Dispose();
         }
 
-        private void HandleTransportDisconnect()
+        public void HandleTransportDisconnect()
         {
             OnDisconnect?.Invoke();
 

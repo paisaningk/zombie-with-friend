@@ -24,7 +24,11 @@ namespace Networking.TransportProvider
         public async UniTask<string> CreateLobby(CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
-            var lobby = await SteamMatchmaking.CreateLobbyAsync(4).AsUniTask().AttachExternalCancellation(ct);;
+            // Timeout ควรใส่ด้วย เผื่อ Steam ไม่ตอบ
+            var lobby = await SteamMatchmaking.CreateLobbyAsync(4)
+                .AsUniTask()
+                .AttachExternalCancellation(ct)
+                .Timeout(TimeSpan.FromSeconds(10));
 
             if (lobby == null)
             {
@@ -37,7 +41,7 @@ namespace Networking.TransportProvider
             currentLobby.SetPrivate();
             currentLobby.SetMemberData("name", "Test1");
 
-            return currentLobby.ToString();
+            return currentLobby.Id.ToString();
         }
 
         public async UniTask<bool> JoinLobby(string lobbyCode, CancellationToken ct = default)
@@ -49,7 +53,10 @@ namespace Networking.TransportProvider
             }
             
             ct.ThrowIfCancellationRequested();
-            var lobby = await SteamMatchmaking.JoinLobbyAsync(id).AsUniTask().AttachExternalCancellation(ct);
+            var lobby = await SteamMatchmaking.JoinLobbyAsync(id)
+                .AsUniTask()
+                .AttachExternalCancellation(ct)
+                .Timeout(TimeSpan.FromSeconds(10));
 
             if (lobby == null)
             {
@@ -81,6 +88,11 @@ namespace Networking.TransportProvider
             players.AddRange(currentLobby.Members.Select(member => member.Name));
 
             return players;
+        }
+
+        public Friend GetHostSteamId()
+        {
+            return currentLobby.Owner;
         }
 
         public SteamId GetCurrentLobbyId()

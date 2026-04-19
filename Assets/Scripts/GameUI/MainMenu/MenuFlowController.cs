@@ -25,6 +25,7 @@ namespace GameUI.MainMenu
             JoinPanel.OnBackToMainMenu += ShowMainMenu;
 
             LobbyPanel.OnExitLobby += ShowMainMenu;
+            LobbyPanel.OnExitLobby += LobbyManager.Instance.HandleTransportDisconnect;
         }
 
         [Button]
