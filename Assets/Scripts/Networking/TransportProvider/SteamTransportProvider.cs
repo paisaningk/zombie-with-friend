@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using FishNet;
+using FishNet.Transporting.Multipass;
 using Sirenix.OdinInspector;
 using Steamworks;
 using Steamworks.Data;
@@ -16,6 +17,11 @@ namespace Networking.TransportProvider
     {
         // stage
         [ShowInInspector] [ReadOnly] private Lobby currentLobby;
+        [SerializeField] private Multipass multipass;
+
+        
+        public bool SupportsLobby => true;
+        public bool RequiresCode  => true;
 
         public event Action<List<string>> OnPlayerListChanged;
         public event Action OnDisconnect;
@@ -24,22 +30,21 @@ namespace Networking.TransportProvider
         public async UniTask<string> CreateLobby(CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
-            // Timeout ควรใส่ด้วย เผื่อ Steam ไม่ตอบ
             var lobby = await SteamMatchmaking.CreateLobbyAsync(4)
                 .AsUniTask()
                 .AttachExternalCancellation(ct)
                 .Timeout(TimeSpan.FromSeconds(10));
 
-            if (lobby == null)
-            {
-                Debug.Log("สร้างห้องไม่สำเร็จ");
+            if (lobby == null) {
                 OnError?.Invoke("On Lobby Created Error");
                 return string.Empty;
             }
 
             currentLobby = lobby.Value;
             currentLobby.SetPrivate();
-            currentLobby.SetMemberData("name", "Test1");
+
+            // Set หลัง Steam พร้อมแล้ว
+            multipass.SetClientTransport<FishyFacepunch.FishyFacepunch>();
 
             return currentLobby.Id.ToString();
         }
@@ -63,6 +68,8 @@ namespace Networking.TransportProvider
                 OnError?.Invoke("Join Lobby Failed");
                 return false;
             }
+            
+            multipass.SetClientTransport<FishyFacepunch.FishyFacepunch>();
             
             currentLobby = lobby.Value;
             return true;
@@ -90,14 +97,7 @@ namespace Networking.TransportProvider
             return players;
         }
 
-        public Friend GetHostSteamId()
-        {
-            return currentLobby.Owner;
-        }
-
-        public SteamId GetCurrentLobbyId()
-        {
-            return currentLobby.Id;
-        }
+        public string GetHostSteamId()    => currentLobby.Owner.Id.ToString();
+        public string GetCurrentLobbyId() => currentLobby.Id.Value.ToString();
     }
 }

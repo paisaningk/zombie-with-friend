@@ -8,6 +8,14 @@ using Sirenix.OdinInspector;
 using UnityEngine;
 namespace Networking
 {
+    
+    public enum Transport
+    {
+        Yak            = 0,
+        Tugboat        = 1,
+        FacePunch = 2
+    }
+    
     public class LobbyManager : Singleton<LobbyManager>
     {
         protected override bool dontDestroyOnLoad => false;
@@ -71,7 +79,7 @@ namespace Networking
             {
                 await Transport.JoinLobby(lobbyID, cts.Token);
 
-                InstanceFinder.ClientManager.StartConnection(Transport.GetHostSteamId().Id.ToString());
+                InstanceFinder.ClientManager.StartConnection(Transport.GetHostSteamId());
 
                 OnLobbyJoined?.Invoke(lobbyID);
             }

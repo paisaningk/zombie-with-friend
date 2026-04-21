@@ -1242,8 +1242,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: FishNet.Runtime::FishNet.Transporting.Multipass.Multipass
   GlobalServerActions: 1
   _transports:
-  - {fileID: 784042736}
   - {fileID: 784042738}
+  - {fileID: 784042737}
+  - {fileID: 784042736}
 --- !u!1 &830226255
 GameObject:
   m_ObjectHideFlags: 0
