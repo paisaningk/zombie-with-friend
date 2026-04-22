@@ -15,6 +15,9 @@ namespace Networking.TransportProvider
 {
     public class SteamTransportProvider : MonoBehaviour, ITransportProvider
     {
+        public string ConnectionAddress => currentLobby.Id.IsValid ? currentLobby.Owner.Id.ToString() : string.Empty;
+        public string LobbyId => currentLobby.Id.ToString();
+        
         // stage
         [ShowInInspector] [ReadOnly] private Lobby currentLobby;
         [SerializeField] private Multipass multipass;
@@ -72,7 +75,7 @@ namespace Networking.TransportProvider
             multipass.SetClientTransport<FishyFacepunch.FishyFacepunch>();
             
             currentLobby = lobby.Value;
-            return true;
+            return false;
         }
 
         public void Disconnect()
@@ -95,9 +98,6 @@ namespace Networking.TransportProvider
             players.AddRange(currentLobby.Members.Select(member => member.Name));
 
             return players;
-        }
-
-        public string GetHostSteamId()    => currentLobby.Owner.Id.ToString();
-        public string GetCurrentLobbyId() => currentLobby.Id.Value.ToString();
+        } 
     }
 }

@@ -11,6 +11,8 @@ namespace Networking.TransportProvider
     public class TugboatTransprotProvider : MonoBehaviour, ITransportProvider
     {
         [SerializeField] private Multipass multipass;
+        public string ConnectionAddress => "127.0.0.1";
+        public string LobbyId => "LOCAL";
         
         public bool SupportsLobby => true;
         public bool RequiresCode  => true;
@@ -31,7 +33,10 @@ namespace Networking.TransportProvider
 
         public void         Disconnect()        { }
         public string       GetHostSteamId()    => string.Empty;
-        public string       GetCurrentLobbyId() => "LOCAL";
-        public List<string> GetPlayersInLobby() => new();
+
+        public List<string> GetPlayersInLobby()
+        {
+            return new List<string>();
+        }
     }
 }

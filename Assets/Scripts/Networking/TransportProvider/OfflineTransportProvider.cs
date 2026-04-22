@@ -10,6 +10,8 @@ namespace Networking.TransportProvider
     public class OfflineTransportProvider : MonoBehaviour, ITransportProvider
     {
         [SerializeField] private Multipass multipass;
+        public string ConnectionAddress => string.Empty;
+        public string LobbyId => "OFFLINE";
         
         public bool SupportsLobby => false;
         public bool RequiresCode  => false;
@@ -21,11 +23,13 @@ namespace Networking.TransportProvider
         }
 
         public UniTask<bool> JoinLobby(string address, CancellationToken ct = default)
-            => UniTask.FromResult(true); // ไม่มี join ในโหมด offline
+            => UniTask.FromResult(false);
 
         public void         Disconnect()        { }
-        public string       GetHostSteamId()    => string.Empty;
-        public string       GetCurrentLobbyId() => "OFFLINE";
-        public List<string> GetPlayersInLobby() => new();
+
+        public List<string> GetPlayersInLobby()
+        {
+            return new List<string>();
+        }
     }
 }
