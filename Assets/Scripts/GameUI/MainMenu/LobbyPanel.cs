@@ -1,5 +1,6 @@
 using System;
 using FishNet;
+using FishNet.Managing.Scened;
 using GameUI.Component;
 using Networking;
 using Sirenix.OdinInspector;
@@ -9,6 +10,7 @@ namespace GameUI.MainMenu
 {
     public class LobbyPanel : UIPanel
     {
+        public string LoadScenes;
         public TMP_Text LobbyNameText;
         public ButtonFx StartGameButton;
         public ButtonFx CopyCodeButton;
@@ -18,7 +20,21 @@ namespace GameUI.MainMenu
 
         public void Start()
         {
+            StartGameButton.onClick.AddListener(StartGame);
             ExitLobbyButton.onClick.AddListener(ExitLobby);
+            CopyCodeButton.onClick.AddListener(CopyCode);
+        }
+        private void StartGame()
+        {
+            if (!LobbyManager.Instance.IsHost()) return;
+
+            var scene = new SceneLoadData(LoadScenes);
+            InstanceFinder.SceneManager.LoadGlobalScenes(scene);
+        }
+
+        public void CopyCode()
+        {
+            GUIUtility.systemCopyBuffer = LobbyManager.Instance.GetCode();
         }
 
         public void Setup(string lobbyCode)
@@ -44,5 +60,12 @@ namespace GameUI.MainMenu
         {
             OnExitLobby?.Invoke();
         }
+
+        // private IEnumerator ShowCopiedFeedback()
+        // {
+        //     copyButton.GetComponentInChildren<TextMeshProUGUI>().text = "Copied!";
+        //     yield return new WaitForSeconds(1.5f);
+        //     copyButton.GetComponentInChildren<TextMeshProUGUI>().text = "Copy";
+        // }
     }
 }

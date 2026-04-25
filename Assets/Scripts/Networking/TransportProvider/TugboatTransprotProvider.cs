@@ -19,7 +19,6 @@ namespace Networking.TransportProvider
 
         public UniTask<string> CreateLobby(CancellationToken ct = default)
         {
-            InstanceFinder.ServerManager.StartConnection();
             multipass.SetClientTransport<Tugboat>();
             // return IP ของเครื่องตัวเอง
             return UniTask.FromResult("127.0.0.1");

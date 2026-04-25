@@ -5,6 +5,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using FishNet;
 using FishNet.Connection;
+using FishNet.Managing;
 using FishNet.Transporting;
 using Networking.TransportProvider;
 using Sirenix.OdinInspector;
@@ -14,9 +15,9 @@ namespace Networking
     
     public enum Transport
     {
-        Yak            = 0,
-        Tugboat        = 1,
-        FacePunch = 2
+        Yak = 0,
+        Tugboat = 1,
+        FacePunch = 2,
     }
     
     public class LobbyManager : Singleton<LobbyManager>
@@ -26,12 +27,13 @@ namespace Networking
         private List<NetworkConnection> connectedPlayers = new();
 
         [SerializeField] private ITransportProvider currentTransport;
-        [SerializeField] private SteamTransportProvider steamTransport;
-        [SerializeField] private OfflineTransportProvider offlineTransport;
-        [SerializeField] private TugboatTransprotProvider tugboatTransport;
+        [SerializeField] private SteamTransportProvider SteamTransport;
+        [SerializeField] private OfflineTransportProvider OfflineTransport;
+        [SerializeField] private TugboatTransprotProvider TugboatTransport;
 
         public Transport CurrentTransportMode;
-        private bool _isIntentionalDisconnect = false;
+        public NetworkManager NetworkManager;
+        private bool isIntentionalDisconnect = false;
 
 
         // ============ Events แจ้ง UI ============
@@ -59,12 +61,10 @@ namespace Networking
 
                 Debug.Log("Create Lobby");
 
-                InstanceFinder.ServerManager.StartConnection();
-                InstanceFinder.ClientManager.StartConnection(currentTransport.ConnectionAddress);
+                NetworkManager.ServerManager.StartConnection();
+                NetworkManager.ClientManager.StartConnection(currentTransport.ConnectionAddress);
 
-                Debug.Log(lobbyID);
-
-                OnLobbyCreated?.Invoke(lobbyID);
+                await UniTask.WaitForSeconds(0.2f);
 
                 return true;
             }
@@ -80,15 +80,15 @@ namespace Networking
             }
         }
 
-        public async UniTask OnJoinPressed(string lobbyID)
+        public async UniTask<bool> OnJoinPressed(string lobbyID)
         {
             SetTransport(CurrentTransportMode);
             
             if (string.IsNullOrEmpty(lobbyID))
             {
                 OnError?.Invoke("กรุณาใส่ Lobby ID");
-                
-                return;
+
+                return false;
             }
 
             try
@@ -98,21 +98,23 @@ namespace Networking
                 if (!success)
                 {
                     OnError?.Invoke("เข้าห้องไม่สำเร็จ");
-                    return;
+                    return false;
                 }
 
                 if (!string.IsNullOrEmpty(currentTransport.ConnectionAddress))
-                    InstanceFinder.ClientManager.StartConnection(currentTransport.ConnectionAddress);
+                    NetworkManager.ClientManager.StartConnection(currentTransport.ConnectionAddress);
 
                 OnLobbyJoined?.Invoke(lobbyID);
+                return true;
             }
             catch (OperationCanceledException)
             {
-
+                return false;
             }
             catch (Exception e)
             {
                 OnError?.Invoke(e.Message);
+                return false;
             }
         }
 
@@ -126,9 +128,9 @@ namespace Networking
         {
             currentTransport = transport switch
             {
-                Transport.Yak => offlineTransport,
-                Transport.Tugboat => tugboatTransport,
-                Transport.FacePunch => steamTransport,
+                Transport.Yak => OfflineTransport,
+                Transport.Tugboat => TugboatTransport,
+                Transport.FacePunch => SteamTransport,
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
@@ -139,31 +141,36 @@ namespace Networking
         [Button]
         public bool IsHost()
         {
-            return InstanceFinder.IsHostStarted;
+            return NetworkManager.IsHostStarted;
+        }
+
+        public string GetCode()
+        {
+            return currentTransport.ConnectionAddress;
         }
 
         // ============ Private ============
         private void OnEnable()
         {
             cts = new CancellationTokenSource();
-            InstanceFinder.ServerManager.OnRemoteConnectionState += OnPlayerConnected;
-            InstanceFinder.ClientManager.OnClientConnectionState += OnClientConnectionState;
+            NetworkManager.ServerManager.OnRemoteConnectionState += OnPlayerConnected;
+            NetworkManager.ClientManager.OnClientConnectionState += OnClientConnectionState;
 
 
             // subscribe Steam transport events
-            steamTransport.OnPlayerListChanged += HandlePlayerListChanged;
-            steamTransport.OnDisconnect += HandleTransportDisconnect;
-            steamTransport.OnError += OnErrorLog;
+            SteamTransport.OnPlayerListChanged += HandlePlayerListChanged;
+            SteamTransport.OnDisconnect += HandleTransportDisconnect;
+            SteamTransport.OnError += OnErrorLog;
         }
 
         private void OnDisable()
         {
-            InstanceFinder.ServerManager.OnRemoteConnectionState -= OnPlayerConnected;
-            InstanceFinder.ClientManager.OnClientConnectionState -= OnClientConnectionState;
+            NetworkManager.ServerManager.OnRemoteConnectionState -= OnPlayerConnected;
+            NetworkManager.ClientManager.OnClientConnectionState -= OnClientConnectionState;
 
-            steamTransport.OnPlayerListChanged -= HandlePlayerListChanged;
-            steamTransport.OnDisconnect -= HandleTransportDisconnect;
-            steamTransport.OnError -= OnErrorLog;
+            SteamTransport.OnPlayerListChanged -= HandlePlayerListChanged;
+            SteamTransport.OnDisconnect -= HandleTransportDisconnect;
+            SteamTransport.OnError -= OnErrorLog;
 
             cts?.Cancel();
             cts?.Dispose(); // ← เพิ่ม dispose
@@ -173,6 +180,9 @@ namespace Networking
         private void OnPlayerConnected(NetworkConnection conn, RemoteConnectionStateArgs args)
         {
             if (currentTransport == null) return;
+
+            Debug.Log(conn.ClientId);
+            
             if (args.ConnectionState == RemoteConnectionState.Started)
             {
                 connectedPlayers.Add(conn);
@@ -189,9 +199,9 @@ namespace Networking
         private void OnClientConnectionState(ClientConnectionStateArgs args)
         {
             if (args.ConnectionState != LocalConnectionState.Stopped) return;
-            if (_isIntentionalDisconnect)
+            if (isIntentionalDisconnect)
             {
-                _isIntentionalDisconnect = false;
+                isIntentionalDisconnect = false;
                 return;
             }
 
@@ -203,12 +213,12 @@ namespace Networking
 
         public void HandleTransportDisconnect()
         {
-            _isIntentionalDisconnect = true;
+            isIntentionalDisconnect = true;
 
             if (IsHost())
-                InstanceFinder.ServerManager.StopConnection(true);
+                NetworkManager.ServerManager.StopConnection(true);
             else
-                InstanceFinder.ClientManager.StopConnection();
+                NetworkManager.ClientManager.StopConnection();
 
             currentTransport?.Disconnect();
             connectedPlayers.Clear();

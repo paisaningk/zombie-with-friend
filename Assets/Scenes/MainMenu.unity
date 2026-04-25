@@ -1096,6 +1096,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameUI.LobbyPanel
   Panel: {fileID: 991984819}
+  LoadScenes: SampleScene
   LobbyNameText: {fileID: 2145111018}
   StartGameButton: {fileID: 1039443603}
   CopyCodeButton: {fileID: 2055351110}
@@ -2788,8 +2789,10 @@ GameObject:
   - component: {fileID: 1635334326}
   - component: {fileID: 1635334327}
   - component: {fileID: 1635334328}
+  - component: {fileID: 1635334330}
+  - component: {fileID: 1635334329}
   m_Layer: 0
-  m_Name: NetworkLauncher
+  m_Name: Lobby Manager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2822,7 +2825,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4b832c33476865e49a628444f3593e5e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NetworkLauncher
-  Transport: {fileID: 1635334328}
+  SteamTransport: {fileID: 1635334328}
+  OfflineTransport: {fileID: 1635334330}
+  TugboatTransport: {fileID: 1635334329}
+  CurrentTransportMode: 1
+  NetworkManager: {fileID: 784042734}
 --- !u!114 &1635334328
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2835,6 +2842,33 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ea1fe2fdef0457fb3c22ff79119a612, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Networking.TransportProvider.SteamTransportProvider
+  multipass: {fileID: 784042739}
+--- !u!114 &1635334329
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1635334325}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9702922219004962bcc196c68079ed0d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Networking.TransportProvider.TugboatTransprotProvider
+  multipass: {fileID: 784042739}
+--- !u!114 &1635334330
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1635334325}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db24faeefb434db7a53f98f237899420, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Networking.TransportProvider.OfflineTransportProvider
+  multipass: {fileID: 784042739}
 --- !u!1 &1885518165
 GameObject:
   m_ObjectHideFlags: 0

@@ -11,7 +11,7 @@ namespace GameUI.MainMenu
         public ButtonFx ExitButton;
 
         public Action<string> OnCreateLobby;
-        public Action OnJoinLobby;
+        public Action OnOpenLobbyUI;
 
         public void Start()
         {
@@ -53,7 +53,7 @@ namespace GameUI.MainMenu
 
         private void JoinButtonClick()
         {
-            OnJoinLobby.Invoke();
+            OnOpenLobbyUI.Invoke();
         }
 
         private void ExitButtonClick()

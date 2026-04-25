@@ -1,5 +1,6 @@
 using System;
 using GameUI.Component;
+using Networking;
 using Sirenix.OdinInspector;
 using TMPro;
 using UnityEngine;
@@ -11,7 +12,7 @@ namespace GameUI.MainMenu
         public ButtonFx JoinButton;
         public ButtonFx BackButton;
 
-        public Action OnJoinLobby;
+        public Action<string> OnJoinLobby;
         public Action OnBackToMainMenu;
 
         public void Start()
@@ -29,9 +30,25 @@ namespace GameUI.MainMenu
             BackButton.Text.SetText("Back To Main Menu");
         }
 
-        private void Joinlobby()
+        private async void Joinlobby()
         {
-            Debug.Log("Join lobby");
+            try
+            {
+                var canCreateLobby = await LobbyManager.Instance.OnJoinPressed(LobbyInputField.text);
+
+                if (!canCreateLobby)
+                {
+                    LobbyManager.Instance.OnErrorLog($"Can't create lobby");
+                    return;
+                }
+
+                Debug.Log("Join lobby");
+                OnJoinLobby.Invoke("LobbyInputField");
+            }
+            catch (Exception e)
+            {
+                LobbyManager.Instance.OnErrorLog(e.StackTrace);
+            }
         }
 
         private void BackToMainMenu()

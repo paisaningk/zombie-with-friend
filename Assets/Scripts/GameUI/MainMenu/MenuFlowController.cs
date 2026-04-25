@@ -11,17 +11,14 @@ namespace GameUI.MainMenu
 
         private void Start()
         {
-            // subscribe event จาก LobbyManager
-            // LobbyManager.Instance.OnLobbyCreated += ShowLobby;
-            // LobbyManager.Instance.OnLobbyJoined += ShowLobby;
-            // LobbyManager.Instance.OnDisconnect += ShowMainMenu;
-
             ShowMainMenu();
 
-            MainMenu.OnJoinLobby += ShowJoin;
+            LobbyManager.Instance.OnDisconnect += ShowMainMenu;
+
+            MainMenu.OnOpenLobbyUI += ShowJoin;
             MainMenu.OnCreateLobby += ShowLobby;
 
-            JoinPanel.OnJoinLobby += ShowJoin;
+            JoinPanel.OnJoinLobby += ShowLobby;
             JoinPanel.OnBackToMainMenu += ShowMainMenu;
 
             LobbyPanel.OnExitLobby += ShowMainMenu;
@@ -49,6 +46,7 @@ namespace GameUI.MainMenu
         {
             MainMenu.ClosePanel();
             JoinPanel.ClosePanel();
+            Debug.Log(LobbyManager.Instance.IsHost());
             LobbyPanel.Setup(lobbyCode);
             LobbyPanel.OpenPanel();
         }
