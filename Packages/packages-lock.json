@@ -1,5 +1,16 @@
 {
   "dependencies": {
+    "com.annulusgames.lit-motion": {
+      "version": "https://github.com/annulusgames/LitMotion.git?path=src/LitMotion/Assets/LitMotion",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {
+        "com.unity.burst": "1.6.0",
+        "com.unity.collections": "1.5.1",
+        "com.unity.mathematics": "1.0.1"
+      },
+      "hash": "6cae9f18a49de0259904268ca76cf12cb89d1fc5"
+    },
     "com.arongranberg.aline": {
       "version": "file:com.arongranberg.aline",
       "depth": 0,
@@ -20,6 +31,16 @@
       "source": "git",
       "dependencies": {},
       "hash": "a9e27c03d411d2fca01cc7410c24c97cd77cb539"
+    },
+    "com.eflatun.scenereference": {
+      "version": "git+https://github.com/starikcetin/Eflatun.SceneReference.git#5.0.0",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {
+        "com.unity.settings-manager": "2.0.1",
+        "com.unity.nuget.newtonsoft-json": "3.0.2"
+      },
+      "hash": "6821c571090fc0828accced5dbd7635152c23887"
     },
     "com.opsive.behaviordesigner": {
       "version": "file:com.opsive.behaviordesigner",
@@ -262,7 +283,7 @@
     },
     "com.unity.settings-manager": {
       "version": "2.1.1",
-      "depth": 2,
+      "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://packages.unity.com"

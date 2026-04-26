@@ -11,7 +11,7 @@ namespace Networking.TransportProvider
     {
         [SerializeField] private Multipass multipass;
         public string ConnectionAddress => string.Empty;
-        public string LobbyId => "OFFLINE";
+        public string LobbyName => "OFFLINE";
         
         public bool SupportsLobby => false;
         public bool RequiresCode  => false;

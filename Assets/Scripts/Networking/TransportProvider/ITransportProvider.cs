@@ -10,7 +10,7 @@ namespace Networking.TransportProvider
         bool SupportsLobby { get; }
         bool RequiresCode { get; }
         string ConnectionAddress { get; }
-        string LobbyId { get; }
+        string LobbyName { get; }
 
         UniTask<string> CreateLobby(CancellationToken ct = default);
         UniTask<bool>   JoinLobby(string code, CancellationToken ct = default);

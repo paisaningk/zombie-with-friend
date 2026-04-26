@@ -43,7 +43,7 @@ namespace GameUI.MainMenu
                     return;
                 }
 
-                OnCreateLobby.Invoke(LobbyManager.Instance.GetLobbyID());
+                OnCreateLobby.Invoke(LobbyManager.Instance.GetLobbyName());
             }
             catch (Exception e)
             {

@@ -22,9 +22,9 @@ namespace Networking
     
     public class LobbyManager : Singleton<LobbyManager>
     {
-        protected override bool dontDestroyOnLoad => false;
+        protected override bool dontDestroyOnLoad => true;
 
-        private List<NetworkConnection> connectedPlayers = new();
+        [SerializeField] private List<NetworkConnection> connectedPlayers = new List<NetworkConnection>();
 
         [SerializeField] private ITransportProvider currentTransport;
         [SerializeField] private SteamTransportProvider SteamTransport;
@@ -118,6 +118,16 @@ namespace Networking
             }
         }
 
+        public async UniTask QuickJoin()
+        {
+            if (currentTransport == null)
+            {
+                SetTransport(CurrentTransportMode);
+            }
+
+            await OnJoinPressed(GetCode());
+        }
+
         public void OnCancelPressed()
         {
             cts.Cancel();
@@ -136,7 +146,10 @@ namespace Networking
         }
 
         // ============ Wrappers (ข้อมูล lobby) ============
-        public string GetLobbyID() => currentTransport?.LobbyId ?? string.Empty;
+        public string GetLobbyName()
+        {
+            return currentTransport?.LobbyName ?? string.Empty;
+        }
 
         [Button]
         public bool IsHost()
@@ -180,8 +193,6 @@ namespace Networking
         private void OnPlayerConnected(NetworkConnection conn, RemoteConnectionStateArgs args)
         {
             if (currentTransport == null) return;
-
-            Debug.Log(conn.ClientId);
             
             if (args.ConnectionState == RemoteConnectionState.Started)
             {

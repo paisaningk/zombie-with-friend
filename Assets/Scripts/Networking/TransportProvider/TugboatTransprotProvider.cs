@@ -12,7 +12,7 @@ namespace Networking.TransportProvider
     {
         [SerializeField] private Multipass multipass;
         public string ConnectionAddress => "127.0.0.1";
-        public string LobbyId => "LOCAL";
+        public string LobbyName => "LOCAL";
         
         public bool SupportsLobby => true;
         public bool RequiresCode  => true;

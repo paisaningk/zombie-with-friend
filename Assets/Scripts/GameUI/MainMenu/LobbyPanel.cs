@@ -1,4 +1,6 @@
 using System;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using FishNet;
 using FishNet.Managing.Scened;
 using GameUI.Component;
@@ -10,13 +12,17 @@ namespace GameUI.MainMenu
 {
     public class LobbyPanel : UIPanel
     {
-        public string LoadScenes;
+        public string MenuScene;
+        public string GameScene;
         public TMP_Text LobbyNameText;
         public ButtonFx StartGameButton;
         public ButtonFx CopyCodeButton;
         public ButtonFx ExitLobbyButton;
 
         public Action OnExitLobby;
+
+        private CancellationTokenSource cts;
+
 
         public void Start()
         {
@@ -28,13 +34,22 @@ namespace GameUI.MainMenu
         {
             if (!LobbyManager.Instance.IsHost()) return;
 
-            var scene = new SceneLoadData(LoadScenes);
-            InstanceFinder.SceneManager.LoadGlobalScenes(scene);
+            var menuScene = new SceneUnloadData(MenuScene);
+            InstanceFinder.SceneManager.UnloadGlobalScenes(menuScene);
+
+            var gameScene = new SceneLoadData(GameScene);
+            InstanceFinder.SceneManager.LoadGlobalScenes(gameScene);
         }
 
         public void CopyCode()
         {
+            // cancel animation เดิมถ้ากดซ้ำ
+            cts?.Cancel();
+            cts = new CancellationTokenSource();
+
             GUIUtility.systemCopyBuffer = LobbyManager.Instance.GetCode();
+
+            ShowCopiedFeedback(cts.Token).Forget();
         }
 
         public void Setup(string lobbyCode)
@@ -61,11 +76,25 @@ namespace GameUI.MainMenu
             OnExitLobby?.Invoke();
         }
 
-        // private IEnumerator ShowCopiedFeedback()
-        // {
-        //     copyButton.GetComponentInChildren<TextMeshProUGUI>().text = "Copied!";
-        //     yield return new WaitForSeconds(1.5f);
-        //     copyButton.GetComponentInChildren<TextMeshProUGUI>().text = "Copy";
-        // }
+        private async UniTaskVoid ShowCopiedFeedback(CancellationToken ct = default)
+        {
+            try
+            {
+                ct.ThrowIfCancellationRequested();
+                CopyCodeButton.Text.text = "Copied!";
+                await UniTask.WaitForSeconds(1.5f, cancellationToken: ct);
+                CopyCodeButton.Text.text = "Copy Code";
+            }
+            catch (OperationCanceledException)
+            {
+                // reset text ถ้าถูก cancel
+                CopyCodeButton.Text.text = "Copy Code";
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"ShowCopiedFeedback error: {e.Message}");
+                CopyCodeButton.Text.text = "Copy Code";
+            }
+        }
     }
 }

@@ -16,7 +16,7 @@ namespace Networking.TransportProvider
     public class SteamTransportProvider : MonoBehaviour, ITransportProvider
     {
         public string ConnectionAddress => currentLobby.Id.IsValid ? currentLobby.Owner.Id.ToString() : string.Empty;
-        public string LobbyId => currentLobby.Id.ToString();
+        public string LobbyName => currentLobby.Id.ToString();
         
         // stage
         [ShowInInspector] [ReadOnly] private Lobby currentLobby;
