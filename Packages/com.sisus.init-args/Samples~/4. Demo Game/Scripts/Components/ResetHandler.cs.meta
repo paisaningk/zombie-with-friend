@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 8f18a234f138c564d812f05df2f03b27
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Samples~/4. Demo Game/Scripts/Components/ResetHandler.cs
+  uploadId: 908852

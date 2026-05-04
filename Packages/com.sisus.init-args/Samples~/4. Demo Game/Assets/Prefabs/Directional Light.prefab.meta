@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 5122a3550ee43e44698a918f60e9273d
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Samples~/4. Demo Game/Assets/Prefabs/Directional
+    Light.prefab
+  uploadId: 908852

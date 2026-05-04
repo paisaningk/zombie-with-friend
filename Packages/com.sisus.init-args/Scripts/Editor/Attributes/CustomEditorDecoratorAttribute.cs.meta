@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: a4141d047cc1c154e9a533b2dadcc3f7
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/Editor/Attributes/CustomEditorDecoratorAttribute.cs
+  uploadId: 908852

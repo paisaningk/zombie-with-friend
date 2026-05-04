@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 186586c7638a1a84fb79b1678fdd596d
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Add-Ons/UnityEngine.unitypackage
+  uploadId: 908852

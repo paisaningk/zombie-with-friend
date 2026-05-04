@@ -1,0 +1,10 @@
+﻿fileFormatVersion: 2
+guid: 20d7db207b424350a610ae8aae2e0bbf
+timeCreated: 1734437253
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/MonoBehaviour/MonoBehaviourBase.cs
+  uploadId: 908852

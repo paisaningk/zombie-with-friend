@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 00cd55ceea1e9b34885c623740ce1579
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Samples~/3. Initializers/Demo.Subscene.unity
+  uploadId: 908852

@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 92c58e33a8d86c64784f1e3cd71a3232
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Samples~/4. Demo Game/Scripts/Components/SubscenesLoadHandler.cs
+  uploadId: 908852

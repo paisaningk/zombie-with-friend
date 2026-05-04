@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 3505c7a9b5bacad4f8e2baf7fa60c7ae
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Samples~/4. Demo Game/Scripts/EventListeners/OnMoveInputChanged.cs
+  uploadId: 908852

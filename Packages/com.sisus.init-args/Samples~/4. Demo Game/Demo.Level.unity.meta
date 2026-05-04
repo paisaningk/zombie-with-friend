@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: f0c588f3b918fbf4483e139f21973649
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Samples~/4. Demo Game/Demo.Level.unity
+  uploadId: 908852

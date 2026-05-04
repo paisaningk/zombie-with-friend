@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: aa7e9eba37f47034ab23ba7ca9012139
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Add-Ons/Odin.unitypackage
+  uploadId: 908852

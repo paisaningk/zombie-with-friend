@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 3767b35a36f5da442b71c3c1bd052bd1
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Documentation.pdf
+  uploadId: 908852

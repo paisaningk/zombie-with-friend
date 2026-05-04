@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: d9ecd004b09c3ac4e8fc66c111129c67
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/Editor/Inspector/Icons.cs
+  uploadId: 908852

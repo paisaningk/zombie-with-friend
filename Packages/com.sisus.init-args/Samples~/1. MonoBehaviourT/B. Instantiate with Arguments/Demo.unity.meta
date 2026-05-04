@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 57b57636c0130f641941ef26f8a4558a
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Samples~/1. MonoBehaviourT/B. Instantiate
+    with Arguments/Demo.unity
+  uploadId: 908852

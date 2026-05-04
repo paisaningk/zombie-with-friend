@@ -1,0 +1,10 @@
+﻿fileFormatVersion: 2
+guid: 45032e66aca16d34a94eb77fc4eefdb6
+timeCreated: 1734629129
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Samples~/3. Initializers/RandomFloat.cs
+  uploadId: 908852

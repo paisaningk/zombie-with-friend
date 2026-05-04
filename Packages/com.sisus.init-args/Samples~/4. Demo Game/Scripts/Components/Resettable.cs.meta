@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: a39a119f5b5201944b1698f2673cdc8f
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 'nullArgumentGuard: 0, hideInitSection: 1'
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Samples~/4. Demo Game/Scripts/Components/Resettable.cs
+  uploadId: 908852

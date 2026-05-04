@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 49d81c98bea96a54cba8a7144e8023d6
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Samples~/4. Demo Game/Assets/Prefabs/Wall.prefab
+  uploadId: 908852

@@ -1,0 +1,10 @@
+﻿fileFormatVersion: 2
+guid: c08ab84bc3144226b5a8c6afa6275508
+timeCreated: 1739705618
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/Core/InvalidInitArgumentsException.cs
+  uploadId: 908852

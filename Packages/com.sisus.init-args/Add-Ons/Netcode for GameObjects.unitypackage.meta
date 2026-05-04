@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 38b8f6e63f47d1b4c98c735241ae6d20
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Add-Ons/Netcode for GameObjects.unitypackage
+  uploadId: 908852

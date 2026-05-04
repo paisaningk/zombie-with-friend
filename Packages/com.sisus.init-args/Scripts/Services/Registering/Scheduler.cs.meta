@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 3153219bf151d0f438f834cabb017e93
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/Services/Registering/Scheduler.cs
+  uploadId: 908852

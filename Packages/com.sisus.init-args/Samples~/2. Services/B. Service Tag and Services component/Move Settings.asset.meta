@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: bd34f34109a2238429b531f19edaaf85
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Samples~/2. Services/B. Service Tag and
+    Services component/Move Settings.asset
+  uploadId: 908852

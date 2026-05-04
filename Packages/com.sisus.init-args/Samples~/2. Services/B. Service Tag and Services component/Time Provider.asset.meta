@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 8b185d77e814c6b428ee87010488fec5
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Samples~/2. Services/B. Service Tag and
+    Services component/Time Provider.asset
+  uploadId: 908852

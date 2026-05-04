@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: e12f19af2fbc1984fbafa192db315d59
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Samples~/3. Initializers/Resources/InitArgs.Demos.Initializers/Arrow
+    Keys Input Provider.prefab
+  uploadId: 908852

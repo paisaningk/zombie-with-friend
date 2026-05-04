@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 1d53e358b6a71414e834daf52bf1be02
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/Services/Registering/ServiceInitializerT3.cs
+  uploadId: 908852

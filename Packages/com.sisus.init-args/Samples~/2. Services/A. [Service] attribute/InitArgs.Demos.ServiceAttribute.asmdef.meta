@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 99a5b109093814e44add7d35dc5205ba
+AssemblyDefinitionImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Samples~/2. Services/A. [Service] attribute/InitArgs.Demos.ServiceAttribute.asmdef
+  uploadId: 908852

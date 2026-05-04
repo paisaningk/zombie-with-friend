@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: bdceba460d9ca3c4b93083298daa826b
+AssemblyDefinitionImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Samples~/3. Initializers/Editor/InitArgs.Demos.Initializers.Editor.asmdef
+  uploadId: 908852

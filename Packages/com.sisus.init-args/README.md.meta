@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: d51d6f5ccd6c4dd4fbcee9de578e40e5
+TextScriptImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/README.md
+  uploadId: 908852

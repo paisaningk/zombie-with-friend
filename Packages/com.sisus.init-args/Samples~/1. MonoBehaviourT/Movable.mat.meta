@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 1d628e189445b75489c6333669bf5663
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Samples~/1. MonoBehaviourT/Movable.mat
+  uploadId: 908852

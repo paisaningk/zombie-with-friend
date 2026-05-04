@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: db3a41e29e2cba24b84326352cf23f82
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Samples~/4. Demo Game/Assets/Materials/Wall.mat
+  uploadId: 908852

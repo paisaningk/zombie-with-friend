@@ -1,0 +1,10 @@
+﻿fileFormatVersion: 2
+guid: 09586233447f4fd6b46f8961c1ee16af
+timeCreated: 1746186487
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/InitAttribute/InitAttributeUtility.cs
+  uploadId: 908852

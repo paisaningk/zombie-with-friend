@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 96f5617d71a457a478bb9d16db347d90
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Samples~/3. Initializers/Demo.unity
+  uploadId: 908852

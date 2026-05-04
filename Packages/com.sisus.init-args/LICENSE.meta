@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 58b2c2d1912183042973e2522171a691
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/LICENSE
+  uploadId: 908852

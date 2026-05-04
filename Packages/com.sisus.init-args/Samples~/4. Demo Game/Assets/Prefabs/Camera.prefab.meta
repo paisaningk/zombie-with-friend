@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: b48cb002b1e586b4687f2a275acef3a5
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Samples~/4. Demo Game/Assets/Prefabs/Camera.prefab
+  uploadId: 908852

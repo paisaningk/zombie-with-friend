@@ -1,0 +1,10 @@
+﻿fileFormatVersion: 2
+guid: 3ec495f1f4594534854ec6ad6b03c0a5
+timeCreated: 1761806915
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/Editor/Dropdown/ClientsDataSource.cs
+  uploadId: 908852

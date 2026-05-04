@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: fbe956764437fdd4b8f9fa4d34fc984a
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/Initializer/NullGuardResult.cs
+  uploadId: 908852

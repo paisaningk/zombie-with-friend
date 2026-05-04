@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 775a2224141e05446997b09a7419c97e
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/StateMachineBehaviour/StateMachineBehaviourT1.cs
+  uploadId: 908852

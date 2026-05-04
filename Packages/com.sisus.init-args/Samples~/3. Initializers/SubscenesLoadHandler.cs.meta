@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: d6ac4cb2708006042987101fd8cb2147
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Samples~/3. Initializers/SubscenesLoadHandler.cs
+  uploadId: 908852

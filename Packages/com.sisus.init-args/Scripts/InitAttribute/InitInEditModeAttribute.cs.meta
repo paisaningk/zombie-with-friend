@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: d57564e173286c247824f6d42bab7a95
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/InitAttribute/InitInEditModeAttribute.cs
+  uploadId: 908852

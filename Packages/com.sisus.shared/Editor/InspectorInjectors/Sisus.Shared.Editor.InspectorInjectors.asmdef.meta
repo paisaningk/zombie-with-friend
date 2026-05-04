@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: d70d0d55175c30f4ca2478c2b64fc148
+AssemblyDefinitionImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.shared/Editor/InspectorInjectors/Sisus.Shared.Editor.InspectorInjectors.asmdef
+  uploadId: 908852

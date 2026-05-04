@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 3afa54dd4db68424db479d44609dbc76
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Samples~/4. Demo Game/Assets/Prefabs/Collectable
+    Spawner.prefab
+  uploadId: 908852

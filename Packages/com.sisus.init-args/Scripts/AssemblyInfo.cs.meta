@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: c8b3f4645caa80845945bd69bbfc47bc
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/AssemblyInfo.cs
+  uploadId: 908852

@@ -1,0 +1,16 @@
+{
+    "name": "InitArgs.Demos.AddComponent",
+    "rootNamespace": "Sisus.Init.Demos.AddComponent",
+    "references": [
+        "InitArgs"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

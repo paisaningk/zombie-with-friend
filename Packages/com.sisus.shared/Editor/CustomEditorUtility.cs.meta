@@ -1,0 +1,10 @@
+﻿fileFormatVersion: 2
+guid: 89299ce9681a4b23bdcb53e560ded20a
+timeCreated: 1723899721
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.shared/Editor/CustomEditorUtility.cs
+  uploadId: 908852

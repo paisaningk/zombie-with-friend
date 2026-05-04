@@ -1,0 +1,10 @@
+﻿fileFormatVersion: 2
+guid: d5fa7f405af34a99a72bfa5030d95c84
+timeCreated: 1731190580
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/Services/LocalServices.cs
+  uploadId: 908852

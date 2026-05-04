@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 086ce327fa9fa214690bb80856a417bd
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/Services/ServiceInfo.cs
+  uploadId: 908852

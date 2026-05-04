@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: dec33f348a3b94044a62699087f10a74
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/Editor/Inspector/EditorDecorators/MonoBehaviourT6EditorDecorator.cs
+  uploadId: 908852

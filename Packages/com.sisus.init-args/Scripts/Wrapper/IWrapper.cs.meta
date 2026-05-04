@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 80c5a3a60a5c1ca4585b3d198423b7ae
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/Wrapper/IWrapper.cs
+  uploadId: 908852

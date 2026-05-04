@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 1e9ab52dbe47f0b4c8c463a12a15c1aa
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/ValueProviders/Components/GetComponentInChildren.cs
+  uploadId: 908852

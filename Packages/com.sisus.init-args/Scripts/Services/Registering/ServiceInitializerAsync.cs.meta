@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 4056420257cef374e9a51b3e2fbde43a
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/Services/Registering/ServiceInitializerAsync.cs
+  uploadId: 908852

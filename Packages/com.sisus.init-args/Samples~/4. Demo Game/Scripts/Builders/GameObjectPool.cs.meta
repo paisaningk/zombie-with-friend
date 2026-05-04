@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 9aa518ffc0d869e4ea2945aff0df41ad
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Samples~/4. Demo Game/Scripts/Builders/GameObjectPool.cs
+  uploadId: 908852

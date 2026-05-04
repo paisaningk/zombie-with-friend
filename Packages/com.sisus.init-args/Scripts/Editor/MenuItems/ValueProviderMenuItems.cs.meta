@@ -1,0 +1,10 @@
+﻿fileFormatVersion: 2
+guid: 5f6b821bc9d247a8bdbb9f74a2a8c50d
+timeCreated: 1767449669
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/Editor/MenuItems/ValueProviderMenuItems.cs
+  uploadId: 908852

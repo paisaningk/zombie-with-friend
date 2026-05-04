@@ -1,0 +1,18 @@
+{
+    "name": "InitArgs.Demo.Tests.Components",
+    "rootNamespace": "Init.Demo.Tests",
+    "references": [
+        "InitArgs.Demo.Interfaces"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 38188e6bd34c7784a9ffa51592ca5a03
+AssemblyDefinitionImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Samples~/4. Demo Game/Scripts/Editor/InitArgs.Demo.Editor.asmdef
+  uploadId: 908852

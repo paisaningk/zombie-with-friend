@@ -1,0 +1,10 @@
+﻿fileFormatVersion: 2
+guid: 7ac3a9e2667941a4a350043b6478e13d
+timeCreated: 1738304629
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/ValueProviders/CrossSceneReference/IIdentifiable.cs
+  uploadId: 908852

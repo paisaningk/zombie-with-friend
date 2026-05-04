@@ -1,0 +1,7 @@
+<linker>
+  <assembly fullname="InitArgs.Demo" preserve="all"/>
+  <assembly fullname="InitArgs.Demo.Services" preserve="all"/>
+  <assembly fullname="InitArgs.Demo.Interfaces" preserve="all"/>
+  <assembly fullname="InitArgs.Demo.Initializers" preserve="all"/>
+  <assembly fullname="InitArgs.Demo.Extensions" preserve="all"/>
+</linker>

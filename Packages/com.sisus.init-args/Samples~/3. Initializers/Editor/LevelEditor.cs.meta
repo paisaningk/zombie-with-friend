@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 8b9960f30af99a844a61b0f57ef330db
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Samples~/3. Initializers/Editor/LevelEditor.cs
+  uploadId: 908852

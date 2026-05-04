@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: dd2902625647f6f459ca6dd54da0dad8
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/Editor/Inspector/Editors/CrossSceneReferenceGUI.cs
+  uploadId: 908852

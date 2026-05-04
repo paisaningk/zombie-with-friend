@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 0be5d751d74ef964ab382e99dc061d8f
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Add-Ons/Photon Fusion.unitypackage
+  uploadId: 908852

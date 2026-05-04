@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: ac99443dcb5f936469e7326a5a34fc86
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Samples~/1. MonoBehaviourT/C. new GameObject
+    with Arguments/Demo.unity
+  uploadId: 908852

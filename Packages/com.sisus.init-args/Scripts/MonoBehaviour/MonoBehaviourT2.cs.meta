@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: eb27517c58a58124d91b796c4e582ad5
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/MonoBehaviour/MonoBehaviourT2.cs
+  uploadId: 908852

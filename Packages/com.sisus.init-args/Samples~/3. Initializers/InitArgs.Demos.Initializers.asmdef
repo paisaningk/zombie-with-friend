@@ -1,0 +1,17 @@
+{
+    "name": "InitArgs.Demos.Initializers",
+    "rootNamespace": "Sisus.Init.Demos.Initializers",
+    "references": [
+        "InitArgs",
+        "InitArgs.Services"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: aad5dfaada9263445b05d1e8309b14e9
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/Services/Inspector/EditorServiceInjector.cs
+  uploadId: 908852

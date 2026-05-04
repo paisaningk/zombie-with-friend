@@ -1,0 +1,19 @@
+{
+    "name": "InitArgs.Demo.Initializers",
+    "rootNamespace": "Init.Demo",
+    "references": [
+        "InitArgs",
+        "InitArgs.Demo",
+        "InitArgs.Demo.Interfaces",
+        "InitArgs.Demo.Services"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 888befd2f9b458a40a44f9cb5d750851
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/ValueProviders/Components/MainCamera.cs
+  uploadId: 908852

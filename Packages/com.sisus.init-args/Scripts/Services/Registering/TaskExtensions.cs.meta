@@ -1,0 +1,10 @@
+﻿fileFormatVersion: 2
+guid: 686bfa1810b64a1eaca24482533f9682
+timeCreated: 1745574180
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/Services/Registering/TaskExtensions.cs
+  uploadId: 908852

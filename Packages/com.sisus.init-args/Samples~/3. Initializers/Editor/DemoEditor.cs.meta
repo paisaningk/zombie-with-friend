@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 26f4e62bfe6340543ab03d86b84a2031
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Samples~/3. Initializers/Editor/DemoEditor.cs
+  uploadId: 908852

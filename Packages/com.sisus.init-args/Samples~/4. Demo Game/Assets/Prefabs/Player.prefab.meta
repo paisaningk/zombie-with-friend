@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: c5cdae277da67704d9beb6ee731b54a9
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Samples~/4. Demo Game/Assets/Prefabs/Player.prefab
+  uploadId: 908852

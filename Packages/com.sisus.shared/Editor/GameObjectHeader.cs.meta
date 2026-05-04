@@ -1,0 +1,10 @@
+﻿fileFormatVersion: 2
+guid: 35625af2b7ad41f199fea77c5379ca80
+timeCreated: 1734090385
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.shared/Editor/GameObjectHeader.cs
+  uploadId: 908852

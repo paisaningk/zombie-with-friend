@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 46263384498c9af498a24c1df8dd2824
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Add-Ons/ScriptTemplates.unitypackage
+  uploadId: 908852

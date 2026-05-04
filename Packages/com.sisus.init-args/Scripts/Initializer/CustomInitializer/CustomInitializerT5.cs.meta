@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 96da3dc6a320af9479806ea09154ff16
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/Initializer/CustomInitializer/CustomInitializerT5.cs
+  uploadId: 908852

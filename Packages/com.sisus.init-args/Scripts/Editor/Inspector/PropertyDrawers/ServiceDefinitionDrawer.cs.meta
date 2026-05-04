@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 7a654abf2e9142b49923342b05e560d2
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/Editor/Inspector/PropertyDrawers/ServiceDefinitionDrawer.cs
+  uploadId: 908852

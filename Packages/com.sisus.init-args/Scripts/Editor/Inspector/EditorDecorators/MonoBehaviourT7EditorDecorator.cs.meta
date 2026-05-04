@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 6c4c501e4da01fb4e9c81806f7535911
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/Editor/Inspector/EditorDecorators/MonoBehaviourT7EditorDecorator.cs
+  uploadId: 908852

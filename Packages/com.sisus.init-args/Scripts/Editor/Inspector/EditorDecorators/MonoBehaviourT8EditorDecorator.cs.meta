@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 8d97588dfcf93a140831e913b3d541c7
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/Editor/Inspector/EditorDecorators/MonoBehaviourT8EditorDecorator.cs
+  uploadId: 908852

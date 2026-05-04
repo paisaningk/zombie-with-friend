@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: b2193f5bca4252e4996298698eca664d
+AssemblyDefinitionImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Samples~/1. MonoBehaviourT/A. AddComponent
+    with Arguments/Editor/InitArgs.Demos.AddComponent.Editor.asmdef
+  uploadId: 908852

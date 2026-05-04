@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: fc7e8420d564a224aa4bfb28dca0beae
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/Services/ExceptionExtensions.cs
+  uploadId: 908852

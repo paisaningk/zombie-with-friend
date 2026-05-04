@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 223a07e2663bf064ba230b7d1f0d9991
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: -20685
+  icon: {fileID: 3920131678736184407, guid: 0000000000000000d000000000000000, type: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Samples~/4. Demo Game/Scripts/Initializers/LookAtInitializer.cs
+  uploadId: 908852

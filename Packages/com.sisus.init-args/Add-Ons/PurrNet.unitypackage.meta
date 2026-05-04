@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 1a2de7e3353bf304bb2beac027ef337c
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Add-Ons/PurrNet.unitypackage
+  uploadId: 908852

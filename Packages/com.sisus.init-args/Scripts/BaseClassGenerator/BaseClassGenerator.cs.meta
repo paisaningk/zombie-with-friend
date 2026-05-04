@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 422f6ac54d0ca8b4d8bb84f52f465437
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/BaseClassGenerator/BaseClassGenerator.cs
+  uploadId: 908852

@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 1441ae9448bfe2c43a343a0f5f52ea5a
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/Services/WaitForService.cs
+  uploadId: 908852

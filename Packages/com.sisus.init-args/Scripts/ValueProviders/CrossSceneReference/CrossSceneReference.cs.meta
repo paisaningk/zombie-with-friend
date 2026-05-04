@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: e5be95f4f6e516d4c86aa2953ffb7ecb
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/ValueProviders/CrossSceneReference/CrossSceneReference.cs
+  uploadId: 908852

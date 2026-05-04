@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: b180c1891ef03904c8430b1e6e43f483
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Samples~/4. Demo Game/Assets/Events/Resources/On
+    Move Input Changed.asset
+  uploadId: 908852

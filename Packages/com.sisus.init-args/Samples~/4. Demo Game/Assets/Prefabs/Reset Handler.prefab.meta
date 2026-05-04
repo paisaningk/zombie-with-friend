@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 4e201e099349f6b40a115d3cac21077c
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Samples~/4. Demo Game/Assets/Prefabs/Reset
+    Handler.prefab
+  uploadId: 908852

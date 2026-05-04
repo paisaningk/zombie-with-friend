@@ -1,0 +1,10 @@
+﻿fileFormatVersion: 2
+guid: 48aae290f52fac540a0ff51cd48466f8
+timeCreated: 1734628502
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Samples~/3. Initializers/MoveInputProvider.cs
+  uploadId: 908852

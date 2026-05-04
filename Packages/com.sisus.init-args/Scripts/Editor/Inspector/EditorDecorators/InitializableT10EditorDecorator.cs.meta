@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 2841ef5b576a28c44b3716cae3f4459c
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/Editor/Inspector/EditorDecorators/InitializableT10EditorDecorator.cs
+  uploadId: 908852

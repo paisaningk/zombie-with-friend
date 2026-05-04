@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: a9913eda03ea95749b07948d28c31abd
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/Initializer/WrapperInitializer/WrapperInitializerBaseT5.cs
+  uploadId: 908852

@@ -1,0 +1,10 @@
+﻿fileFormatVersion: 2
+guid: 78ea91c735bd43c3baffa1c169a50320
+timeCreated: 1761908572
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/Editor/Dropdown/AnyFieldTypeOptionsDataSource.cs
+  uploadId: 908852

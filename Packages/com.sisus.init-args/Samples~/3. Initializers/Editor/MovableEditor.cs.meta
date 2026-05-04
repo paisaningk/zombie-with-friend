@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 1bb09d2f6fc3f774787154c9e80cba57
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Samples~/3. Initializers/Editor/MovableEditor.cs
+  uploadId: 908852

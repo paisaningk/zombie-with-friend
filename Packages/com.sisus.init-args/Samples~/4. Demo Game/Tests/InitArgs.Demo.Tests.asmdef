@@ -1,0 +1,26 @@
+{
+    "name": "InitArgs.Demo.Tests",
+    "rootNamespace": "Init.Demo.Tests",
+    "references": [
+        "InitArgs",
+        "InitArgs.Editor",
+        "InitArgs.Demo",
+        "InitArgs.Demo.Interfaces",
+        "InitArgs.Demo.Services",
+        "InitArgs.Demo.Tests.Components",
+        "InitArgs.Demo.Initializers"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

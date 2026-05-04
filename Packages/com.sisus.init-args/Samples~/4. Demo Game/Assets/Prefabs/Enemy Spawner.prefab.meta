@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 42f85d32ead83e242821c3a2fc371804
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Samples~/4. Demo Game/Assets/Prefabs/Enemy
+    Spawner.prefab
+  uploadId: 908852

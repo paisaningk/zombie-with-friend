@@ -1,0 +1,16 @@
+{
+    "name": "InitArgs.Demos.GameObjectT",
+    "rootNamespace": "Sisus.Init.Demos.GameObjectT",
+    "references": [
+        "InitArgs"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

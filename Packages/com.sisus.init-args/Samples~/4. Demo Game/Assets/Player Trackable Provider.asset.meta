@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: dbb588ca0d72f544db27d3d4ae8000c1
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Samples~/4. Demo Game/Assets/Player Trackable
+    Provider.asset
+  uploadId: 908852

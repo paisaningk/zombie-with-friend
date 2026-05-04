@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 2ae0bb5b6b4b06446af066803c9f6757
+PackageManifestImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/package.json
+  uploadId: 908852

@@ -1,0 +1,18 @@
+{
+    "name": "InitArgs.Demos.ServiceAttribute.Editor",
+    "rootNamespace": "Sisus.Init.Demos.Services",
+    "references": [
+        "InitArgs.Demos.ServiceAttribute"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

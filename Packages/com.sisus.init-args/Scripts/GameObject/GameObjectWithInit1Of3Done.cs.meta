@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 55f174696f635724b9eba9f24f8f0011
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/GameObject/GameObjectWithInit1Of3Done.cs
+  uploadId: 908852

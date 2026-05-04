@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: bdebfeece9ba7474e9307e8923f0234c
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 200530
+  packageName: Init(args)
+  packageVersion: 1.5.6
+  assetPath: Packages/com.sisus.init-args/Scripts/Editor/MenuItems/MonoScriptMenuItems.cs
+  uploadId: 908852
