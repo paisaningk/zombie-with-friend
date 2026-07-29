@@ -81,8 +81,15 @@ namespace Pathfinding {
 
 		int nodesEvaluatedRep;
 
-		/// <summary>Random number generator</summary>
-		readonly System.Random rnd = new System.Random();
+		/// <summary>
+		/// Random number generator source.
+		///
+		/// You may supply a custom random number generator here in order to get reproducible paths by using a fixed seed.
+		/// If not, a new System.Random instance will be created when the path is constructed.
+		///
+		/// Keep in mind that multiple paths should never share the same System.Random instance, since paths are calculated in parallel.
+		/// </summary>
+		public System.Random rnd;
 
 		protected override bool hasEndPoint => false;
 
@@ -100,6 +107,7 @@ namespace Pathfinding {
 			chosenPathNodeGScore = 0;
 			maxGScore = 0;
 			aim = Vector3.zero;
+			rnd = new System.Random();
 
 			nodesEvaluatedRep = 0;
 		}
@@ -125,6 +133,26 @@ namespace Pathfinding {
 			endPoint = Vector3.zero;
 
 			return this;
+		}
+
+		/// <summary>
+		/// Refreshes the start point of the path.
+		/// Useful if the agent has moved significantly since the path was requested.
+		///
+		/// If the path has not yet been processed by the pathfinding system, the start point will be updated immediately.
+		/// If the path is being calculated or has been calculated, this function will do nothing.
+		///
+		/// A common way is to call this function once per frame until the path has been calculated,
+		/// with the most up-to-date position of the agent.
+		///
+		/// Note: For a RandomPath, this method only updates the start point, since the end point is determined by the pathfinding result.
+		/// </summary>
+		public override void RefreshPathEndpoints (Vector3 start, Vector3 end) {
+			lock (this) {
+				if (PipelineState == PathState.PathQueue || PipelineState == PathState.Created) {
+					originalStartPoint = startPoint = start;
+				}
+			}
 		}
 
 		/// <summary>

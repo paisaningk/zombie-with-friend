@@ -49,6 +49,7 @@ namespace SingularityGroup.HotReload.Editor {
         /// Use it for all tasks.
         /// When token is cancelled, scripts are about to be recompiled and this will cause tasks to fail for weird reasons.
         /// </remarks>
+        [NonSerialized]
         public CancellationToken cancelToken;
         CancellationTokenSource cancelTokenSource;
 
@@ -123,8 +124,10 @@ namespace SingularityGroup.HotReload.Editor {
             if (Current == this) {
                 Current = null;
             }
-            timer.Dispose();
-            timer = null;
+            if (timer != null) {
+                timer.Dispose();
+                timer = null;
+            }
         }
 
         internal void SelectTab(Type tabType) {

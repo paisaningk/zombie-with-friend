@@ -13,6 +13,6 @@ AssetOrigin:
   serializedVersion: 1
   productId: 253397
   packageName: vHierarchy 2
-  packageVersion: 2.1.7
-  assetPath: Assets/vHierarchy/VHierarchyMenu.cs
-  uploadId: 838294
+  packageVersion: 2.1.9
+  assetPath: Assets/Plugins/vHierarchy/VHierarchyMenu.cs
+  uploadId: 936112

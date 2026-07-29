@@ -231,6 +231,24 @@ namespace SingularityGroup.HotReload {
                 return false;
             }
         }
+        
+        static bool IsUnsupportedAddedOnValidate(MethodBase newMethod) {
+            try {
+                return UnityEventHelper.IsUnsupportedAddedOnValidate(newMethod);
+            } catch(Exception ex) {
+                Log.Warning(Localization.Translations.Logging.ExceptionIsUnsupportedAddedOnValidate, ex.GetType().Name, ex.Message);
+                return false;
+            }
+        }
+
+        static bool IsUnsupportedAddedScriptableObjectEventMethod(MethodBase newMethod) {
+            try {
+                return UnityEventHelper.IsUnsupportedAddedScriptableObjectEventMethod(newMethod);
+            } catch(Exception ex) {
+                Log.Warning(Localization.Translations.Logging.ExceptionIsUnsupportedAddedScriptableObjectEventMethod, ex.GetType().Name, ex.Message);
+                return false;
+            }
+        }
 
         void HandleMethodPatchResponse(MethodPatchResponse response, RegisterPatchesResult result) {
             EnsureSymbolResolver();
@@ -240,10 +258,15 @@ namespace SingularityGroup.HotReload {
                     foreach(var sMethod in patch.newMethods) {
                         var newMethod = SymbolResolver.Resolve(sMethod);
 
-                        var isUnityEvent = EnsureUnityEventMethod(newMethod);
-                        if (isUnityEvent) {
+                        if (IsUnsupportedAddedOnValidate(newMethod)) {
+                            var targetType = ((MethodInfo)newMethod).GetParameters()[0].ParameterType;
+                            result.patchFailures.Add(Tuple.Create(sMethod, string.Format(Translations.Logging.AddedOnValidateUnsupported, targetType.FullName)));
+                        } else if (IsUnsupportedAddedScriptableObjectEventMethod(newMethod)) {
+                            var targetType = ((MethodInfo)newMethod).GetParameters()[0].ParameterType;
+                            result.patchFailures.Add(Tuple.Create(sMethod, string.Format(Translations.Logging.AddedScriptableObjectEventUnsupported, newMethod.Name, targetType.FullName)));
+                        } else if (EnsureUnityEventMethod(newMethod)) {
                             unityEventMethods.Add(newMethod);
-                        } 
+                        }
                         
                         MethodUtils.DisableVisibilityChecks(newMethod);
                         if (!patch.patchMethods.Any(m => m.metadataToken == sMethod.metadataToken)) {

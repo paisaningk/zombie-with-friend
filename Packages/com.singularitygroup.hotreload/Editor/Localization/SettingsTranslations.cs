@@ -167,7 +167,7 @@ namespace SingularityGroup.HotReload.Editor.Localization {
                 ToggleHideConsole = "Hide console window on start";
                 ToggleDeactivate = "Deactivate Hot Reload";
                 ToggleDisableErrorReporting = "Disable Detailed Error Reporting";
-                ToggleDisableTelemetry = "Disalbe Telemetry";
+                ToggleDisableTelemetry = "Disable Telemetry";
                 TogglePauseEditMode = "Pause Hot Reload in Edit Mode";
                 ToggleAutostart = "Autostart on Unity open";
                 ToggleAutoClearTimeline = "Auto clear Timeline after recompile";

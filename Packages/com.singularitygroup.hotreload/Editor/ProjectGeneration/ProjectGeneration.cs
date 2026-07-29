@@ -191,7 +191,11 @@ namespace SingularityGroup.HotReload.Editor.ProjectGeneration {
             var configPath = Path.Combine(m_ProjectDirectory, PackageConst.ConfigFileName); 
             Config config;
             if(File.Exists(configPath)) {
-                config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(configPath));
+                try {
+                    config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(configPath));
+                } catch {
+                    return new Config();
+                }
             } else {
                 config = new Config();
             }

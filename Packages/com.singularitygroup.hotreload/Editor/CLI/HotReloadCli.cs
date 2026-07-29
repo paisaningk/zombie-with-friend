@@ -134,7 +134,11 @@ namespace SingularityGroup.HotReload.Editor.Cli {
             
             Config config;
             if (File.Exists(PackageConst.ConfigFileName)) {
-                config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(PackageConst.ConfigFileName));
+                try {
+                    config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(PackageConst.ConfigFileName));
+                } catch {
+                    config = new Config();
+                }
             } else {
                 config = new Config();
             }

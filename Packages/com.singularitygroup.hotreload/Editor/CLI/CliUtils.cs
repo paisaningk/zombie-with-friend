@@ -18,10 +18,12 @@ namespace SingularityGroup.HotReload.Editor.Cli {
 
         public static string GetProjectIdentifier() {
             if (File.Exists(PackageConst.ConfigFilePath)) {
-                var config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(PackageConst.ConfigFilePath));
-                if (config.singleInstance) {
-                    return null;
-                }
+                try {
+                    var config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(PackageConst.ConfigFilePath));
+                    if (config.singleInstance) {
+                        return null;
+                    }
+                } catch { /*_*/}
             }
             var path = Path.GetFullPath(MultiplayerPlaymodeHelper.PathToMainProject("."));
             var name = new DirectoryInfo(path).Name;

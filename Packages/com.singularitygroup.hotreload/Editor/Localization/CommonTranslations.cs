@@ -20,7 +20,7 @@ namespace SingularityGroup.HotReload.Editor.Localization {
             public static string ButtonSkip;
             public static string ButtonUpgrade;
             public static string ButtonDocs;
-            public static string ButtonFixAll;
+            public static string ButtonEnableOnDevice;
             public static string ButtonGoBack;
             public static string ButtonActivatePromoCode;
             public static string ButtonActivateLicense;
@@ -57,7 +57,7 @@ namespace SingularityGroup.HotReload.Editor.Localization {
                 ButtonRedeem = "Redeem";
                 ButtonSkip = "Skip";
                 ButtonUpgrade = "Upgrade";
-                ButtonFixAll = "Fix All";
+                ButtonEnableOnDevice = "Enable On-Device";
                 ButtonGoBack = "Go Back";
                 ButtonActivatePromoCode = "Activate promo code";
                 ButtonActivateLicense = "Activate License";
@@ -97,7 +97,7 @@ namespace SingularityGroup.HotReload.Editor.Localization {
                 ButtonSkip = "跳过";
                 ButtonDocs = "文档";
                 ButtonUpgrade = "升级";
-                ButtonFixAll = "全部修复";
+                ButtonEnableOnDevice = "在设备上启用";
                 ButtonGoBack = "返回";
                 ButtonActivatePromoCode = "激活促销代码";
                 ButtonActivateLicense = "激活许可证";

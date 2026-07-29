@@ -736,7 +736,7 @@ namespace SingularityGroup.HotReload.Editor {
                 GUILayout.Label(Translations.Settings.SettingsBuildSettingsChecklist, HotReloadWindowStyles.H3TitleStyle);
                 EditorGUI.BeginDisabledGroup(isSupported);
                 // One-click to change each setting to the supported value
-                if (GUILayout.Button(Translations.Common.ButtonFixAll, GUILayout.MaxWidth(90f))) {
+                if (GUILayout.Button(Translations.Common.ButtonEnableOnDevice, GUILayout.MaxWidth(120f))) {
                     FixAllUnsupportedSettings(so);
                 }
                 EditorGUI.EndDisabledGroup();

@@ -81,13 +81,18 @@
         },
         {
             "name": "com.unity.test-framework",
-            "expression": "2.0.0",
+            "expression": "1.5.1",
             "define": "MODULE_TEST_FRAMEWORK"
         },
         {
             "name": "com.unity.entities.graphics",
             "expression": "0.0.0",
             "define": "MODULE_ENTITIES_GRAPHICS"
+        },
+        {
+            "name": "com.unity.inputsystem",
+            "expression": "0.0.0",
+            "define": "MODULE_INPUT_SYSTEM"
         }
     ],
     "noEngineReferences": false

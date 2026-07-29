@@ -222,7 +222,7 @@ namespace SingularityGroup.HotReload {
         }
         
         static bool assetPollPending;
-        internal static async void PollAssetChanges(Action<string> onResponseReceived) {
+        internal static async void PollAssetChanges(Action<string, bool> onResponseReceived) {
             if (assetPollPending) return;
         
             assetPollPending = true;
@@ -234,6 +234,12 @@ namespace SingularityGroup.HotReload {
                 
                 if (result.statusCode == HttpStatusCode.OK) {
                     var responses = JsonConvert.DeserializeObject<List<string>>(result.responseText);
+                    // A large burst (e.g. branch switch / VCS op) of asset changes used to be dropped
+                    // wholesale, which silently swallowed recompile-triggering changes too (.asmdef/.asmref/
+                    // plugins). Instead, still forward every change but flag the burst so the handler skips
+                    // only the bulk asset re-import (the part that can storm/loop), while compile-relevant
+                    // files still trigger a recompile.
+                    var tooManyChanges = responses.Count >= 25;
                     await ThreadUtility.SwitchToMainThread();
                     // Looping in reverse order fixes moving files:
                     // by default new files come in before old ones which causes issues because meta files for old location has to be deleted first
@@ -244,7 +250,7 @@ namespace SingularityGroup.HotReload {
                             Log.Debug($"Ignoring asset change inside Unity: {response}");
                             continue;
                         }
-                        onResponseReceived(response);
+                        onResponseReceived(response, tooManyChanges);
                     }
                 } else if(result.statusCode == HttpStatusCode.Unauthorized || result.statusCode == 0) {
                     // Server is not running or not authorized.
@@ -435,13 +441,13 @@ namespace SingularityGroup.HotReload {
 #endif
         }
         
-        public static Task RequestClearPatches() {
-            var body = SerializeRequestBody(new CompileRequest(serverInfo.rootPath, IsReleaseMode()));
+        public static Task RequestClearPatches(string sessionId) {
+            var body = SerializeRequestBody(new CompileRequest(serverInfo.rootPath, IsReleaseMode(), sessionId));
             return PostJson(url + "/clearpatches", body, 10);
         }
         
-        public static async Task RequestCompile(Action<string> onResponseReceived) {
-            var body = SerializeRequestBody(new CompileRequest(serverInfo.rootPath, IsReleaseMode()));
+        public static async Task RequestCompile(string sessionId, Action<string> onResponseReceived) {
+            var body = SerializeRequestBody(new CompileRequest(serverInfo.rootPath, IsReleaseMode(), sessionId));
             var result = await PostJson(url + "/compile", body, 10);
             if (result.statusCode == HttpStatusCode.OK && !string.IsNullOrEmpty(result.responseText)) {
                 var responses = JsonConvert.DeserializeObject<List<string>>(result.responseText);
