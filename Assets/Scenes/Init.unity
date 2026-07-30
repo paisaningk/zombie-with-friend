@@ -131,7 +131,6 @@ GameObject:
   - component: {fileID: 784042734}
   - component: {fileID: 784042733}
   - component: {fileID: 784042739}
-  - component: {fileID: 784042736}
   - component: {fileID: 784042738}
   - component: {fileID: 784042737}
   m_Layer: 0
@@ -154,6 +153,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: FishNet.Runtime::FishNet.Managing.Transporting.TransportManager
   Transport: {fileID: 784042739}
+  _maximumClientPacketSize: 20480
   _intermediateLayer: {fileID: 0}
   _latencySimulator:
     _enabled: 0
@@ -195,24 +195,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &784042736
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 784042732}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9da90c29836670c49809661c5c09cd5d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::FishyFacepunch.FishyFacepunch
-  _steamAppID: 480
-  _serverBindAddress: 
-  _port: 27015
-  _maximumClients: 16
-  _clientAddress: 
-  _timeout: 25
 --- !u!114 &784042737
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -228,7 +210,6 @@ MonoBehaviour:
   _stopSocketsOnThread: 0
   _dontRoute: 0
   _reuseAddress: 0
-  _unreliableMtu: 1023
   _ipv4BindAddress: 
   _enableIpv6: 1
   _ipv6BindAddress: 
@@ -263,7 +244,6 @@ MonoBehaviour:
   _transports:
   - {fileID: 784042738}
   - {fileID: 784042737}
-  - {fileID: 784042736}
 --- !u!1 &1635334325
 GameObject:
   m_ObjectHideFlags: 0
@@ -385,7 +365,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: abff1aebcdf34f99b75dff4cf6f7ce3e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DevTool.InitScene
-  IsSkipMenu: 1
+  IsSkipMenu: 0
   MainMenuScene:
     asset: {fileID: 102900000, guid: 05b5348f78985f04f9ca2f8f077c411e, type: 3}
     guid: 05b5348f78985f04f9ca2f8f077c411e

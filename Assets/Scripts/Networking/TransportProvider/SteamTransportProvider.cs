@@ -47,7 +47,7 @@ namespace Networking.TransportProvider
             currentLobby.SetPrivate();
 
             // Set หลัง Steam พร้อมแล้ว
-            multipass.SetClientTransport<FishyFacepunch.FishyFacepunch>();
+            //multipass.SetClientTransport<FishyFacepunch>();
 
             return currentLobby.Id.ToString();
         }
@@ -72,7 +72,7 @@ namespace Networking.TransportProvider
                 return false;
             }
             
-            multipass.SetClientTransport<FishyFacepunch.FishyFacepunch>();
+            //multipass.SetClientTransport<FishyFacepunch.FishyFacepunch>();
             
             currentLobby = lobby.Value;
             return false;
