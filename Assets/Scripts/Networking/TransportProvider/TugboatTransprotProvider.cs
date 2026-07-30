@@ -14,7 +14,11 @@ namespace Networking.TransportProvider
         public string ConnectionAddress => "127.0.0.1";
         public string LobbyName => "LOCAL";
         
-        public bool SupportsLobby => true;
+        // Tugboat is a direct-IP transport with no lobby service: GetPlayersInLobby has
+        // nothing to return. Reporting false routes the player list through FishNet's
+        // connection events (LobbyManager.connectedPlayers) instead. Reserve true for
+        // transports with a real lobby backend (Steam).
+        public bool SupportsLobby => false;
         public bool RequiresCode  => true;
 
         public UniTask<string> CreateLobby(CancellationToken ct = default)

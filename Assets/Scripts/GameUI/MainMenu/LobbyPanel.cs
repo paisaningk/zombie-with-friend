@@ -32,12 +32,14 @@ namespace GameUI.MainMenu
         }
         private void StartGame()
         {
+            // Only the host drives the networked scene load; clients receive it automatically.
             if (!LobbyManager.Instance.IsHost()) return;
 
-            var menuScene = new SceneUnloadData(MenuScene);
-            InstanceFinder.SceneManager.UnloadGlobalScenes(menuScene);
-
-            var gameScene = new SceneLoadData(GameScene);
+            // ReplaceOption.All unloads every currently-loaded scene (including the menu,
+            // which was loaded outside FishNet as an "offline" scene) on all peers, then
+            // loads the game scene. This is why we don't UnloadGlobalScenes(menu) first —
+            // the menu isn't a FishNet-managed scene, so that call would be a no-op.
+            var gameScene = new SceneLoadData(GameScene) { ReplaceScenes = ReplaceOption.All };
             InstanceFinder.SceneManager.LoadGlobalScenes(gameScene);
         }
 

@@ -58,3 +58,62 @@
 - task 8 จะเอา `AnyPlayerAlive()` stub ไปต่อ lose logic (เพิ่มเงื่อนไข GameState==Playing)
 - task 15 จะหย่อน `GameState` SyncVar ลง `GameManager` (Instance เปิดไว้ทั้ง server+client แล้ว รองรับ)
 - convention ใหม่ `namespace Player` / `namespace Game` — ของเดิม (PlayerMovementTest ฯลฯ อยู่ global) ค่อยย้ายเป็น pass เดียวทีหลัง
+
+### 2026-07-30 — Task 1: runtime verification (host, single instance) ✅ (partial)
+
+รัน dev flow จริงใน play mode (host ผ่าน `LobbyManager.OnCreateLobby` → Tugboat loopback → plain `LoadScene(SampleScene)`) แล้ว spawn Player prefab ผ่าน `ServerManager.Spawn` เพื่อ exercise code path ของ task 1 (วัดจำนวน `OnStateChanged` ยิงด้วย counter บน handler จริง)
+
+**Verified (host, single instance):**
+- `GameManager` (scene NetworkObject) network-initialize ผ่าน plain `LoadScene` ได้ — `Instance` set + `IsServerInitialized=True` + `IsSpawned=True` → **ordering หลักที่ doc flag ไว้ผ่าน** (ไม่มี warning `GameManager.Instance is null`)
+- `PlayerState` register เข้า GameManager ที่ init แล้ว → `Players.Count=1`, spawn มา default `Alive`
+- transition Downed→Alive→Dead→Alive: **host double-fire ยุบเหลือ `OnStateChanged` ครั้งเดียวต่อ 1 change** (counter idle=0, 1 ต่อ transition จริง, 0 ต่อ no-op)
+- `SetState` no-op guard (ค่าเดิม → ไม่ยิง event)
+- `AnyPlayerAlive()` track Alive↔Dead แบบ dynamic (True→False ตอน Dead, กลับ True ตอน revive)
+
+**ยัง NOT verified (ขอบเขตของ harness นี้ ไม่ใช่บั๊ก):**
+- cross-peer SyncVar propagation — ทั้งหมดเป็น server+client instance เดียว ยังไม่มี peer ที่ 2 จริง
+- failure ordering (player register ตอน GameManager ยัง**ไม่**ขึ้น) — test ได้แค่ happy path (GameManager มาก่อน); branch warning ยัง code-read เฉยๆ
+- `AnyPlayerAlive()` branch `Count==0` (lone-host guard)
+
+**เจอระหว่างทาง (นอกขอบเขต task 1 — เรื่อง spawn/scene-flow):**
+- component บน `PlayerSpawn` คือ **FishNet built-in `FishNet.Component.Spawning.PlayerSpawner`** (MonoBehaviour, `_playerPrefab=Player` assign แล้ว) — **ไม่ใช่** custom `Networking.PlayerSpawner` และ **ไม่ต้องมี NetworkObject**
+- **Root cause ที่ไม่มีใคร spawn:** FishNet PlayerSpawner spawn ตอน event `OnClientLoadedStartScenes` ซึ่งยิง**ครั้งเดียวตอน connection โหลด start scenes เสร็จ (ตอน connect)** — ไม่ยิงซ้ำตอน `LoadGlobalScenes` ทีหลัง. flow จริง (menu) ทุกคน connect ในลอบบี้ก่อน แล้วค่อยโหลด game scene → event ยิงไปแล้วตอนอยู่เมนู → spawner ในซีนเกม subscribe ไม่ทัน → spawn ไม่เกิดทั้ง host+client (architectural mismatch กับ lobby-first flow)
+- custom `Networking.PlayerSpawner` (NetworkBehaviour) ไม่ได้ถูกใช้ในซีนไหน
+- มี scene-load 2 path: `LobbyPanel.StartGame` ใช้ `LoadGlobalScenes` (FishNet, ถูก) แต่ dev `InitScene.IsSkipMenu` ใช้ plain `SceneManager.LoadScene` (FishNet track ไม่ได้)
+
+### 2026-07-30 — Lobby/join flow review (grill) + player-spawn fix ✅
+
+Review flow เข้าห้อง (MenuFlowController / MainMenuPanel / JoinPanel / LobbyPanel / LobbyManager / transport providers) ผ่าน grill session แล้วแก้ตามที่ตกลง + fix ปัญหา player ไม่ spawn (verify runtime ใน real flow แล้ว)
+
+**Decisions (grill):**
+1. **localhost-only ก่อน** — Direct IP ไว้ทีหลัง (`JoinLobby` ยัง ignore code/IP ที่พิมพ์, `ConnectionAddress` hardcode `127.0.0.1`); ช่อง code หน้า Join = cosmetic ชั่วคราว
+2. **Tugboat `SupportsLobby=false`** — direct-IP transport ไม่มี lobby service จริง ให้ player list ใช้ connection events; `true` สงวนให้ Steam
+3. โหลด game scene: `LoadGlobalScenes(GameScene, ReplaceScenes = ReplaceOption.All)` (unload เมนู offline-scene ทุก peer อัตโนมัติ) แทน `UnloadGlobalScenes` ที่เป็น no-op
+4. join = **optimistic** (เข้าห้องก่อน) + โชว์ error ตอน disconnect ไม่ให้เด้งกลับเงียบ; await-connection จริงไว้ทำตอน Direct IP
+5. dev `IsSkipMenu` ใช้ networked load ตัวเดียวกับ flow จริง (host-only `LoadGlobalScenes`, client รับผ่าน network)
+6. roster ในห้อง = host-only stopgap; synced state (LobbyPlayer + SyncVar isReady/class) เลื่อนไป **task 14**
+
+**Changes:**
+- `GamePlayerSpawner.cs` (ใหม่, MonoBehaviour) — presence-based: subscribe `SceneManager.OnClientPresenceChangeEnd` + drain connection ที่ present อยู่แล้วตอน init (host), idempotent ด้วย HashSet, spawn ผ่าน `GetPooledInstantiated` + `ServerManager.Spawn(nob, conn, scene)` — แก้ root cause ที่ built-in spawner (start-scenes-based) พลาด lobby-first flow
+- SampleScene: เอา FishNet built-in `PlayerSpawner` ออกจาก `PlayerSpawn` → ใส่ `GamePlayerSpawner` (playerPrefab=Player, spawns=[1,2]) แทน
+- ลบ custom `Networking/PlayerSpawner.cs` (dead — ไม่มี code/scene อ้าง ยืนยันด้วย GUID)
+- `TugboatTransprotProvider` → `SupportsLobby=false`
+- `LobbyPanel.StartGame` → `LoadGlobalScenes` + `ReplaceOption.All`, ตัด `UnloadGlobalScenes`
+- `InitScene.IsSkipMenu` → host-only `LoadGlobalScenes` + `ReplaceOption.All` (เลิก plain load); fully-qualify `UnityEngine.SceneManagement.SceneManager` กัน ambiguous กับ FishNet
+- `LobbyManager`: เรียก `OnErrorLog("การเชื่อมต่อหลุด")` ตอนหลุดไม่ตั้งใจ → ได้ `Debug.LogError` จริง + ยิง `OnError` ให้ UI (ยังไม่มี element แสดง — defer) ไม่ให้ disconnect เงียบสนิท
+- `LobbyManager.OnCreateLobby`: แทน magic `WaitForSeconds(0.2f)` ด้วย `await UniTask.WaitUntil(() => IsHostStarted).Timeout(5s)` — รอ host ขึ้นจริงก่อน return (caller เปิด LobbyPanel ต่อ ซึ่ง gate ปุ่ม Start ด้วย IsHost()); timeout → `OnErrorLog` + `StopConnection` teardown + return false (ไม่ค้าง/ไม่ทิ้ง half-started host)
+- `JoinPanel`: ส่ง `LobbyInputField.text` แทนสตริงลิเทอรัล `"LobbyInputField"`
+
+**Runtime verified — full menu flow ผ่าน UI จริง (กด Host → Start เอง, ไม่ใช่ reflection):** อ่านจาก `[FLOW]` log ที่ใส่ชั่วคราว (ถอดออกแล้ว):
+- `Host: started OK (IsHostStarted=True)` — **WaitUntil host-start ทำงาน ไม่ timeout** (แทน magic 0.2s ได้จริง)
+- `Lobby.Setup: StartButton visible=True` — **Start button gating ถูก** (ปุ่มโผล่หลัง host ขึ้นจริง)
+- `StartGame → LoadGlobalScenes(ReplaceOption.All)` → เมนู unload (`sceneCount=2`)
+- **spawn ผ่าน EVENT path:** `presence ADDED conn 0` → `SPAWNED player for conn 0 at (-8.03,2.42,0)` — ในเมนู flow จริง host เข้าซีน**หลัง**ซีนโหลด (drain ตอน init เจอ 0) → เข้า `OnClientPresenceChangeEnd` = **code path เดียวกับ client-join** → ยืนยัน event path ทำงานจริง (ไม่ใช่แค่ construction)
+- `GameManager registered (total=1)`, `PlayerState=1`, `Player(Clone)` ใน SampleScene
+- แยก (MCP test ก่อนหน้า): **drain path** (host present ตั้งแต่ init) ก็ spawn ได้ → **ครบทั้ง 2 path (drain + event)**
+- **error-on-disconnect เห็นจริง** (`การเชื่อมต่อหลุด` ตอน single-instance `IsSkipMenu=true` → client branch → join fail) → decision #4 ทำงาน
+- compile clean (errorCount=0)
+
+**ยัง NOT verified:** multi-peer จริง (2 connection แยก — client ที่ 2 ผ่าน MPM/คนละเครื่อง) ยังไม่ลอง — แต่กลไกของ client-join (event path) verify ผ่าน host แล้ว เหลือแค่ยืนยัน 2 คนพร้อมกัน
+
+**เปิดค้าง (แยก):** `OnError` มี `Debug.LogError` แล้วแต่ยังไม่มี UI element แสดงบนจอ (ค่อยต่อ); `LobbyPanel.MenuScene` เป็น dead field หลังตัด `UnloadGlobalScenes`; `IsSkipMenu=true`+single instance → client branch → join fail (by design — ต้อง MPM tag "Host" ถึง host, เทสต์เมนูใช้ `IsSkipMenu=false`); Direct IP + synced roster = งานทีหลัง (ข้อ 1/6)

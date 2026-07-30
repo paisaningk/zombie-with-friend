@@ -35,6 +35,10 @@ namespace Networking
         public NetworkManager NetworkManager;
         private bool isIntentionalDisconnect = false;
 
+        // How long OnCreateLobby waits for the host (server + local client) to come up
+        // before reporting failure. Loopback is near-instant; this is just a safety bound.
+        private const float HostStartTimeoutSeconds = 5f;
+
 
         // ============ Events แจ้ง UI ============
         public event Action<string> OnLobbyCreated; //UI แสดง code
@@ -64,7 +68,22 @@ namespace Networking
                 NetworkManager.ServerManager.StartConnection();
                 NetworkManager.ClientManager.StartConnection(currentTransport.ConnectionAddress);
 
-                await UniTask.WaitForSeconds(0.2f);
+                // Wait until the host is actually up (server + local client) instead of guessing
+                // with a fixed delay — the caller opens LobbyPanel right after and gates the Start
+                // button on IsHostStarted. Bounded by a timeout so a failed start reports and tears
+                // down cleanly rather than leaving a half-started host / hanging the caller.
+                try
+                {
+                    await UniTask.WaitUntil(() => NetworkManager.IsHostStarted, cancellationToken: cts.Token)
+                        .Timeout(TimeSpan.FromSeconds(HostStartTimeoutSeconds));
+                }
+                catch (TimeoutException)
+                {
+                    OnErrorLog("เริ่มโฮสต์ไม่สำเร็จ (timeout)");
+                    NetworkManager.ClientManager.StopConnection();
+                    NetworkManager.ServerManager.StopConnection(true);
+                    return false;
+                }
 
                 return true;
             }
@@ -216,9 +235,12 @@ namespace Networking
                 return;
             }
 
-            // หลุดเอง
+            // หลุดเอง (ไม่ได้ตั้งใจ) — optimistic join พาเข้าห้องไปก่อน ถ้าต่อไม่ติด/หลุด
+            // ต้องแจ้ง error ไม่ให้เด้งกลับเมนูเงียบๆ ใช้ OnErrorLog เพื่อให้มี Debug.LogError จริง
+            // (ยิง OnError ให้ UI ที่ subscribe ด้วย — ตอนนี้ยังไม่มี element แสดง ค่อยต่อทีหลัง)
             connectedPlayers.Clear();
             currentTransport?.Disconnect();
+            OnErrorLog("การเชื่อมต่อหลุด");
             OnDisconnect?.Invoke();
         }
 

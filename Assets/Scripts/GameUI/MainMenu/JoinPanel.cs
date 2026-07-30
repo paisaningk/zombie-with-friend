@@ -43,7 +43,7 @@ namespace GameUI.MainMenu
                 }
 
                 Debug.Log("Join lobby");
-                OnJoinLobby.Invoke("LobbyInputField");
+                OnJoinLobby.Invoke(LobbyInputField.text);
             }
             catch (Exception e)
             {
