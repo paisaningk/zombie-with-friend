@@ -258,6 +258,7 @@ GameObject:
   - component: {fileID: 5483262435677738108}
   - component: {fileID: 5623214020912071740}
   - component: {fileID: 6812398529465059314}
+  - component: {fileID: 144987612181943736}
   m_Layer: 3
   m_Name: Player
   m_TagString: Player
@@ -635,3 +636,24 @@ MonoBehaviour:
   _addedNetworkObject: {fileID: 5738819235587161346}
   _networkObjectCache: {fileID: 0}
   _bleedOutSeconds: 30
+--- !u!114 &144987612181943736
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8446928096559664053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 39e061a0372de5d43bad1c4f6d445691, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Player.PlayerReviver
+  _componentIndexCache: 255
+  _addedNetworkObject: {fileID: 5738819235587161346}
+  _networkObjectCache: {fileID: 0}
+  _reviveRadius: 2.5
+  _reviveHoldSeconds: 3
+  _reviveHpPercent: 0.3
+  _playerMask:
+    serializedVersion: 2
+    m_Bits: 8

@@ -20,8 +20,8 @@
 | 4 | PlayerLook — yaw/pitch ±80° | P1 | ✅ **เสร็จ (2026-07-31)** *(merge กับ 3; "ไม่ disable ตอน downed" = task 6)* |
 | 5 | PlayerCombat hitscan + WeaponData | P1 | ✅ **เสร็จ (2026-07-31)** *(hitscan verified; projectile = scaffolding รอ task 9)* |
 | 6 | Downed / bleed-out 30 วิ | P2 | ✅ **เสร็จ (2026-07-31)** |
-| 7 | Revive (hold 3 วิ) | P2 | ⏭️ ถัดไป |
-| 8 | Lose condition — AnyPlayerAlive() | P2 | ⬜ |
+| 7 | Revive (hold 3 วิ) | P2 | ✅ **เสร็จ (2026-07-31)** |
+| 8 | Lose condition — AnyPlayerAlive() | P2 | ⏭️ ถัดไป |
 | 9 | Enemy AI 3 types *(งานใหม่)* | P3 | ⬜ |
 | 10 | Wave spawner + auto-revive | P3 | ⬜ |
 | 11 | Currency split-on-kill | P4 | ⬜ |
@@ -193,3 +193,17 @@ Downed behavior + coordinator กลาง (ผู้ใช้ถามหา "�
 **ยัง NOT verified:** owner กด move/shoot ตอน downed จริง (`.enabled=false`→Update ไม่รัน, by-construction — play-test ได้) · revive-cancel-before-30วิ (by-construction) · multi-peer
 
 **เตรียมให้ task ถัดไป:** task 7 (revive) + task 11 (wave-clear) แค่เรียก `PlayerState.SetState(Alive)` → controller re-enable + bleed-out หยุดให้เอง · task 8 (lose) ใช้ `AnyPlayerAlive()`
+
+### 2026-07-31 — Task 7: PlayerReviver (revive downed teammate) ✅
+
+revive: Alive เข้าใกล้ downed + hold Interact 3 วิ → server validate → Alive + partial HP. ออกแบบผ่าน grill. เหตุผลเต็ม [decisions/0006](decisions/0006-player-reviver.md)
+
+**ไฟล์:** ใหม่ `Player/PlayerReviver.cs` (OverlapSphere หา downed + manual hold 3 วิ + `ServerRpc` validate/apply) · แก้ `PlayerHealth.cs` เพิ่ม **`[Server] SetHp(float)`** (setter ที่ task 2 เลื่อนมา) · decision 0006 · wire `PlayerReviver` ลง Player.prefab (playerMask=Player, radius2.5/hold3/hp30%)
+
+**Decisions (grill):** component แยก (owner-drive, รวมทีหลังได้) · OverlapSphere proximity (not-self+IsDowned, nearest, 2.5m) · manual hold 3 วิ (Interact.IsPressed, uninterruptible=damage ไม่ cancel) · **revive 30% max** (full สงวน wave-clear) · `SetHp(float)` absolute ไม่มี Alive-guard (store model)
+
+**Runtime verified (host, 2 players MCP):** revive apply → target **Alive + HP=30 (Max×0.3) + Movement/Weapon re-enabled** · **distance rejection** (ไกล 10m → reject, คง Downed) · **client-detect** (FindDownedTarget OverlapSphere เจอ downed, exclude self) · compile clean
+
+**ยัง NOT verified:** hold input 3 วิ จริง (inject ไม่ได้ → user play-test) · uninterruptible/reset (by-construction) · multi-peer จริง
+
+**เตรียมให้ต่อ:** task 11 (wave-clear) ใช้ `SetHp(Max)` + `SetState(Alive)` ทุกคน (setter พร้อมแล้ว)

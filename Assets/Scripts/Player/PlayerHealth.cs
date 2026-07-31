@@ -103,6 +103,20 @@ namespace Player
                 _state.SetState(PlayerLifeState.Downed);
         }
 
+        /// <summary>
+        /// Directly set HP, clamped to [0, Max]. For revive (task 7, partial) and wave-clear
+        /// (task 11, full). NO Alive-guard — unlike <see cref="ApplyDamage"/> this is meant to
+        /// set HP on a Downed player. Store-only: does NOT touch state — the caller sets
+        /// PlayerState.Alive separately. Server-only.
+        /// </summary>
+        [Server]
+        public void SetHp(float amount)
+        {
+            float next = Mathf.Clamp(amount, 0f, _maxHp);
+            if (next == _health.Value) return;
+            _health.Value = next;
+        }
+
         // --- SyncVar → event plumbing (mirrors PlayerState) ---
         // We ignore asServer and dedupe by value in Notify(), collapsing the host's server+client
         // double callback into a single announcement; the initial fire reports prev == next.
