@@ -18,8 +18,8 @@
 | 2 | PlayerHealth — HP=0 → Downed | P0 | ✅ **เสร็จ (2026-07-31)** |
 | 3 | First-person movement | P1 | ✅ **เสร็จ (2026-07-31)** *(รวมกับ 4)* |
 | 4 | PlayerLook — yaw/pitch ±80° | P1 | ✅ **เสร็จ (2026-07-31)** *(merge กับ 3; "ไม่ disable ตอน downed" = task 6)* |
-| 5 | PlayerCombat hitscan + WeaponData | P1 | ⏭️ ถัดไป |
-| 6 | Downed / bleed-out 30 วิ | P2 | ⬜ |
+| 5 | PlayerCombat hitscan + WeaponData | P1 | ✅ **เสร็จ (2026-07-31)** *(hitscan verified; projectile = scaffolding รอ task 9)* |
+| 6 | Downed / bleed-out 30 วิ | P2 | ⏭️ ถัดไป |
 | 7 | Revive (hold 3 วิ) | P2 | ⬜ |
 | 8 | Lose condition — AnyPlayerAlive() | P2 | ⬜ |
 | 9 | Enemy AI 3 types *(งานใหม่)* | P3 | ⬜ |
@@ -161,3 +161,20 @@ Review flow เข้าห้อง (MenuFlowController / MainMenuPanel / JoinP
 **ยัง NOT verified:** non-owner จริง (single host), multi-peer + yaw sync ไป client
 
 **ค้าง:** yaw ใช้ `transform.Rotate` ตรงๆ — ถ้าเจอ jitter ตอนชนของค่อยเปลี่ยนเป็น `Rigidbody.MoveRotation` · `NetworkShooter` ยัง `muzzle.forward` top-down (task 5 hitscan) · eye height 0.6 ปรับได้
+
+### 2026-07-31 — Task 5: PlayerWeapon (hitscan + projectile framework) ✅ (hitscan)
+
+แปลง projectile prototype → hitscan first-person + data-driven WeaponData (polymorphic). scope โตกว่า MVP เดิม (เป็น weapon framework เต็ม hitscan+projectile) ตามที่ user เลือก. ออกแบบผ่าน grill. เหตุผลเต็มดู [decisions/0004](decisions/0004-player-weapon.md)
+
+**ไฟล์ใหม่:** `Combat/WeaponData.cs`(abstract) + `HitscanWeaponData.cs` + `ProjectileWeaponData.cs` + `PlayerWeapon.cs` + `TestHitTarget.cs`(throwaway) · `InputSystem_Actions`(+action Reload, regen) · asset `Data/Weapons/DefaultRifle.asset`(hitscan) + `DefaultLauncher.asset`(projectile) · decision 0004
+**ลบ:** `ProjectileShooter.cs` (NetworkShooter)
+**แก้:** `NetworkProjectile.ServerInit(dir, speed, damage)` data-driven + ทิศ 3D
+**Prefab:** ถอด NetworkShooter → ใส่ PlayerWeapon (weaponData=DefaultRifle, hitMask=-13 exclude Player+IgnoreRaycast, aimSource=CameraHolder, muzzle=Cube(1)) · **Scene:** เพิ่ม TestHitTarget (cube+NetworkObject, layer Default) ใน SampleScene
+
+**Decisions (grill):** Model B (client raycast→ส่ง hit→server damage จาก WeaponData) · fire-rate client-gate+server-validate · **B polymorphic SO-as-strategy** (พิจารณา composition แล้ว over-engineer) · ammo magazine+manual R+auto-on-empty (SyncVar) · no friendly fire · tracer placeholder · PlayerWeapon (namespace Combat)
+
+**Runtime verified (host, MCP — hitscan):** spawn Ammo=30 · ยิงเป้า `LastDamage=25`(=WeaponData.damage, server ใส่) HitCount++ Hp ลด · **fire-rate reject** (2 นัดรัว→ติด 1) · **manual reload** (27→30) · auto-reload by-construction · compile clean
+
+**Feel — user-verified ✅ (2026-07-31):** input→fire ผ่าน play-test — hold คลิก = ยิง (tracer + `[TestHitTarget] took 25 dmg` log + ammo ลด), R = reload · *(MCP inject input ไม่ได้ → verify ด้วยการกดจริง)*
+
+**⚠️ projectile = UNVERIFIED scaffolding:** spawn/init รัน (ammo ลด + WeaponData stat) แต่ **ยิงโดนไม่ได้** — Bullet collider non-trigger vs `OnTriggerEnter` → ต้องผ่าตัด prototype (trigger + FishNet Reserialize) → **เลื่อน task 9** (มี enemy = เป้าจริง) · mark `// UNVERIFIED` ใน ProjectileWeaponData/SpawnProjectile แล้ว · Bullet.prefab revert กลับ (edit ผมทำ serialization เสีย)

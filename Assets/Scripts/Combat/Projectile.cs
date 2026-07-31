@@ -12,13 +12,15 @@ public sealed class NetworkProjectile : NetworkBehaviour
     private Vector3 _vel;
     private float _dieAt;
 
-    // ให้ server ตั้งค่าทิศทาง/ความเร็ว
+    // Server sets direction + stats (speed/damage come from the firing weapon's WeaponData).
     [Server]
-    public void ServerInit(Vector3 dir)
+    public void ServerInit(Vector3 dir, float newSpeed, float newDamage)
     {
-        dir.y = 0f;
+        speed = newSpeed;
+        damage = newDamage;
+
         if (dir.sqrMagnitude < 0.0001f) dir = transform.forward;
-        dir.Normalize();
+        dir.Normalize(); // full 3D direction (first-person aim includes pitch)
 
         _vel = dir * speed;
         _dieAt = Time.time + lifeTime;
@@ -43,11 +45,10 @@ public sealed class NetworkProjectile : NetworkBehaviour
             return;
         }
 
-        if (other.TryGetComponent<IHitReceiver>(out var receiver))
+        var receiver = other.GetComponentInParent<IHitReceiver>();
+        if (receiver != null)
         {
             Vector3 dir = _vel.sqrMagnitude > 0f ? _vel.normalized : transform.forward;
-            dir.y = 0f;
-            if (dir.sqrMagnitude > 0.0001f) dir.Normalize();
 
             receiver.ReceiveHit(new HitInfo(
                 point: transform.position,
@@ -58,8 +59,6 @@ public sealed class NetworkProjectile : NetworkBehaviour
         }
 
         Despawn();
-        
-        Debug.Log(other.gameObject.name);
     }
 
     [Server]

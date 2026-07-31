@@ -252,11 +252,11 @@ GameObject:
   - component: {fileID: 5903140171842550392}
   - component: {fileID: 8458327974489042994}
   - component: {fileID: 7118011573638494271}
-  - component: {fileID: 7133092593591934447}
   - component: {fileID: 8334691806070802285}
   - component: {fileID: 4553083533604345656}
   - component: {fileID: 8123789843772406037}
   - component: {fileID: 5483262435677738108}
+  - component: {fileID: 5623214020912071740}
   m_Layer: 3
   m_Name: Player
   m_TagString: Player
@@ -377,7 +377,7 @@ MonoBehaviour:
   - {fileID: 5723845655369902788}
   - {fileID: 5903140171842550392}
   - {fileID: 8458327974489042994}
-  - {fileID: 7133092593591934447}
+  - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
   InitializedParentNetworkBehaviour: {fileID: 0}
@@ -527,24 +527,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &7133092593591934447
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8446928096559664053}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 44b18356d611464d8dc9adf379166a80, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _componentIndexCache: 3
-  _addedNetworkObject: {fileID: 5738819235587161346}
-  _networkObjectCache: {fileID: 5738819235587161346}
-  muzzle: {fileID: 3832648189946085887}
-  projectilePrefab: {fileID: 5213625977848984770, guid: 2514e2137e748b6448f8f0ca08a7caad, type: 3}
-  fireCooldown: 0.1
 --- !u!114 &8334691806070802285
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -615,3 +597,24 @@ MonoBehaviour:
   ownerListener: {fileID: 4643368175344255430}
   sensitivity: 0.1
   pitchClamp: 80
+--- !u!114 &5623214020912071740
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8446928096559664053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e33dbb0ed8bcae848997a5c8123d08a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Combat.PlayerWeapon
+  _componentIndexCache: 255
+  _addedNetworkObject: {fileID: 5738819235587161346}
+  _networkObjectCache: {fileID: 0}
+  _weaponData: {fileID: 11400000, guid: 42bad4882028b884682c701dfea55adb, type: 2}
+  _hitMask:
+    serializedVersion: 2
+    m_Bits: 4294967283
+  _aimSource: {fileID: 9124571334662110557}
+  _muzzle: {fileID: 3832648189946085887}

@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f3d48e14df96434c885291bf5085edb, type: 3}
+  m_Name: DefaultLauncher
+  m_EditorClassIdentifier: Assembly-CSharp::Combat.ProjectileWeaponData
+  damage: 40
+  fireRate: 3
+  magazineSize: 10
+  reloadTime: 2
+  fullAuto: 0
+  projectilePrefab: {fileID: 6294629343607866315, guid: 2514e2137e748b6448f8f0ca08a7caad, type: 3}
+  projectileSpeed: 30
