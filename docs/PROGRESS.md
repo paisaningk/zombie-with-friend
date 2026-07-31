@@ -221,3 +221,16 @@ event-driven lose + introduce GameState. ออกแบบผ่าน grill. �
 **ยัง NOT verified:** disconnect-lose (by-construction) · Count==0 guard (by-inspection) · multi-peer + client GameState sync
 
 **เตรียมให้ต่อ:** task 10 win → `SetGameState(Won)` · task 15 Lobby/scene lifecycle · task 16 result screen subscribe `OnGameStateChanged`
+
+### 2026-07-31 — Task 9: Enemy AI — ออกแบบแล้ว (grill) ยังไม่ build 🔵
+
+grill ออกแบบ enemy ทั้งก้อนเสร็จ — **บันทึกดีไซน์ไว้ที่ [decisions/0008](decisions/0008-enemy-ai.md)** (ยังไม่เขียนโค้ด). สรุปย่อ:
+- `Enemy` component เดียว + `EnemyData` SO (stat + attackType) · 3 prefab per type (Runner/Tank/Ranger), visual placeholder
+- health: SyncVar HP + `IHitReceiver` + hit-flash (HP OnChange) + OnDied→despawn
+- movement: FollowerEntity **server-only** + NetworkTransform sync · chase via destination
+- target: **registry-based** (GameManager.Players filter IsAlive, nearest) → **ตัด downed layer swap ทิ้ง**
+- attack: distance-check server-side · melee = ApplyDamage ตรงๆ · **Ranger = projectile** (ปิดหนี้ projectile)
+- build notes: layer Enemy ใหม่ · A* graph scan · แก้/สร้าง projectile prefab (reserialize ให้ถูก) · cleanup TestHitTarget+prototype cubes
+- **wave spawner = task 10 (แยก)** · gold = task 12
+
+**สถานะ: design เท่านั้น ยังไม่ build/verify** — เริ่มเขียนจาก 0008
