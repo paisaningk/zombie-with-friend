@@ -21,8 +21,8 @@
 | 5 | PlayerCombat hitscan + WeaponData | P1 | ✅ **เสร็จ (2026-07-31)** *(hitscan verified; projectile = scaffolding รอ task 9)* |
 | 6 | Downed / bleed-out 30 วิ | P2 | ✅ **เสร็จ (2026-07-31)** |
 | 7 | Revive (hold 3 วิ) | P2 | ✅ **เสร็จ (2026-07-31)** |
-| 8 | Lose condition — AnyPlayerAlive() | P2 | ⏭️ ถัดไป |
-| 9 | Enemy AI 3 types *(งานใหม่)* | P3 | ⬜ |
+| 8 | Lose condition — AnyPlayerAlive() | P2 | ✅ **เสร็จ (2026-07-31)** |
+| 9 | Enemy AI 3 types *(งานใหม่)* | P3 | ⏭️ ถัดไป |
 | 10 | Wave spawner + auto-revive | P3 | ⬜ |
 | 11 | Currency split-on-kill | P4 | ⬜ |
 | 12 | Shop + ready-check | P4 | ⬜ |
@@ -207,3 +207,17 @@ revive: Alive เข้าใกล้ downed + hold Interact 3 วิ → serve
 **ยัง NOT verified:** hold input 3 วิ จริง (inject ไม่ได้ → user play-test) · uninterruptible/reset (by-construction) · multi-peer จริง
 
 **เตรียมให้ต่อ:** task 11 (wave-clear) ใช้ `SetHp(Max)` + `SetState(Alive)` ทุกคน (setter พร้อมแล้ว)
+
+### 2026-07-31 — Task 8: Lose condition + GameState ✅
+
+event-driven lose + introduce GameState. ออกแบบผ่าน grill. เหตุผลเต็ม [decisions/0007](decisions/0007-lose-condition-gamestate.md)
+
+**ไฟล์:** ใหม่ `Game/GameState.cs` (enum {Lobby,Playing,Won,Lost}) · แก้ `GameManager.cs` — `SyncVar<GameState>` + `OnGameStateChanged` event (dedupe/initial-fire แบบ PlayerState) + `[Server] SetGameState` + subscribe `player.OnStateChanged` (Register/Unregister) + `CheckLose()` · decision 0007
+
+**Decisions (grill):** subscribe OnStateChanged (event-driven) · minimal GameState enum + SyncVar + event เดียว (ไม่มี OnGameOver แยก) · lose guard **`Count>0 && none-alive`** (กัน empty-game แพ้ผิด) · re-check lose ตอน disconnect (Unregister) · Playing ตอน server-start
+
+**Runtime verified (host, MCP):** server-start → **GameState=Playing** · player Alive → ไม่ lose · **down player คนเดียว → Lost** (event-driven instant) · **sticky** (revive หลัง Lost → คง Lost, CheckLose guard Playing) · compile clean
+
+**ยัง NOT verified:** disconnect-lose (by-construction) · Count==0 guard (by-inspection) · multi-peer + client GameState sync
+
+**เตรียมให้ต่อ:** task 10 win → `SetGameState(Won)` · task 15 Lobby/scene lifecycle · task 16 result screen subscribe `OnGameStateChanged`

@@ -1,21 +1,23 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using FishNet.Object;
+using FishNet.Object.Synchronizing;
 using Player;
 using UnityEngine;
 
 namespace Game
 {
     /// <summary>
-    /// Minimal server-side match coordinator.
+    /// Minimal server-side match coordinator + synced match state (<see cref="GameState"/>).
     ///
-    /// Lives as a scene NetworkObject (NOT DontDestroyOnLoad, unlike LobbyManager) — it
-    /// exists for the duration of a match and is torn down with the game scene.
+    /// Lives as a scene NetworkObject (NOT DontDestroyOnLoad, unlike LobbyManager) — it exists
+    /// for the duration of a match and is torn down with the game scene. <see cref="Instance"/>
+    /// is set on BOTH server and clients so client-read state (GameState) works; the player
+    /// registry is server-only.
     ///
-    /// <see cref="Instance"/> is set on BOTH server and clients so future client-read state
-    /// (GameState SyncVar, task 15) works without reworking this. The player registry,
-    /// however, is server-only: registration is guarded by [Server] and the list stays
-    /// empty on clients.
+    /// Lose is event-driven (no timer): whenever a registered player's state changes — or one
+    /// disconnects — while Playing, if players exist but NONE are Alive the match is Lost.
     /// </summary>
     public class GameManager : NetworkBehaviour
     {
@@ -24,6 +26,28 @@ namespace Game
         // Server-only. On clients this stays empty; nothing reads it there.
         private readonly List<PlayerState> _players = new List<PlayerState>();
         public IReadOnlyList<PlayerState> Players => _players;
+
+        // Synced match state. Consumers (result screen, task 16) subscribe to OnGameStateChanged;
+        // one event covers both Lost (task 8) and Won (task 10).
+        private readonly SyncVar<GameState> _gameState = new SyncVar<GameState>();
+
+        /// <summary>(previous, next). Fires once on start (prev == next), then on every change.</summary>
+        public event Action<GameState, GameState> OnGameStateChanged;
+
+        private GameState _notified;
+        private bool _hasNotified;
+
+        public GameState State => _gameState.Value;
+
+        private void Awake()
+        {
+            _gameState.OnChange += HandleGameStateSync;
+        }
+
+        private void OnDestroy()
+        {
+            _gameState.OnChange -= HandleGameStateSync;
+        }
 
         // Runs once per peer (server and client), so Instance is available on both.
         public override void OnStartNetwork()
@@ -36,6 +60,14 @@ namespace Game
                 return;
             }
             Instance = this;
+            Notify(_gameState.Value); // initial fire (all peers)
+        }
+
+        public override void OnStartServer()
+        {
+            base.OnStartServer();
+            // The game scene is up → we're playing. task 15 will drive Lobby → Playing properly.
+            SetGameState(GameState.Playing);
         }
 
         public override void OnStopNetwork()
@@ -45,30 +77,66 @@ namespace Game
                 Instance = null;
         }
 
+        /// <summary>The single mutation point for match state. Server-only. No-op if unchanged.</summary>
+        [Server]
+        public void SetGameState(GameState next)
+        {
+            if (_gameState.Value == next) return;
+            _gameState.Value = next;
+        }
+
         [Server]
         public void RegisterPlayer(PlayerState player)
         {
             if (player == null) return;
             if (!_players.Contains(player))
+            {
                 _players.Add(player);
+                player.OnStateChanged += HandlePlayerStateChanged;
+            }
         }
 
         [Server]
         public void UnregisterPlayer(PlayerState player)
         {
-            _players.Remove(player);
+            if (player != null)
+                player.OnStateChanged -= HandlePlayerStateChanged;
+            if (_players.Remove(player))
+                CheckLose(); // the last Alive player disconnecting can trigger a loss
         }
 
+        private void HandlePlayerStateChanged(PlayerLifeState prev, PlayerLifeState next) => CheckLose();
+
         /// <summary>
-        /// Stub for the lose-condition system (task 8). True while at least one registered
-        /// player is Alive. The Count > 0 guard prevents a lone host with no players yet
-        /// from reading as "everyone dead". Real semantics (only meaningful while
-        /// GameState == Playing) land in task 8.
+        /// Lose when Playing AND players exist but NONE are Alive. The Count &gt; 0 guard excludes
+        /// the empty case (no players yet / everyone left) — that is not a team wipe.
         /// </summary>
+        [Server]
+        private void CheckLose()
+        {
+            if (_gameState.Value != GameState.Playing) return;
+            if (_players.Count > 0 && !_players.Any(p => p != null && p.IsAlive))
+                SetGameState(GameState.Lost);
+        }
+
+        /// <summary>True while at least one registered player is Alive (and any exist).</summary>
         [Server]
         public bool AnyPlayerAlive()
         {
             return _players.Count > 0 && _players.Any(p => p != null && p.IsAlive);
+        }
+
+        // --- GameState SyncVar → event plumbing (mirrors PlayerState) ---
+        private void HandleGameStateSync(GameState prev, GameState next, bool asServer) => Notify(next);
+
+        private void Notify(GameState next)
+        {
+            if (_hasNotified && _notified == next) return;
+
+            var prev = _hasNotified ? _notified : next; // initial fire => prev == next
+            _notified = next;
+            _hasNotified = true;
+            OnGameStateChanged?.Invoke(prev, next);
         }
     }
 }
