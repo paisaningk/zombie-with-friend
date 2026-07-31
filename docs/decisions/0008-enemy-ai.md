@@ -1,8 +1,8 @@
 # 0008 — Enemy AI (3 types)
 
-> Task 9 (P3) · ออกแบบ 2026-07-31 (ผ่าน grill session) · สถานะ: **ออกแบบแล้ว — ยังไม่ build** ⚠️
+> Task 9 (P3) · ออกแบบ 2026-07-31 (grill) · **build + verified 2026-08-01** ✅
 
-บันทึก **การตัดสินใจจาก grill** ไว้ก่อน (กันดีไซน์หาย) — โค้ดยังไม่ได้เขียน. เริ่ม build จากเอกสารนี้.
+บันทึก **การตัดสินใจจาก grill** + ผล build. ดีไซน์ทำตามที่ตกลงครบ (ไม่มี decision เปลี่ยน) — เจอ 2 บั๊กตอน verify แก้แล้ว (ดูท้ายเอกสาร).
 
 ## บริบท
 
@@ -53,6 +53,29 @@ A* พร้อมในซีน: `AstarPath` (บน "Path") + prototype agent
 
 wave spawner (task 10) · gold/goldReward (task 12) · enemy health-bar UI · distinct visual per type · kiting · knockback enemy · enemy attack anim/effect (placeholder ทีหลัง)
 
-## ยังไม่ verified (ยังไม่ build)
+## BUILD (2026-08-01) — ทำตามดีไซน์ครบ
 
-ทั้งหมด — เอกสารนี้เป็น **design เท่านั้น**. เทสต์ตอน build: spawn enemy ใกล้ player → A* ไล่ → ถึง range → attack (player HP ลด) → player ยิง → HP ลด + hit-flash → ตาย/despawn · Ranger → projectile ใส่ player
+**ไฟล์ใหม่:** `Enemies/EnemyData.cs` (SO: displayName, maxHp, moveSpeed, attackType{Melee,Ranged}, damage, attackRange, attackRate, projectilePrefab, projectileSpeed) · `Enemies/Enemy.cs` (`NetworkBehaviour, IHitReceiver` — SyncVar HP, registry-based nearest-alive target re-select 0.5s, FollowerEntity server-only chase, distance-check melee=ApplyDamage ตรง / ranged=spawn projectile, hit-flash บน HP OnChange, OnDied→Despawn)
+**แก้:** `Combat/Projectile.cs` (`NetworkProjectile`) — เปลี่ยนจาก hardcode `CompareTag("Player") return` เป็น **`damageMask`/`blockMask`** (layer-based) → ปิดหนี้ projectile + ให้ enemy projectile โดน player ได้ (prefab เดียวใช้ได้ 2 ทิศ: enemy→Player, player→Enemy)
+**assets/wiring (ผ่าน MCP):** layer **Enemy=9** · 3 SO `Data/Enemies/{Runner,Tank,Ranger}Data` · `Prefabs/Enemies/EnemyProjectile` (sphere+trigger+kinematic RB+NetworkObject+NetworkTransform+NetworkProjectile, damageMask=Player blockMask=Ground, layer IgnoreRaycast) · 3 enemy prefab `{Runner,Tank,Ranger}Enemy` (capsule+CapsuleCollider layer Enemy+NetworkObject+NetworkTransform+FollowerEntity+Enemy) auto-register ใน DefaultPrefabObjects · cleanup SampleScene (ลบ TestHitTarget+Cube+Cube(1)+Cube(2), ลบ `Combat/TestHitTarget.cs`)
+
+**stat ที่ตั้ง:** Runner(hp30/spd7/dmg8/range1.6/rate1.5, melee) · Tank(hp150/spd2.5/dmg20/range2/rate0.7, melee) · Ranger(hp50/spd3.5/dmg12/range12/rate0.8, ranged/projSpeed20)
+
+## 2 บั๊กที่เจอตอน verify + แก้
+
+1. **FollowerEntity บินขึ้นฟ้า (y พุ่ง 70→228, vel +Y คงที่)** — `groundMask` default = `-1` (ทุก layer **รวมตัวเอง**) → ground-raycast ชน capsule ตัวเอง → ดันขึ้นสะสมทุกเฟรม. **แก้:** ตั้ง `movement.groundMask = Ground(1<<6)` เท่านั้น (exclude self/Enemy) bake เข้าทั้ง 3 prefab → y=0.5 นิ่งบนพื้น
+2. **Ranger projectile บินทะลุ player ไม่โดน** — aim `target.pos + up*0.8` = y1.8 แต่ player cube collider top = y1.5 → บินเหนือหัว. **แก้:** aim กลางตัว (`target.transform.position`) + origin `+up*0.5` → ยิงผ่าน center collider · เพิ่ม projectile RB `collisionDetectionMode=ContinuousSpeculative` กัน fast-trigger tunneling
+
+## Runtime verified (host, single instance, MCP)
+
+- **chase:** FollowerEntity + A* (GridGraph 100×100 auto-scan) — destination=player, ไล่ x เข้าหา, grounded y=0.5 (หลังแก้บั๊ก 1)
+- **melee (Runner):** ไล่ถึง (dist 1.03 < range 1.6) → ApplyDamage → **player HP→0 → Downed → bleed-out → Dead → lose trigger** (ครบ chain)
+- **enemy damage/death:** `ApplyDamage(15)` 30→15 (hit-flash fire บน HP OnChange), อีก 15 →0 → **Die→OnDied→Despawn** (enemyCount 1→0)
+- **ranged (Ranger):** นิ่งที่ range → spawn projectile เล็ง player → **projectile โดน → player HP 100→28** (6 hits × 12, หลังแก้บั๊ก 2)
+- **target registry:** filter IsAlive nearest (downed player ไม่โดน target, ตัด layer-swap ทิ้งตามดีไซน์)
+
+## ยัง NOT verified
+
+- **multi-peer จริง** (2 connection แยก) — HP/pose SyncVar propagation ไป client, hit-flash ฝั่ง client, FollowerEntity disabled บน pure-client (เทสต์ได้แค่ host = server+client รวม)
+- **player hitscan → enemy path จริง** (กด input ยิง) — verify ผ่าน `ReceiveHit`/`ApplyDamage` (path เดียวกับ `ServerReportHit`) แต่ยังไม่กดยิงจริง (MCP inject input ไม่ได้ → play-test)
+- ranger **kiting** (ตัดออก MVP), obstacle avoidance (arena โล่ง), enemy ชน player แล้วดัน rigidbody (collision push — cosmetic, cap ทีหลังถ้ากวน)

@@ -3,12 +3,12 @@
 บันทึกความคืบหน้าจริง (living doc) — อัปเดตทุกครั้งที่ปิด task
 ดูภาพรวม scope/กติกาที่ [CLAUDE.md](../CLAUDE.md) · เหตุผล design แต่ละ task ที่ [docs/decisions/](decisions/)
 
-> อัปเดตล่าสุด: **2026-07-31**
+> อัปเดตล่าสุด: **2026-08-01**
 
 ## สถานะรวม
 
-กำลังอยู่ **Phase 0 (foundation)** → ต่อด้วย Phase 1 (first-person conversion)
-โค้ดฐานเดิมยังเป็น prototype (top-down + projectile) — ดูตาราง "สถานะจริง vs MVP" ใน CLAUDE.md
+จบ **Phase 0–2 (player lifecycle ครบ)** + **Phase 3 เริ่มแล้ว** — Task 9 (Enemy AI) build+verified
+เหลือ wave spawner (10) → economy/shop (11–13) → lobby/gamestate/result (14–16)
 
 ## Task board
 
@@ -22,8 +22,8 @@
 | 6 | Downed / bleed-out 30 วิ | P2 | ✅ **เสร็จ (2026-07-31)** |
 | 7 | Revive (hold 3 วิ) | P2 | ✅ **เสร็จ (2026-07-31)** |
 | 8 | Lose condition — AnyPlayerAlive() | P2 | ✅ **เสร็จ (2026-07-31)** |
-| 9 | Enemy AI 3 types *(งานใหม่)* | P3 | ⏭️ ถัดไป |
-| 10 | Wave spawner + auto-revive | P3 | ⬜ |
+| 9 | Enemy AI 3 types *(งานใหม่)* | P3 | ✅ **เสร็จ (2026-08-01)** |
+| 10 | Wave spawner + auto-revive | P3 | ⏭️ ถัดไป |
 | 11 | Currency split-on-kill | P4 | ⬜ |
 | 12 | Shop + ready-check | P4 | ⬜ |
 | 13 | Support Heal Pulse | P4 | ⬜ |
@@ -234,3 +234,20 @@ grill ออกแบบ enemy ทั้งก้อนเสร็จ — **บ
 - **wave spawner = task 10 (แยก)** · gold = task 12
 
 **สถานะ: design เท่านั้น ยังไม่ build/verify** — เริ่มเขียนจาก 0008
+
+### 2026-08-01 — Task 9: Enemy AI (3 types) build + verified ✅
+
+build ตามดีไซน์ 0008 ครบ (ไม่มี decision เปลี่ยน) — server-auth enemy 3 types + ปิดหนี้ projectile. เหตุผล+ผลเต็ม [decisions/0008](decisions/0008-enemy-ai.md)
+
+**ไฟล์ใหม่:** `Enemies/EnemyData.cs` (SO) · `Enemies/Enemy.cs` (`NetworkBehaviour, IHitReceiver` — SyncVar HP, registry-based nearest-alive target 0.5s, FollowerEntity server-only chase, melee=ApplyDamage ตรง/ranged=projectile, hit-flash, OnDied→Despawn)
+**แก้:** `Combat/Projectile.cs` → `damageMask`/`blockMask` (layer-based) แทน hardcode tag exclude — ปิดหนี้ projectile จาก task 5 + prefab เดียวใช้ได้ 2 ทิศ
+**ลบ:** `Combat/TestHitTarget.cs` (throwaway)
+**wiring (MCP):** layer Enemy=9 · 3 SO `Data/Enemies/*` · `Prefabs/Enemies/EnemyProjectile` + 3 enemy prefab (auto-register DefaultPrefabObjects) · cleanup SampleScene (ลบ TestHitTarget+Cube+Cube(1)+Cube(2))
+
+**2 บั๊กเจอตอน verify + แก้:** (1) FollowerEntity `groundMask=-1` ชน collider ตัวเอง → บินขึ้นฟ้า → แก้ groundMask=Ground เท่านั้น (2) Ranger aim สูงเกิน (y1.8 > cube top y1.5) บินทะลุ → แก้ aim กลางตัว + projectile CCD
+
+**Runtime verified (host, MCP):** chase (A* + grounded) · **melee → player HP→0→Downed→Dead→lose** · enemy `ApplyDamage` 30→15→0 → hit-flash + Die→Despawn · **Ranger projectile → player HP 100→28** · target filter IsAlive nearest (ตัด downed-layer-swap ทิ้ง)
+
+**ยัง NOT verified:** multi-peer จริง (SyncVar propagation/flash ฝั่ง client, FollowerEntity disabled บน pure-client) · player กดยิง hitscan→enemy จริง (verify ผ่าน ReceiveHit path แล้ว, เหลือ play-test input)
+
+**เตรียมให้ต่อ:** task 10 (wave) ใช้ `Enemy.OnDied` นับ + spawn จาก fixed points + `WaveData` list · task 12 (gold) hook `OnDied` แบ่ง gold
