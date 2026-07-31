@@ -257,6 +257,7 @@ GameObject:
   - component: {fileID: 8123789843772406037}
   - component: {fileID: 5483262435677738108}
   - component: {fileID: 5623214020912071740}
+  - component: {fileID: 6812398529465059314}
   m_Layer: 3
   m_Name: Player
   m_TagString: Player
@@ -618,3 +619,19 @@ MonoBehaviour:
     m_Bits: 4294967283
   _aimSource: {fileID: 9124571334662110557}
   _muzzle: {fileID: 3832648189946085887}
+--- !u!114 &6812398529465059314
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8446928096559664053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4538dd580e414a746b2e2ff4b75e5c79, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Player.PlayerController
+  _componentIndexCache: 255
+  _addedNetworkObject: {fileID: 5738819235587161346}
+  _networkObjectCache: {fileID: 0}
+  _bleedOutSeconds: 30

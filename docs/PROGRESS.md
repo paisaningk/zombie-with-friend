@@ -19,8 +19,8 @@
 | 3 | First-person movement | P1 | ✅ **เสร็จ (2026-07-31)** *(รวมกับ 4)* |
 | 4 | PlayerLook — yaw/pitch ±80° | P1 | ✅ **เสร็จ (2026-07-31)** *(merge กับ 3; "ไม่ disable ตอน downed" = task 6)* |
 | 5 | PlayerCombat hitscan + WeaponData | P1 | ✅ **เสร็จ (2026-07-31)** *(hitscan verified; projectile = scaffolding รอ task 9)* |
-| 6 | Downed / bleed-out 30 วิ | P2 | ⏭️ ถัดไป |
-| 7 | Revive (hold 3 วิ) | P2 | ⬜ |
+| 6 | Downed / bleed-out 30 วิ | P2 | ✅ **เสร็จ (2026-07-31)** |
+| 7 | Revive (hold 3 วิ) | P2 | ⏭️ ถัดไป |
 | 8 | Lose condition — AnyPlayerAlive() | P2 | ⬜ |
 | 9 | Enemy AI 3 types *(งานใหม่)* | P3 | ⬜ |
 | 10 | Wave spawner + auto-revive | P3 | ⬜ |
@@ -178,3 +178,18 @@ Review flow เข้าห้อง (MenuFlowController / MainMenuPanel / JoinP
 **Feel — user-verified ✅ (2026-07-31):** input→fire ผ่าน play-test — hold คลิก = ยิง (tracer + `[TestHitTarget] took 25 dmg` log + ammo ลด), R = reload · *(MCP inject input ไม่ได้ → verify ด้วยการกดจริง)*
 
 **⚠️ projectile = UNVERIFIED scaffolding:** spawn/init รัน (ammo ลด + WeaponData stat) แต่ **ยิงโดนไม่ได้** — Bullet collider non-trigger vs `OnTriggerEnter` → ต้องผ่าตัด prototype (trigger + FishNet Reserialize) → **เลื่อน task 9** (มี enemy = เป้าจริง) · mark `// UNVERIFIED` ใน ProjectileWeaponData/SpawnProjectile แล้ว · Bullet.prefab revert กลับ (edit ผมทำ serialization เสีย)
+
+### 2026-07-31 — Task 6: PlayerController (Downed / bleed-out) ✅
+
+Downed behavior + coordinator กลาง (ผู้ใช้ถามหา "ตัวกลางของ player" → ทำ thin lifecycle facade). ออกแบบผ่าน grill. เหตุผลเต็ม [decisions/0005](decisions/0005-player-controller-downed.md)
+
+**ไฟล์ใหม่:** `Player/PlayerController.cs` — thin coordinator: subscribe `PlayerState.OnStateChanged` → `Movement/Weapon.enabled = IsAlive` (คง Look), zero velocity ตอน non-Alive, server bleed-out timer (`_bleedOutSeconds=30`) → `SetState(Dead)` · decision 0005
+**Prefab:** ใส่ `PlayerController` ลง Player.prefab (GetComponent หา ref เอง)
+
+**Decisions (grill):** PlayerController = coordinator บางๆ (ไม่ god-object, 0001 แยก component ยังคงอยู่) · disable Movement+Weapon (คง Look) ทั้ง Downed+Dead · zero velocity · **layer swap เลื่อน task 9** (ยังไม่มี enemy, friendly-fire ครอบคลุมแล้ว) · bleed-out server-only 30 วิ (ไม่ sync countdown) · Dead ใช้ disable เดียวกับ Downed (spectate เลื่อน 11/15)
+
+**Runtime verified (host, MCP):** Alive → Movement/Weapon/Look enabled · **Downed** (ApplyDamage 100) → Movement/Weapon disabled, Look on, velocityXZ=0 · **bleed-out 30 วิ → Dead** (จริงตามเวลา) disabled คงเดิม, AnyPlayerAlive=False · **SetState(Alive) → re-enable** (revive/wave-clear hook), AnyPlayerAlive=True · compile clean
+
+**ยัง NOT verified:** owner กด move/shoot ตอน downed จริง (`.enabled=false`→Update ไม่รัน, by-construction — play-test ได้) · revive-cancel-before-30วิ (by-construction) · multi-peer
+
+**เตรียมให้ task ถัดไป:** task 7 (revive) + task 11 (wave-clear) แค่เรียก `PlayerState.SetState(Alive)` → controller re-enable + bleed-out หยุดให้เอง · task 8 (lose) ใช้ `AnyPlayerAlive()`
