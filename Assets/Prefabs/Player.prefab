@@ -275,6 +275,7 @@ GameObject:
   - component: {fileID: 7133092593591934447}
   - component: {fileID: 2720942649904229083}
   - component: {fileID: 8334691806070802285}
+  - component: {fileID: 4553083533604345656}
   m_Layer: 3
   m_Name: Player
   m_TagString: Player
@@ -358,6 +359,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26b716c41e9b56b4baafaf13a523ba2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _localLevelOfDetailCalculationType: 0
+  _useLevelOfDetail: 0
+  _useRootLevelOfDetail: 1
   NetworkObserver: {fileID: 0}
   _enablePrediction: 0
   _predictionType: 1
@@ -601,3 +605,19 @@ MonoBehaviour:
   _componentIndexCache: 255
   _addedNetworkObject: {fileID: 5738819235587161346}
   _networkObjectCache: {fileID: 0}
+--- !u!114 &4553083533604345656
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8446928096559664053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f64c756aef86094faaac6550a9c9d9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Player.PlayerHealth
+  _componentIndexCache: 255
+  _addedNetworkObject: {fileID: 5738819235587161346}
+  _networkObjectCache: {fileID: 0}
+  _maxHp: 100

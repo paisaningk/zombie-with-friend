@@ -3,7 +3,7 @@
 บันทึกความคืบหน้าจริง (living doc) — อัปเดตทุกครั้งที่ปิด task
 ดูภาพรวม scope/กติกาที่ [CLAUDE.md](../CLAUDE.md) · เหตุผล design แต่ละ task ที่ [docs/decisions/](decisions/)
 
-> อัปเดตล่าสุด: **2026-07-30**
+> อัปเดตล่าสุด: **2026-07-31**
 
 ## สถานะรวม
 
@@ -15,8 +15,8 @@
 | # | Task | Phase | สถานะ |
 |---|---|---|---|
 | 1 | PlayerState enum + SyncVar | P0 | ✅ **เสร็จ (2026-07-30)** |
-| 2 | PlayerHealth — HP=0 → Downed | P0 | ⏭️ ถัดไป |
-| 3 | First-person movement | P1 | ⬜ |
+| 2 | PlayerHealth — HP=0 → Downed | P0 | ✅ **เสร็จ (2026-07-31)** |
+| 3 | First-person movement | P1 | ⏭️ ถัดไป |
 | 4 | PlayerLook — yaw/pitch ±80° | P1 | ⬜ |
 | 5 | PlayerCombat hitscan + WeaponData | P1 | ⬜ |
 | 6 | Downed / bleed-out 30 วิ | P2 | ⬜ |
@@ -117,3 +117,21 @@ Review flow เข้าห้อง (MenuFlowController / MainMenuPanel / JoinP
 **ยัง NOT verified:** multi-peer จริง (2 connection แยก — client ที่ 2 ผ่าน MPM/คนละเครื่อง) ยังไม่ลอง — แต่กลไกของ client-join (event path) verify ผ่าน host แล้ว เหลือแค่ยืนยัน 2 คนพร้อมกัน
 
 **เปิดค้าง (แยก):** `OnError` มี `Debug.LogError` แล้วแต่ยังไม่มี UI element แสดงบนจอ (ค่อยต่อ); `LobbyPanel.MenuScene` เป็น dead field หลังตัด `UnloadGlobalScenes`; `IsSkipMenu=true`+single instance → client branch → join fail (by design — ต้อง MPM tag "Host" ถึง host, เทสต์เมนูใช้ `IsSkipMenu=false`); Direct IP + synced roster = งานทีหลัง (ข้อ 1/6)
+
+### 2026-07-31 — Task 2: PlayerHealth (HP=0 → Downed) ✅
+
+วางชั้น HP server-authoritative ต่อจาก PlayerState — HP ถึง 0 → สั่ง Downed (ไม่ respawn). ออกแบบผ่าน grill session
+
+**ไฟล์ใหม่:**
+- `Assets/Scripts/Player/PlayerHealth.cs` — `NetworkBehaviour, IHitReceiver`, `[RequireComponent(PlayerState)]`; `SyncVar<float>` HP + serialized `_maxHp=100`; `[Server] ApplyDamage(float)` (public core) + `ReceiveHit(in HitInfo)` (forward `hit.Damage`, ไม่สน knockback); `OnHealthChanged` + props (`Current/Max/Normalized/IsFull`); HP≤0 → `PlayerState.SetState(Downed)`
+- `docs/decisions/0002-player-health.md`
+
+**Wiring:** เพิ่ม `PlayerHealth` ลง `Assets/Prefabs/Player.prefab` (root มี NetworkObject + PlayerState แล้ว), `_maxHp=100`
+
+**Decisions (grill):** IHitReceiver (ไม่ใช่แค่ ApplyDamage) · **Store model** (init=max ใน OnStartServer, ไม่ฟัง state, revive/wave-clear สั่ง HP เอง — ยืดหยุ่น partial-revive) · `OnHealthChanged` ทำเลย (copy PlayerState) · serialized maxHP (SO ทีหลัง task 14, ไม่มี SetMaxHp) · ApplyDamage public · **spawn HP เนียน** (first fire = max ไม่มี 0)
+
+**Runtime verified (host, MCP):** spawn `Current=Max=100, IsFull, Normalized=1` (ไม่มี 0) · `ApplyDamage(30)→70` ยิง `OnHealthChanged` ครั้งเดียว (host double-fire dedupe) · `ApplyDamage(0/-10)` no-op ไม่ยิง · `ApplyDamage(100)→0` → `PlayerState=Downed` + `AnyPlayerAlive=false` · damage ตอน Downed ถูก block (Alive-guard, ไม่มี finish-off-downed) · `IHitReceiver` + `ApplyDamage` public · compile clean (errorCount=0)
+
+**ยัง NOT verified:** multi-peer จริง (HP SyncVar propagation ไป client, `ReceiveHit` จาก enemy จริง) — เทสต์แค่ host; ReceiveHit เป็น delegation ไป ApplyDamage ที่ verify ครบ · **first-fire "เนียน" verified แค่ outcome บน host** (Current=max) — การ fire ครั้งแรกฝั่ง client จริงยังไม่ทดสอบ (OnStartClient safety-net อาจยิง `(0,0)` ถ้า FishNet ยังไม่ apply SyncVar ก่อน OnStartClient) → เช็คตอน multi-peer/health-bar (ดู 0002 ความเสี่ยง)
+
+**ค้างให้ task ถัดไป:** task 6 (bleed-out/disable) · task 7/11 (revive/wave-clear สั่ง HP ผ่าน setter ที่จะเพิ่ม) · task 9 (enemy เรียก ApplyDamage/ReceiveHit) · task 13 (SetMaxHp + semantics) · task 14 (maxHP → class SO)
