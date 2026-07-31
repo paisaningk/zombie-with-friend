@@ -16,9 +16,9 @@
 |---|---|---|---|
 | 1 | PlayerState enum + SyncVar | P0 | ✅ **เสร็จ (2026-07-30)** |
 | 2 | PlayerHealth — HP=0 → Downed | P0 | ✅ **เสร็จ (2026-07-31)** |
-| 3 | First-person movement | P1 | ⏭️ ถัดไป |
-| 4 | PlayerLook — yaw/pitch ±80° | P1 | ⬜ |
-| 5 | PlayerCombat hitscan + WeaponData | P1 | ⬜ |
+| 3 | First-person movement | P1 | ✅ **เสร็จ (2026-07-31)** *(รวมกับ 4)* |
+| 4 | PlayerLook — yaw/pitch ±80° | P1 | ✅ **เสร็จ (2026-07-31)** *(merge กับ 3; "ไม่ disable ตอน downed" = task 6)* |
+| 5 | PlayerCombat hitscan + WeaponData | P1 | ⏭️ ถัดไป |
 | 6 | Downed / bleed-out 30 วิ | P2 | ⬜ |
 | 7 | Revive (hold 3 วิ) | P2 | ⬜ |
 | 8 | Lose condition — AnyPlayerAlive() | P2 | ⬜ |
@@ -135,3 +135,29 @@ Review flow เข้าห้อง (MenuFlowController / MainMenuPanel / JoinP
 **ยัง NOT verified:** multi-peer จริง (HP SyncVar propagation ไป client, `ReceiveHit` จาก enemy จริง) — เทสต์แค่ host; ReceiveHit เป็น delegation ไป ApplyDamage ที่ verify ครบ · **first-fire "เนียน" verified แค่ outcome บน host** (Current=max) — การ fire ครั้งแรกฝั่ง client จริงยังไม่ทดสอบ (OnStartClient safety-net อาจยิง `(0,0)` ถ้า FishNet ยังไม่ apply SyncVar ก่อน OnStartClient) → เช็คตอน multi-peer/health-bar (ดู 0002 ความเสี่ยง)
 
 **ค้างให้ task ถัดไป:** task 6 (bleed-out/disable) · task 7/11 (revive/wave-clear สั่ง HP ผ่าน setter ที่จะเพิ่ม) · task 9 (enemy เรียก ApplyDamage/ReceiveHit) · task 13 (SetMaxHp + semantics) · task 14 (maxHP → class SO)
+
+### 2026-07-31 — Task 3+4: First-person movement + look ✅
+
+แปลง prototype top-down → first-person. merge งาน 3+4 (movement ต้องใช้ yaw), component แยก. ออกแบบผ่าน grill
+
+**ไฟล์ใหม่:**
+- `Assets/Scripts/Player/PlayerMovement.cs` — owner Rigidbody WASD อ้าง `transform.forward/right` (Input System `Move`) + sprint (`Sprint` hold → ×1.6) · non-owner kinematic
+- `Assets/Scripts/Player/PlayerLook.cs` — owner `Look` → **yaw หมุน root (sync ผ่าน NT)** + **pitch CameraHolder local clamp ±80° (ไม่ sync)** · enable owner Camera+AudioListener + Cursor.Locked
+- `Assets/InputSystem_Actions.cs` (generated — เปิด `generateWrapperCode` ใน .meta)
+- `docs/decisions/0003-first-person-movement-look.md`
+
+**ลบ:** `PlayerMovementTest.cs`, `PlayerCamera.cs` (prototype, ยืนยันไม่มี ref เหลือ)
+
+**Prefab (Player.prefab):** ถอด `PlayerMovementTest`+`PlayerCamera`+`CinemachineCamera`+`CinemachineFollow` · ใส่ `Camera`+`AudioListener` (disabled) บน CameraHolder (eye `(0,0.6,0)`) · ใส่ `PlayerMovement`+`PlayerLook` + wire refs
+
+**Scene:** ลบ `Main Camera` ใน SampleScene (per-player cam แทน)
+
+**Decisions (grill):** merge 3+4/component แยก · Rigidbody (เดิม) · Input System (generated class) · ทิ้ง Cinemachine เขียน manual · ตัด knockback · per-player cam owner-only + ลบ Main Camera · sprint ×1.6 no-stamina · yaw=root(synced)/pitch=CameraHolder(local ไม่ sync)
+
+**Runtime verified (host, MCP):** spawn owner player · `IsOwner=True` · `rb.isKinematic=False` · **Camera+AudioListener enabled** · **Cursor Locked** · input instance สร้าง · **activeCameras=1 / activeAudioListeners=1** (handoff หลังลบ Main Camera สะอาด ไม่ชน) · errorCount=0 · compile clean
+
+**Feel — user-verified ✅ (2026-07-31):** WASD เดินอ้าง facing, sprint, mouse yaw/pitch + clamp ±80°, cursor lock — ผ่าน (`activeInputHandler=2` Both → input ส่งถึงจริง)
+
+**ยัง NOT verified:** non-owner จริง (single host), multi-peer + yaw sync ไป client
+
+**ค้าง:** yaw ใช้ `transform.Rotate` ตรงๆ — ถ้าเจอ jitter ตอนชนของค่อยเปลี่ยนเป็น `Rigidbody.MoveRotation` · `NetworkShooter` ยัง `muzzle.forward` top-down (task 5 hitscan) · eye height 0.6 ปรับได้
