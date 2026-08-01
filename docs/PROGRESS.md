@@ -7,8 +7,8 @@
 
 ## สถานะรวม
 
-จบ **Phase 0–4** — Task 9 (Enemy) + 10 (Wave) + 11 (Currency) + 12 (Shop+Ready) build+verified
-core loop + เศรษฐกิจ + shop ครบ (kill→gold→ซื้อ upgrade→ready→wave ถัดไป). เหลือ support ability (13) → lobby/gamestate/result (14–16)
+จบ **Phase 0–4** — Task 9 (Enemy) + 10 (Wave) + 11 (Currency) + 12 (Shop+Ready) + 13 (Support Heal Pulse) build+verified
+core loop + เศรษฐกิจ + shop + class ability ครบ. เหลือ **Phase 5**: lobby class-select (14) → gamestate (15) → result/IP/art (16)
 
 ## Task board
 
@@ -26,7 +26,7 @@ core loop + เศรษฐกิจ + shop ครบ (kill→gold→ซื้�
 | 10 | Wave spawner + auto-revive | P3 | ✅ **เสร็จ (2026-08-01)** |
 | 11 | Currency split-on-kill | P4 | ✅ **เสร็จ (2026-08-01)** |
 | 12 | Shop + ready-check | P4 | ✅ **เสร็จ (2026-08-01)** *(12a ready + 12b shop)* |
-| 13 | Support Heal Pulse | P4 | ⬜ |
+| 13 | Support Heal Pulse | P4 | ✅ **เสร็จ (2026-08-01)** |
 | 14 | Lobby class select + ready | P5 | ⬜ |
 | 15 | GameState management | P5 | ⬜ |
 | 16 | Result screen + IP UI + art | P5 | ⬜ |
@@ -317,3 +317,21 @@ wave progression ครบ loop (spawn→clear→revive→advance→Won/Lost). �
 **ยัง NOT verified:** multi-peer (currentWave/pose/revive ฝั่ง client) · revive จาก Downed จริง (ต้อง 2 player — คนเดียว down = Lost) · ผู้เล่นยิงจริง (bulk-kill = path เดียวกับ hitscan)
 
 **เตรียมให้ต่อ:** task 11/12 (gold) hook `WaveManager.HandleEnemyDied` (มี comment ชี้จุดแบ่ง gold) · task 12/13 (shop+ready) เสียบที่ seam ก่อน `StartNextWave` (แทน auto inter-wave delay) · task 16 (result/HUD) subscribe `OnWaveChanged` + `OnGameStateChanged`
+
+### 2026-08-01 — Task 13: Support Heal Pulse (+ PlayerClass foundation) build + verified ✅
+
+ability ตัวแรก + วางรากฐาน class. ออกแบบผ่าน grill. เหตุผล+ผลเต็ม [decisions/0012](decisions/0012-support-heal-pulse.md)
+
+**ไฟล์ใหม่:** `Player/PlayerClassType.cs` (enum `{Gunner,Support}`) · `Player/PlayerClass.cs` (NB, `SyncVar` all-read default **Support** + `[Server] SetClass` + event — mirror PlayerState) · `Player/HealPulseAbility.cs` (NB — owner input Q → client-gate → `[ServerRpc] CmdHealPulse` → `ServerCast` validate → apply → `[ObserversRpc] RpcPlayEffect`)
+**แก้:** `Player/PlayerController.cs` (+accessor `Class`/`Ability` + **`IsAlive`** canonical check delegate PlayerState ไม่ใช่ hp>0) · `InputSystem_Actions.inputactions` (+action `Ability`=Q, regenerate wrapper)
+**wiring (MCP):** +`PlayerClass`+`HealPulseAbility` ลง Player.prefab (NB 14–15)
+
+**กลไก (C-1):** cast (Q) → server: Support+Alive+cooldown → เดิน `GameManager.Players` radius 6m: Alive→heal **+40** (รวมตัวเอง, clamp) / Downed→ปลุก **Alive+15%Max** (<manual 30%) / Dead→ข้าม · cooldown = `SyncVar<double>` **network time** (owner-only) 15วิ · effect = ทรงกลมขยาย placeholder + log
+
+**Decisions (grill):** PlayerClass enum ตอนนี้ (gate = หัวใจ, task14 เสียบ UI) · C-1 pulse heal+ปลุก(HP ต่ำ) · registry ไม่ใช่ physics (server-auth) · SyncVar network-time cooldown (ตาม action pattern) · Ability=Q · component แยก (class ≠ ability) · self-guard IsAlive (เหมือน Reviver) · class all-read/cooldown owner-only · ค่า → ClassData SO task14
+
+**Runtime verified (host, 2 players MCP):** self+ally heal (60→100 clamp / 50→90) · cooldown 15 set + re-cast reject · downed ally → Alive+15 · Dead skip · Gunner reject · Downed caster reject · ObserversRpc effect ยิงผ่าน RPC pipeline จริง (log ×10) · compile clean
+
+**ยัง NOT verified:** multi-peer (class/cooldown SyncVar ไป client, network-time ข้ามเครื่อง) · owner กด Q จริง (verify ผ่าน ServerCast path)
+
+**เตรียมให้ต่อ:** task 14 (lobby `SetClass` + ย้าย heal/maxHP/weapon → `ClassData` SO) · task 16 (cooldown bar อ่าน `CooldownRemaining` · class HUD จาก `OnClassChanged`)

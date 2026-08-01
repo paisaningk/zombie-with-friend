@@ -262,6 +262,8 @@ GameObject:
   - component: {fileID: 7346838354289565727}
   - component: {fileID: 4868030049970023185}
   - component: {fileID: 1833939544930983548}
+  - component: {fileID: 9177347999803828243}
+  - component: {fileID: 1673695169657730033}
   m_Layer: 3
   m_Name: Player
   m_TagString: Player
@@ -706,3 +708,38 @@ MonoBehaviour:
   _addedNetworkObject: {fileID: 5738819235587161346}
   _networkObjectCache: {fileID: 0}
   _shop: {fileID: 11400000, guid: b684807cb295e1741b637e205936e743, type: 2}
+--- !u!114 &9177347999803828243
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8446928096559664053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 319502be380d08b4d998e27c2ef4e479, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Player.PlayerClass
+  _componentIndexCache: 255
+  _addedNetworkObject: {fileID: 5738819235587161346}
+  _networkObjectCache: {fileID: 0}
+--- !u!114 &1673695169657730033
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8446928096559664053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ea700ee619896d48acda959daffe9be, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Player.HealPulseAbility
+  _componentIndexCache: 255
+  _addedNetworkObject: {fileID: 5738819235587161346}
+  _networkObjectCache: {fileID: 0}
+  _healAmount: 40
+  _reviveHpPercent: 0.15
+  _radius: 6
+  _cooldownSeconds: 15
+  _effectDuration: 0.35

@@ -29,12 +29,18 @@ namespace Player
 
         // --- facade: cached sibling refs (add more as components grow) ---
         public PlayerState State { get; private set; }
+        public PlayerClass Class { get; private set; }
         public PlayerHealth Health { get; private set; }
         public PlayerWallet Wallet { get; private set; }
         public PlayerReady Ready { get; private set; }
         public PlayerUpgrades Upgrades { get; private set; }
         public PlayerMovement Movement { get; private set; }
         public Combat.PlayerWeapon Weapon { get; private set; }
+        public HealPulseAbility Ability { get; private set; }
+
+        /// <summary>Single canonical "can this player act?" check — always via PlayerState (the enum
+        /// is the source of truth; do NOT use hp &gt; 0, a Downed player has 0 HP but isn't Dead).</summary>
+        public bool IsAlive => State != null && State.IsAlive;
 
         private Rigidbody _rb;
         private float _bleedOutEnd;
@@ -42,12 +48,14 @@ namespace Player
         private void Awake()
         {
             State = GetComponent<PlayerState>();
+            Class = GetComponent<PlayerClass>();
             Health = GetComponent<PlayerHealth>();
             Wallet = GetComponent<PlayerWallet>();
             Ready = GetComponent<PlayerReady>();
             Upgrades = GetComponent<PlayerUpgrades>();
             Movement = GetComponent<PlayerMovement>();
             Weapon = GetComponent<Combat.PlayerWeapon>();
+            Ability = GetComponent<HealPulseAbility>();
             _rb = GetComponent<Rigidbody>();
 
             if (State != null)
