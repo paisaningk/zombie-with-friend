@@ -32,8 +32,11 @@ namespace Enemies
         // Hidden like PlayerHealth's SyncVar: consumers read the properties / react to the flash.
         private readonly SyncVar<float> _health = new SyncVar<float>();
 
-        /// <summary>Server-side, fired once when HP reaches 0 (before despawn). For wave/gold hooks.</summary>
-        public event Action OnDied;
+        /// <summary>
+        /// Server-side, fired once when HP reaches 0 (before despawn). Passes the dying enemy so a
+        /// subscriber (WaveManager) can remove it from its live-list. Wave/gold hooks (tasks 10 &amp; 12).
+        /// </summary>
+        public event Action<Enemy> OnDied;
 
         public float Current => _health.Value;
         public float Max => _data != null ? _data.maxHp : 0f;
@@ -208,7 +211,19 @@ namespace Enemies
         [Server]
         private void Die()
         {
-            OnDied?.Invoke();
+            OnDied?.Invoke(this);
+            if (IsSpawned)
+                Despawn();
+        }
+
+        /// <summary>
+        /// Despawn without dying — for WaveManager cleanup when a match ends (Lost). Deliberately
+        /// skips <see cref="Die"/>/<see cref="OnDied"/> so it counts as neither a kill nor a
+        /// wave-clear (the match is already over). Server-only.
+        /// </summary>
+        [Server]
+        public void DespawnByManager()
+        {
             if (IsSpawned)
                 Despawn();
         }

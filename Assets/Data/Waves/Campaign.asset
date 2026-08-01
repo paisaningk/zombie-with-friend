@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1d49ba997356384f9b8b44b4d8a991e, type: 3}
+  m_Name: Campaign
+  m_EditorClassIdentifier: Assembly-CSharp::Enemies.WaveData
+  waves:
+  - pool:
+    - prefab: {fileID: 3646722844623443468, guid: 007a60bc290320b4dbf73b4781361739, type: 3}
+      weight: 1
+      minCount: 5
+    totalCount: 5
+    maxAlive: 5
+    spawnInterval: 1.2
+  - pool:
+    - prefab: {fileID: 3646722844623443468, guid: 007a60bc290320b4dbf73b4781361739, type: 3}
+      weight: 3
+      minCount: 6
+    - prefab: {fileID: 3729534732533067085, guid: 14360065ea61c9b468ea7e50378ef5fb, type: 3}
+      weight: 1
+      minCount: 1
+    totalCount: 10
+    maxAlive: 6
+    spawnInterval: 1
+  - pool:
+    - prefab: {fileID: 3646722844623443468, guid: 007a60bc290320b4dbf73b4781361739, type: 3}
+      weight: 3
+      minCount: 8
+    - prefab: {fileID: 3729534732533067085, guid: 14360065ea61c9b468ea7e50378ef5fb, type: 3}
+      weight: 1
+      minCount: 2
+    - prefab: {fileID: 3712834562247943097, guid: a7293c302008c1a40ae047aa2bd4fb61, type: 3}
+      weight: 1
+      minCount: 1
+    totalCount: 16
+    maxAlive: 7
+    spawnInterval: 0.9
+  - pool:
+    - prefab: {fileID: 3646722844623443468, guid: 007a60bc290320b4dbf73b4781361739, type: 3}
+      weight: 3
+      minCount: 8
+    - prefab: {fileID: 3729534732533067085, guid: 14360065ea61c9b468ea7e50378ef5fb, type: 3}
+      weight: 2
+      minCount: 3
+    - prefab: {fileID: 3712834562247943097, guid: a7293c302008c1a40ae047aa2bd4fb61, type: 3}
+      weight: 2
+      minCount: 3
+    totalCount: 24
+    maxAlive: 8
+    spawnInterval: 0.8
+  - pool:
+    - prefab: {fileID: 3646722844623443468, guid: 007a60bc290320b4dbf73b4781361739, type: 3}
+      weight: 3
+      minCount: 10
+    - prefab: {fileID: 3729534732533067085, guid: 14360065ea61c9b468ea7e50378ef5fb, type: 3}
+      weight: 2
+      minCount: 4
+    - prefab: {fileID: 3712834562247943097, guid: a7293c302008c1a40ae047aa2bd4fb61, type: 3}
+      weight: 2
+      minCount: 4
+    totalCount: 36
+    maxAlive: 9
+    spawnInterval: 0.7

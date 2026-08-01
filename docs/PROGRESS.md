@@ -7,8 +7,8 @@
 
 ## สถานะรวม
 
-จบ **Phase 0–2 (player lifecycle ครบ)** + **Phase 3 เริ่มแล้ว** — Task 9 (Enemy AI) build+verified
-เหลือ wave spawner (10) → economy/shop (11–13) → lobby/gamestate/result (14–16)
+จบ **Phase 0–3 (player lifecycle + enemy + wave loop ครบ)** — Task 9 (Enemy AI) + Task 10 (Wave) build+verified
+core game loop เล่นจบได้แล้ว (5 wave → Won / ทีมล้ม → Lost). เหลือ economy/shop (11–13) → lobby/gamestate/result (14–16)
 
 ## Task board
 
@@ -23,8 +23,8 @@
 | 7 | Revive (hold 3 วิ) | P2 | ✅ **เสร็จ (2026-07-31)** |
 | 8 | Lose condition — AnyPlayerAlive() | P2 | ✅ **เสร็จ (2026-07-31)** |
 | 9 | Enemy AI 3 types *(งานใหม่)* | P3 | ✅ **เสร็จ (2026-08-01)** |
-| 10 | Wave spawner + auto-revive | P3 | ⏭️ ถัดไป |
-| 11 | Currency split-on-kill | P4 | ⬜ |
+| 10 | Wave spawner + auto-revive | P3 | ✅ **เสร็จ (2026-08-01)** |
+| 11 | Currency split-on-kill | P4 | ⏭️ ถัดไป |
 | 12 | Shop + ready-check | P4 | ⬜ |
 | 13 | Support Heal Pulse | P4 | ⬜ |
 | 14 | Lobby class select + ready | P5 | ⬜ |
@@ -251,3 +251,20 @@ build ตามดีไซน์ 0008 ครบ (ไม่มี decision เ�
 **ยัง NOT verified:** multi-peer จริง (SyncVar propagation/flash ฝั่ง client, FollowerEntity disabled บน pure-client) · player กดยิง hitscan→enemy จริง (verify ผ่าน ReceiveHit path แล้ว, เหลือ play-test input)
 
 **เตรียมให้ต่อ:** task 10 (wave) ใช้ `Enemy.OnDied` นับ + spawn จาก fixed points + `WaveData` list · task 12 (gold) hook `OnDied` แบ่ง gold
+
+### 2026-08-01 — Task 10: Wave Spawner + Auto-revive build + verified ✅
+
+wave progression ครบ loop (spawn→clear→revive→advance→Won/Lost). ออกแบบผ่าน grill. เหตุผล+ผลเต็ม [decisions/0009](decisions/0009-wave-spawner.md)
+
+**ไฟล์ใหม่:** `Enemies/WaveData.cs` (SO: `Wave[]` → `WeightedEnemy[]{prefab,weight,minCount}` + totalCount/maxAlive/spawnInterval) · `Game/WaveManager.cs` (NetworkBehaviour, UniTask loop, `SyncVar<int> currentWave` + `OnWaveChanged`) · asset `Data/Waves/Campaign` (5 wave)
+**แก้:** `Enemies/Enemy.cs` — `OnDied` `Action` → **`Action<Enemy>`** + `[Server] DespawnByManager()` (cleanup เงียบตอน Lost) · SampleScene (+4 `EnemySpawn` + `WaveManager` NetworkObject wire Campaign+points)
+
+**โมเดล wave (grill, Option B):** weighted pool + งบรวม `totalCount` + **minimum การันตี** + **maxAlive (เติมทดแทนตอนตาย)** · Σmin>total → min ชนะ · spawn สลับสุ่ม 4 จุด
+
+**loop (server, UniTask):** รอ `Playing` → prep → per wave: resolve queue (min+weighted+shuffle) → spawn คุม maxAlive/interval → รอ clear (`List<Enemy>` ว่าง) → **auto-revive ทุกคน Alive+full HP** → delay → wave ถัดไป → **Won** · Lost → cancel + despawn enemy เหลือ
+
+**Runtime verified (host, MCP):** currentWave **1→2→3→4→5→Won** · W1=Runner×5, W2 **Tank โผล่** (guaranteed min+refill), **maxAlive cap** 6/total10 · wave clear → **revive heal 60→100** · **Lost** (AFK player ตาย) → loop cancel + enemy despawn หมด
+
+**ยัง NOT verified:** multi-peer (currentWave/pose/revive ฝั่ง client) · revive จาก Downed จริง (ต้อง 2 player — คนเดียว down = Lost) · ผู้เล่นยิงจริง (bulk-kill = path เดียวกับ hitscan)
+
+**เตรียมให้ต่อ:** task 11/12 (gold) hook `WaveManager.HandleEnemyDied` (มี comment ชี้จุดแบ่ง gold) · task 12/13 (shop+ready) เสียบที่ seam ก่อน `StartNextWave` (แทน auto inter-wave delay) · task 16 (result/HUD) subscribe `OnWaveChanged` + `OnGameStateChanged`
