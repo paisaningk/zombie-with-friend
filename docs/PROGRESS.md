@@ -7,8 +7,8 @@
 
 ## สถานะรวม
 
-จบ **Phase 0–4** — Task 9 (Enemy) + 10 (Wave) + 11 (Currency) + 12 (Shop+Ready) + 13 (Support Heal Pulse) build+verified
-core loop + เศรษฐกิจ + shop + class ability ครบ. เหลือ **Phase 5**: lobby class-select (14) → gamestate (15) → result/IP/art (16)
+จบ **Phase 0–4** + **Task 14** — core loop + เศรษฐกิจ + shop + class ability + **class-select/ready (staging)** ครบ
+เหลือ **Phase 5**: gamestate เต็มระบบ (15) → result/IP/art (16)
 
 ## Task board
 
@@ -27,7 +27,7 @@ core loop + เศรษฐกิจ + shop + class ability ครบ. เหล
 | 11 | Currency split-on-kill | P4 | ✅ **เสร็จ (2026-08-01)** |
 | 12 | Shop + ready-check | P4 | ✅ **เสร็จ (2026-08-01)** *(12a ready + 12b shop)* |
 | 13 | Support Heal Pulse | P4 | ✅ **เสร็จ (2026-08-01)** |
-| 14 | Lobby class select + ready | P5 | ⬜ |
+| 14 | Lobby class select + ready | P5 | ✅ **เสร็จ (2026-08-01)** *(in-game staging)* |
 | 15 | GameState management | P5 | ⬜ |
 | 16 | Result screen + IP UI + art | P5 | ⬜ |
 
@@ -335,3 +335,22 @@ ability ตัวแรก + วางรากฐาน class. ออกแบ�
 **ยัง NOT verified:** multi-peer (class/cooldown SyncVar ไป client, network-time ข้ามเครื่อง) · owner กด Q จริง (verify ผ่าน ServerCast path)
 
 **เตรียมให้ต่อ:** task 14 (lobby `SetClass` + ย้าย heal/maxHP/weapon → `ClassData` SO) · task 16 (cooldown bar อ่าน `CooldownRemaining` · class HUD จาก `OnClassChanged`)
+
+### 2026-08-01 — Task 14: Class select + Ready (in-game staging) build + verified ✅
+
+class-select + ready ก่อนเริ่มแมตช์. ออกแบบผ่าน grill — **พลิกจาก menu-lobby → in-game staging** (Option C). เหตุผล+ผลเต็ม [decisions/0013](decisions/0013-lobby-class-ready-staging.md)
+
+**ปมที่แก้:** class เก็บบน `PlayerClass` (บน Player.prefab → มีตัวตนหลัง spawn ในเกม) แต่ menu-lobby เลือก**ก่อน** spawn → ต้องมี networking channel ในลอบบี้ + snapshot ข้าม scene. **Option C หลบปม** — เลื่อนจังหวะเลือกไป staging บนด่านหลัง spawn → `PlayerClass`/`PlayerReady` (per-player synced ที่ task 11/12/13 ทำไว้) ใช้ได้ทันที. ตรงกับ KF (เข้าห้อง→โหลดด่าน→เมนูบนด่าน) + reuse pattern shop-window (trader-time) ตอนเปิดแมตช์
+
+**flow:** เข้า scene → `GameState.Lobby` (staging) → จอเลือก Gunner/Support + Ready (freeze คุมตัว + ปลดเมาส์) → host กด Start (เปิดเมื่อทุกคน ready) → `Playing` → prep → wave 1
+
+**ไฟล์ใหม่:** `GameUI/Staging/StagingController.cs` (client-side, build UI ใน code แบบ placeholder — panel/class btn/ready/host-Start/roster; subscribe GameState; owner cursor ตอน Lobby) · decision 0013
+**แก้:** `PlayerClass`(+`[ServerRpc] CmdSetClass` guard `State==Lobby`) · `GameManager.OnStartServer`(→`Lobby` แทน `Playing`) · `WaveManager`(+`static Instance` +`[Server] TryStartMatch` = guard Lobby+AllReady→Playing) · `PlayerController`(gate `Movement/Weapon = IsAlive && Playing`, subscribe `OnGameStateChanged`, +`Look` facade) · `PlayerLook`(ไม่ล็อคเมาส์ใน OnStartClient, `Update` freeze look + ล็อคเมาส์เมื่อ Playing) · SampleScene(+`StagingController` GO)
+
+**Decisions (grill):** Full networked single-coordinator → **พลิกเป็น in-game staging** (reuse ตรงเจตนา) · reuse `Lobby` state + WaveManager owns gate · **host Start button** (เลี่ยง trickle-in) · freeze+ปลดเมาส์ · **flow อย่างเดียว** (Gunner/Support ปืนเหมือนกันไปก่อน — `ClassData` stat = follow-up) · Start เปิดเมื่อทุกคน ready · class ล็อกหลังเริ่ม
+
+**Runtime verified (host, MCP, parked player):** `Lobby` ตอนเข้า scene (ไม่ auto-Playing) + wave gated (currentWave=0) · freeze (Movement/Weapon off, Look on) · **`OnStartClient` fire แม้ disabled** (`_input != null` → ยิง/เดินได้หลังเริ่ม) · `CmdSetClass` ตอน Lobby (Support→Gunner) · ready-gate (`TryStartMatch` reject→ready→accept→`Playing`) · **gating flip บน Playing** (Movement/Weapon on) · panel hide + cursor lock · **class ล็อกหลังเริ่ม** (CmdSetClass no-op ตอน Playing) · loop เดินต่อ (currentWave=1, enemy spawn) · compile+console clean
+
+**ยัง NOT verified:** multi-peer (roster/SyncVar เพื่อนข้ามเครื่อง, "N/N ready") · owner กดปุ่ม UI จริง + render uGUI (verify ผ่าน Cmd path — play-test โดยผู้ใช้)
+
+**เตรียมให้ต่อ:** **follow-up** `ClassData` SO → per-class stat (Gunner fire rate สูง, เสียบผ่าน multiplier แบบ PlayerUpgrades) · task 15 (GameState เต็มระบบ — staging ดึง `Lobby→Playing` มาแล้วบางส่วน · กลับ Lobby หลังจบ) · task 16 (result screen · class HUD `OnClassChanged` · roster ต่อยอด)

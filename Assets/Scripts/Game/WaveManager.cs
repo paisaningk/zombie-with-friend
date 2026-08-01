@@ -26,6 +26,10 @@ namespace Game
     /// </summary>
     public class WaveManager : NetworkBehaviour
     {
+        /// <summary>Set on every peer in OnStartNetwork so the client-side staging UI can call
+        /// <see cref="TryStartMatch"/> (host only; host == server in FishNet host mode).</summary>
+        public static WaveManager Instance { get; private set; }
+
         [Header("Data")]
         [SerializeField] private WaveData _waves;
         [Tooltip("Fixed enemy spawn points in THIS scene (arena geometry). Picked at random per spawn.")]
@@ -73,7 +77,30 @@ namespace Game
         public override void OnStartNetwork()
         {
             base.OnStartNetwork();
+            if (Instance == null) Instance = this;
             NotifyWave(_currentWave.Value); // initial fire on every peer
+        }
+
+        public override void OnStopNetwork()
+        {
+            base.OnStopNetwork();
+            if (Instance == this) Instance = null;
+        }
+
+        /// <summary>
+        /// Host starts the match from the staging screen (decision 0013). Server-only; validates the
+        /// match is still in Lobby and everyone is ready, then flips to Playing — which is exactly what
+        /// <see cref="RunAsync"/> is already waiting on, so the wave loop proceeds from there.
+        /// Returns false (no-op) if not ready yet, so the caller can keep the button gated.
+        /// </summary>
+        [Server]
+        public bool TryStartMatch()
+        {
+            if (_gm == null) _gm = GameManager.Instance;
+            if (_gm == null || _gm.State != GameState.Lobby) return false;
+            if (!AllReady()) return false;
+            _gm.SetGameState(GameState.Playing);
+            return true;
         }
 
         public override void OnStartServer()

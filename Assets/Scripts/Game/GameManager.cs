@@ -79,8 +79,10 @@ namespace Game
         public override void OnStartServer()
         {
             base.OnStartServer();
-            // The game scene is up → we're playing. task 15 will drive Lobby → Playing properly.
-            SetGameState(GameState.Playing);
+            // The game scene is up, but the match hasn't started: players first pick class + ready in
+            // the in-game staging screen (decision 0013). WaveManager.TryStartMatch drives Lobby →
+            // Playing when the host starts. task 15 owns the fuller GameState lifecycle.
+            SetGameState(GameState.Lobby);
         }
 
         public override void OnStopNetwork()

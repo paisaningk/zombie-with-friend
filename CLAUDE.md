@@ -81,7 +81,8 @@
 
 ## MVP Scope — กฎที่ตัดสินใจแล้ว
 
-**Class (เลือกที่ Lobby):** Gunner (fire rate สูง/dmg กลาง, ไม่มี ability) · Support (fire rate ปกติ + Heal Pulse รอบตัว, cooldown 15 วิ)
+**Class (เลือกที่ in-game staging — task 14/decision 0013):** Gunner (fire rate สูง/dmg กลาง, ไม่มี ability) · Support (fire rate ปกติ + Heal Pulse รอบตัว, cooldown 15 วิ)
+> **flow (แบบ Killing Floor):** เข้าห้อง → host กด Start → โหลด game scene → ทุกคน spawn → **staging บนด่าน** (`GameState.Lobby`: เลือก class + Ready, freeze คุมตัว + ปลดเมาส์) → host กด Start Match (เปิดเมื่อทุกคน ready) → `Playing` → wave 1. **ไม่ใช่** เลือกใน menu-lobby ก่อน spawn (ปมช่องว่างข้าม scene — ดู 0013). *Gunner/Support ยังใช้ปืนเดียวกัน — per-class stat (`ClassData` SO) เป็น follow-up*
 
 **Downed / Revive (แทน respawn):**
 - HP = 0 → **Downed** (ไม่ respawn ทันที): ปิด Movement + Combat, **`PlayerLook` ยัง active** (หมุนกล้องได้), enemy **ไม่ target** downed (เปลี่ยน layer/tag ออกจาก detection — ไม่แก้ target logic), bleed-out **30 วิ**
@@ -128,7 +129,7 @@ Turret/building, melee/projectile weapon (มีแค่ hitscan), weapon swap,
 11. Wave-clear auto-revive
 12. Currency — per-player gold SyncVar, split-on-kill
 13. Shop + Ready-check — purchase RPC (3 upgrades)
-14. Lobby scene — class select + ready (ต่อยอดจาก lobby ที่มี)
+14. ~~Lobby scene — class select + ready~~ ✅ **เสร็จ (in-game staging, decision 0013)** — `StagingController` + `PlayerClass.CmdSetClass` + `WaveManager.TryStartMatch`
 15. GameState management — enum SyncVar คุม scene/UI
 16. Result screen — Win/Lose + กลับ Lobby
 17. Direct IP connect UI

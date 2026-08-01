@@ -1,6 +1,7 @@
 using System;
 using FishNet.Object;
 using FishNet.Object.Synchronizing;
+using Game;
 
 namespace Player
 {
@@ -60,12 +61,24 @@ namespace Player
         }
 
         /// <summary>The single mutation point for class. Server-only. No-op if unchanged.
-        /// Caller (task 14): the lobby applies the player's chosen class before the match.</summary>
+        /// Caller: the wave/test path (server) or <see cref="CmdSetClass"/> (owner via lobby staging).</summary>
         [Server]
         public void SetClass(PlayerClassType next)
         {
             if (_class.Value == next) return;
             _class.Value = next;
+        }
+
+        /// <summary>
+        /// Owner picks its class from the in-game staging screen (task 14 / decision 0013). Server
+        /// validates: only allowed while the match is still in <see cref="GameState.Lobby"/> (class
+        /// locks once the match starts). Guarded to ownership by the ServerRpc attribute.
+        /// </summary>
+        [ServerRpc]
+        public void CmdSetClass(PlayerClassType next)
+        {
+            if (GameManager.Instance == null || GameManager.Instance.State != GameState.Lobby) return;
+            SetClass(next);
         }
 
         // --- SyncVar → event plumbing (mirrors PlayerState) ---

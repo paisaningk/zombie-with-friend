@@ -36,6 +36,7 @@ namespace Player
         public PlayerUpgrades Upgrades { get; private set; }
         public PlayerMovement Movement { get; private set; }
         public Combat.PlayerWeapon Weapon { get; private set; }
+        public PlayerLook Look { get; private set; }
         public HealPulseAbility Ability { get; private set; }
 
         /// <summary>Single canonical "can this player act?" check — always via PlayerState (the enum
@@ -55,6 +56,7 @@ namespace Player
             Upgrades = GetComponent<PlayerUpgrades>();
             Movement = GetComponent<PlayerMovement>();
             Weapon = GetComponent<Combat.PlayerWeapon>();
+            Look = GetComponent<PlayerLook>();
             Ability = GetComponent<HealPulseAbility>();
             _rb = GetComponent<Rigidbody>();
 
@@ -68,6 +70,24 @@ namespace Player
         {
             if (State != null)
                 State.OnStateChanged -= HandleStateChanged;
+        }
+
+        // Runs on every peer (server + clients). GameManager (a scene object) is initialized before
+        // players spawn, so its state event is available here — subscribe so staging (Lobby) vs live
+        // (Playing) also gates movement/weapon, then apply the initial gating for the current state.
+        public override void OnStartNetwork()
+        {
+            base.OnStartNetwork();
+            if (GameManager.Instance != null)
+                GameManager.Instance.OnGameStateChanged += HandleGameStateChanged;
+            RefreshGating();
+        }
+
+        public override void OnStopNetwork()
+        {
+            base.OnStopNetwork();
+            if (GameManager.Instance != null)
+                GameManager.Instance.OnGameStateChanged -= HandleGameStateChanged;
         }
 
         // The player IS this PlayerController to the rest of the game — register the facade, not the
@@ -97,24 +117,37 @@ namespace Player
         // Fires once on start (prev == next == current) then once per real change, on every peer.
         private void HandleStateChanged(PlayerLifeState prev, PlayerLifeState next)
         {
-            bool alive = next == PlayerLifeState.Alive;
-
-            // Gate input-driven components. Look is deliberately untouched.
-            if (Movement != null) Movement.enabled = alive;
-            if (Weapon != null) Weapon.enabled = alive;
-
-            // Freeze horizontal motion when going down so the body doesn't slide (owner simulates;
-            // no-op for a kinematic non-owner). Gravity (y) is preserved so it settles on the floor.
-            if (!alive && _rb != null && !_rb.isKinematic)
-            {
-                Vector3 v = _rb.linearVelocity;
-                _rb.linearVelocity = new Vector3(0f, v.y, 0f);
-            }
-
             // Server: start the bleed-out clock on entering Downed. Leaving Downed (revive → Alive,
             // or → Dead) makes the Update guard below stop it — no explicit cancel needed.
             if (IsServerInitialized && next == PlayerLifeState.Downed)
                 _bleedOutEnd = Time.time + _bleedOutSeconds;
+
+            RefreshGating();
+        }
+
+        private void HandleGameStateChanged(GameState prev, GameState next) => RefreshGating();
+
+        /// <summary>
+        /// Single gating point. Movement + Weapon are active only while the player is Alive AND the
+        /// match is live (Playing) — so the pre-match staging screen (Lobby) freezes everyone, and
+        /// Downed/Dead disable them as before. PlayerLook is deliberately untouched here: it self-gates
+        /// look input on match state (decision 0013) and stays enabled so its camera comes up at spawn.
+        /// </summary>
+        private void RefreshGating()
+        {
+            bool playing = GameManager.Instance != null && GameManager.Instance.State == GameState.Playing;
+            bool active = IsAlive && playing;
+
+            if (Movement != null) Movement.enabled = active;
+            if (Weapon != null) Weapon.enabled = active;
+
+            // Freeze horizontal motion whenever not active (going down, or during staging) so the body
+            // doesn't slide (owner simulates; no-op for a kinematic non-owner). Gravity (y) preserved.
+            if (!active && _rb != null && !_rb.isKinematic)
+            {
+                Vector3 v = _rb.linearVelocity;
+                _rb.linearVelocity = new Vector3(0f, v.y, 0f);
+            }
         }
 
         private void Update()

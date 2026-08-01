@@ -1,4 +1,5 @@
 using FishNet.Object;
+using Game;
 using UnityEngine;
 
 namespace Player
@@ -37,9 +38,9 @@ namespace Player
             if (ownerCamera != null) ownerCamera.enabled = true;
             if (ownerListener != null) ownerListener.enabled = true;
 
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-
+            // Cursor is NOT locked here: the player spawns into the staging screen (GameState.Lobby),
+            // which needs a free cursor to click class/ready (decision 0013). Update locks it once the
+            // match is live; StagingController owns the cursor while staging.
             _input = new InputSystem_Actions();
             _input.Player.Enable();
         }
@@ -62,6 +63,18 @@ namespace Player
         private void Update()
         {
             if (!IsOwner || _input == null) return;
+
+            // Freeze look during the pre-match staging screen (and any non-live state). The cursor is
+            // left free for the staging UI; StagingController manages it while GameState == Lobby.
+            if (GameManager.Instance == null || GameManager.Instance.State != GameState.Playing)
+                return;
+
+            // Match is live → own the cursor (lock, idempotent) and drive the camera.
+            if (Cursor.lockState != CursorLockMode.Locked)
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+            }
 
             Vector2 look = _input.Player.Look.ReadValue<Vector2>();
 
