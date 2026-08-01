@@ -40,6 +40,18 @@ namespace Game
 
         public GameState State => _gameState.Value;
 
+        /// <summary>
+        /// Server-only: true while the between-wave shop window is open (set by <see cref="WaveManager"/>).
+        /// The purchase RPC gates on this so upgrades can only be bought between waves (decision 0011).
+        /// Plain bool (not synced) — only the server's purchase validation reads it; a future shop UI
+        /// that needs it client-side can promote it to a SyncVar (task 16).
+        /// </summary>
+        public bool ShopOpen { get; private set; }
+
+        /// <summary>Open/close the shop window. Server-only. Called by WaveManager around its ShopWindow.</summary>
+        [Server]
+        public void SetShopOpen(bool open) => ShopOpen = open;
+
         private void Awake()
         {
             _gameState.OnChange += HandleGameStateSync;

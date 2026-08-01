@@ -38,10 +38,29 @@ namespace Combat
         private LineRenderer _tracer;
         private float _tracerHideTime;
 
+        private Player.PlayerUpgrades _upgrades; // per-player damage / fire-rate scalars (task 12b)
+
         public int Ammo => _ammo.Value;
         public bool IsReloading => _reloading.Value;
         public Vector3 AimOrigin => _aimSource != null ? _aimSource.position : transform.position;
         public Vector3 AimDirection => _aimSource != null ? _aimSource.forward : transform.forward;
+
+        // Upgrade-adjusted stats (fall back to base when there's no upgrades component / no data).
+        private float DamageMultiplier => _upgrades != null ? _upgrades.DamageMultiplier : 1f;
+        private float EffectiveCooldown
+        {
+            get
+            {
+                float baseCd = _weaponData != null ? _weaponData.Cooldown : 0.1f;
+                float mult = _upgrades != null ? _upgrades.FireRateMultiplier : 1f;
+                return mult > 0f ? baseCd / mult : baseCd; // higher fire rate → shorter cooldown
+            }
+        }
+
+        private void Awake()
+        {
+            _upgrades = GetComponent<Player.PlayerUpgrades>();
+        }
 
         public override void OnStartServer()
         {
@@ -90,7 +109,7 @@ namespace Combat
 
             if (firePressed && CanFireLocally())
             {
-                _nextClientFire = Time.time + _weaponData.Cooldown;
+                _nextClientFire = Time.time + EffectiveCooldown;
                 _weaponData.Fire(this); // strategy → FireHitscan / SpawnProjectile
             }
         }
@@ -140,7 +159,7 @@ namespace Combat
             if (Time.time < _nextServerFire) return false;
             if (_ammo.Value <= 0) return false;
 
-            _nextServerFire = Time.time + (_weaponData != null ? _weaponData.Cooldown : 0.1f);
+            _nextServerFire = Time.time + EffectiveCooldown;
             _ammo.Value--;
             if (_ammo.Value <= 0)
                 ServerStartReload(); // auto-reload on empty
@@ -154,7 +173,10 @@ namespace Combat
             if (target == null) return;
             var receiver = target.GetComponent<IHitReceiver>();
             if (receiver != null)
-                receiver.ReceiveHit(new HitInfo(point, dir, _weaponData != null ? _weaponData.damage : 0f, 0f));
+            {
+                float dmg = (_weaponData != null ? _weaponData.damage : 0f) * DamageMultiplier;
+                receiver.ReceiveHit(new HitInfo(point, dir, dmg, 0f));
+            }
         }
 
         [ServerRpc]
@@ -166,7 +188,7 @@ namespace Combat
             NetworkObject proj = Instantiate(pw.projectilePrefab, origin, Quaternion.LookRotation(dir));
             Spawn(proj);
             if (proj.TryGetComponent(out NetworkProjectile np))
-                np.ServerInit(dir, pw.projectileSpeed, pw.damage);
+                np.ServerInit(dir, pw.projectileSpeed, pw.damage * DamageMultiplier);
         }
 
         // ---- reload ----

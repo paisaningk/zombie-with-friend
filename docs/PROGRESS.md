@@ -7,8 +7,8 @@
 
 ## สถานะรวม
 
-จบ **Phase 0–3 + currency** — Task 9 (Enemy) + 10 (Wave) + 11 (Currency) build+verified
-core loop + เศรษฐกิจครบ (kill→gold, survival bonus). เหลือ shop (12) → support ability (13) → lobby/gamestate/result (14–16)
+จบ **Phase 0–4** — Task 9 (Enemy) + 10 (Wave) + 11 (Currency) + 12 (Shop+Ready) build+verified
+core loop + เศรษฐกิจ + shop ครบ (kill→gold→ซื้อ upgrade→ready→wave ถัดไป). เหลือ support ability (13) → lobby/gamestate/result (14–16)
 
 ## Task board
 
@@ -25,7 +25,7 @@ core loop + เศรษฐกิจครบ (kill→gold, survival bonus). เ
 | 9 | Enemy AI 3 types *(งานใหม่)* | P3 | ✅ **เสร็จ (2026-08-01)** |
 | 10 | Wave spawner + auto-revive | P3 | ✅ **เสร็จ (2026-08-01)** |
 | 11 | Currency split-on-kill | P4 | ✅ **เสร็จ (2026-08-01)** |
-| 12 | Shop + ready-check | P4 | 🔵 **12a ready-check เสร็จ (2026-08-01)** · 12b shop ⏭️ |
+| 12 | Shop + ready-check | P4 | ✅ **เสร็จ (2026-08-01)** *(12a ready + 12b shop)* |
 | 13 | Support Heal Pulse | P4 | ⬜ |
 | 14 | Lobby class select + ready | P5 | ⬜ |
 | 15 | GameState management | P5 | ⬜ |
@@ -268,6 +268,23 @@ gold ต่อผู้เล่น + **PlayerController → hub refactor**. อ
 **ยัง NOT verified:** N>1 floor-split (เทสต์ N=1) · survival bonus ตัด Downed · owner-only sync remote · TrySpend (ทั้งหมดต้อง 2 peer / task 12)
 
 **เตรียมให้ต่อ:** task 12 (shop) ใช้ `PlayerWallet.TrySpend` + เสียบ ready-gate ที่ seam ก่อน `StartNextWave` · task 16 (HUD) subscribe `OnGoldChanged`
+
+### 2026-08-01 — Task 12b: Shop upgrades build + verified ✅
+
+ปิด economy loop — 3 stat upgrade (Damage% / MaxHP / FireRate) per-player ซื้อระหว่าง wave. เหตุผล+ผลเต็ม [decisions/0011](decisions/0011-shop-ready.md)
+
+**ไฟล์ใหม่:** `Shop/UpgradeType.cs` (enum) · `Shop/ShopData.cs` (SO: ต่อ upgrade {cost/effectPerLevel/maxLevel}) · `Player/PlayerUpgrades.cs` (owner-only SyncVar 3 level + `DamageMultiplier`/`FireRateMultiplier`/`BonusMaxHp` + `[ServerRpc] CmdBuy`→`[Server] TryBuy`) · asset `Data/Shop/DefaultShop` (150 / +20%,+25,+15% / cap5)
+**แก้:** `Game/GameManager.cs` (+`ShopOpen` server bool + `SetShopOpen`) · `Game/WaveManager.cs` (`ShopWindow` เปิด/ปิด ShopOpen ใน try/finally) · `Player/PlayerHealth.cs` (**`Max` = base + BonusMaxHp**, SetHp/Normalized/IsFull ใช้ Max) · `Combat/PlayerWeapon.cs` (**damage × DamageMultiplier** ใน ServerReportHit+projectile, **cooldown ÷ FireRateMultiplier** client-gate+server-validate ผ่าน `EffectiveCooldown`) · `Player/PlayerController.cs` (+`Upgrades` accessor) · Player.prefab (+PlayerUpgrades NB13, wire DefaultShop)
+
+**กลไก (key):** ไม่แตะ WeaponData/`_maxHp` (shared) — เก็บ level ต่อผู้เล่น (owner-only) คำนวณ stat สดตอนใช้ · owner-only พอ (damage=server, fireRate client-gate=owner, maxHP server+owner)
+
+**Runtime verified (host, MCP):** baseline mult=1/Max=100 · **shop-closed → reject** (gold ไม่หัก) · Damage→mult1.2 · MaxHp→Max125 + heal +25 delta (68→93) · FireRate→mult1.15 (แต่ละครั้ง −150) · **weapon เห็น upgrade** (EffectiveCooldown 0.1087, DamageMult 1.2) · **cap lv5** · **insufficient gold reject** · compile clean
+
+**เก็บกวาด:** `PlayerMovement.FixedUpdate` +guard `_rb.isKinematic` (แก้ warning "set linearVelocity of kinematic body" ตอน body kinematic — ผู้ใช้เจอตอน test/park)
+
+**ยัง NOT verified:** multi-peer (isReady propagate, owner-only level ไป client) · ยิงจริงหลังซื้อ (read-site value verified; hit path = task9) · owner กดปุ่มจริง (verify ผ่าน CmdBuy→TryBuy)
+
+**เตรียมต่อ:** task 13 (Support Heal Pulse) · task 16 (shop/ready/gold HUD — subscribe `OnUpgradesChanged`/`OnReadyChanged`/`OnGoldChanged`; `ShopOpen`→SyncVar ถ้า client ต้องรู้) · **post-MVP backlog: weapon swap** (ต้องเคลียร์ projectile weapon ที่ค้าง task5 ก่อน)
 
 ### 2026-08-01 — Task 12 grill + 12a Ready-check build + verified ✅
 

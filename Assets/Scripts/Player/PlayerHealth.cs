@@ -37,15 +37,18 @@ namespace Player
         private bool _hasNotified;
 
         private PlayerState _state;
+        private PlayerUpgrades _upgrades;
 
         public float Current => _health.Value;
-        public float Max => _maxHp;
-        public float Normalized => _maxHp > 0f ? Mathf.Clamp01(_health.Value / _maxHp) : 0f;
-        public bool IsFull => Mathf.Approximately(_health.Value, _maxHp);
+        /// <summary>Effective max HP: base + the player's MaxHp-upgrade bonus (task 12b). Never mutates base.</summary>
+        public float Max => _maxHp + (_upgrades != null ? _upgrades.BonusMaxHp : 0f);
+        public float Normalized => Max > 0f ? Mathf.Clamp01(_health.Value / Max) : 0f;
+        public bool IsFull => Mathf.Approximately(_health.Value, Max);
 
         private void Awake()
         {
             _state = GetComponent<PlayerState>();
+            _upgrades = GetComponent<PlayerUpgrades>();
             _health.OnChange += HandleSyncChange;
         }
 
@@ -60,7 +63,8 @@ namespace Player
             // Spawn at full HP. Setting it here (not via a field default the event can't see as
             // "max") means the first OnHealthChanged already reports max, and observers receive
             // full HP as the spawn-synced value — no bogus 0 ever reaches a consumer.
-            _health.Value = _maxHp;
+            // (Upgrades are 0 at spawn, so Max == base _maxHp here.)
+            _health.Value = Max;
         }
 
         public override void OnStartClient()
@@ -112,7 +116,7 @@ namespace Player
         [Server]
         public void SetHp(float amount)
         {
-            float next = Mathf.Clamp(amount, 0f, _maxHp);
+            float next = Mathf.Clamp(amount, 0f, Max); // Max includes the MaxHp upgrade bonus
             if (next == _health.Value) return;
             _health.Value = next;
         }

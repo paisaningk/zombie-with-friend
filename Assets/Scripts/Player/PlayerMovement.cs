@@ -68,7 +68,10 @@ namespace Player
 
         private void FixedUpdate()
         {
-            if (!IsOwner || _input == null) return;
+            // Skip when kinematic: writing linearVelocity to a kinematic body is unsupported (Unity
+            // warns). Normally the owner is dynamic while Alive, but a kinematic owner can occur
+            // (e.g. parked/paused, or a test harness), and this keeps that path warning-free.
+            if (!IsOwner || _input == null || _rb.isKinematic) return;
 
             // Wish direction relative to body facing (yaw set by PlayerLook).
             Vector3 wish = transform.forward * _moveInput.y + transform.right * _moveInput.x;

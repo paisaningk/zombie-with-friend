@@ -56,4 +56,16 @@ Wave clear → survival bonus → ReviveAll
 weapon swap (**post-MVP** — ต้องเคลียร์ projectile weapon ที่ค้าง task 5 ก่อน) · shop/ready UI (task 16) · ShopOpen → SyncVar (task 16 ถ้า client ต้องรู้) · cost-scaling (ตัด MVP, cap แทน) · per-player timer setting (task 16 UI)
 
 ## สถานะ
-12a: ⬜ build · 12b: ⬜ build
+**12a: ✅ build + verified (2026-08-01)** · **12b: ✅ build + verified (2026-08-01)**
+
+## Runtime verified (host, MCP)
+**12a (ready-check):** spawn `IsReady=False` · `ServerSetReady(true)`→`AllReady=True` · `ResetAllReady`→False · shop window **timeout path** (wave 1→2, ไม่ ready, timer 5วิ → advance = AFK guard) · **ready path** (`CmdSetReady(true)` → wave 2→3 ก่อน timer 120วิ)
+
+**12b (shop):** baseline `mult=1 Max=100` · **shop-closed → TryBuy reject** (gold ไม่หัก, level เดิม) · **Damage** buy → `DamageMultiplier=1.2` gold −150 · **MaxHp** buy → `Max=125` + heal delta (Cur 68→93 +25) gold −150 · **FireRate** buy → `FireRateMultiplier=1.15` gold −150 · **weapon read-sites เห็น upgrade** (`EffectiveCooldown=0.1087`=0.125÷1.15, weapon `DamageMultiplier=1.2`) · **cap** Damage ตันที่ lv5 (buy4-6 reject) · **insufficient gold** (100<150 → reject, ไม่หัก)
+
+**เก็บกวาดระหว่างทาง:** `PlayerMovement.FixedUpdate` เพิ่ม guard `_rb.isKinematic` — กัน warning "Setting linear velocity of a kinematic body" ตอน body เป็น kinematic (parked/paused/test)
+
+## ยัง NOT verified
+- multi-peer (isReady all-read propagation, owner-only upgrade levels ไป client, "N/M ready")
+- ผู้เล่นยิงจริงหลังซื้อ damage/fireRate (verify ผ่าน read-site value แล้ว; ReceiveHit path = task 9 verified)
+- owner กดปุ่ม Ready/Buy จริง (inject ไม่ได้ → verify ผ่าน CmdSetReady/CmdBuy→TryBuy path)

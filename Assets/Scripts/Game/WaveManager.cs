@@ -275,14 +275,21 @@ namespace Game
         private async UniTask ShopWindow(CancellationToken ct)
         {
             ResetAllReady();
-
-            // Link a CTS so the losing branch is cancelled once the other wins (UniTask drops the
-            // cancellation of the un-awaited branch silently — no unobserved exception).
-            using var linked = CancellationTokenSource.CreateLinkedTokenSource(ct);
-            await UniTask.WhenAny(
-                UniTask.WaitUntil(AllReady, cancellationToken: linked.Token),
-                UniTask.Delay(TimeSpan.FromSeconds(Mathf.Max(0f, _shopTimer)), cancellationToken: linked.Token));
-            linked.Cancel();
+            _gm.SetShopOpen(true); // gate: purchases are only valid while the window is open (task 12b)
+            try
+            {
+                // Link a CTS so the losing branch is cancelled once the other wins (UniTask drops the
+                // cancellation of the un-awaited branch silently — no unobserved exception).
+                using var linked = CancellationTokenSource.CreateLinkedTokenSource(ct);
+                await UniTask.WhenAny(
+                    UniTask.WaitUntil(AllReady, cancellationToken: linked.Token),
+                    UniTask.Delay(TimeSpan.FromSeconds(Mathf.Max(0f, _shopTimer)), cancellationToken: linked.Token));
+                linked.Cancel();
+            }
+            finally
+            {
+                _gm.SetShopOpen(false); // always close, even if cancelled (Lost / teardown)
+            }
         }
 
         private void ResetAllReady()
