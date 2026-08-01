@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Eflatun.SceneReference;
 using FishNet;
 using FishNet.Connection;
 using FishNet.Managing;
@@ -34,6 +35,10 @@ namespace Networking
         public Transport CurrentTransportMode;
         public NetworkManager NetworkManager;
         private bool isIntentionalDisconnect = false;
+
+        [Tooltip("Scene to return to when a connection ends while in-game (Exit to MainMenu / a dropped " +
+                 "connection). No-op if already in this scene — the menu handles its own back-to-main.")]
+        [SerializeField] private SceneReference _mainMenuScene;
 
         // How long OnCreateLobby waits for the host (server + local client) to come up
         // before reporting failure. Loopback is near-instant; this is just a safety bound.
@@ -242,6 +247,7 @@ namespace Networking
             currentTransport?.Disconnect();
             OnErrorLog("การเชื่อมต่อหลุด");
             OnDisconnect?.Invoke();
+            ReturnToMainMenuIfInGame(); // dropped mid-game → don't strand the player in the game scene
         }
 
         public void HandleTransportDisconnect()
@@ -256,6 +262,23 @@ namespace Networking
             currentTransport?.Disconnect();
             connectedPlayers.Clear();
             OnDisconnect?.Invoke();
+            ReturnToMainMenuIfInGame(); // Exit to MainMenu from the in-game result screen (task 15)
+        }
+
+        /// <summary>
+        /// Load the MainMenu scene locally after a connection ends while in the game scene (task 15 —
+        /// Exit to MainMenu, and any dropped connection). Networking is already down here, so this is a
+        /// plain single-scene load — NOT a FishNet networked load. No-op when already in the menu (the
+        /// menu drives its own panels via OnDisconnect), so leaving the lobby doesn't reload the scene.
+        /// </summary>
+        private void ReturnToMainMenuIfInGame()
+        {
+            if (_mainMenuScene == null || string.IsNullOrEmpty(_mainMenuScene.Name)) return;
+
+            string menu = _mainMenuScene.Name;
+            if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == menu) return;
+
+            UnityEngine.SceneManagement.SceneManager.LoadScene(menu);
         }
 
         private void HandlePlayerListChanged(List<string> players)

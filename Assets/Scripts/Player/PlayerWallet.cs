@@ -60,6 +60,11 @@ namespace Player
             _gold.Value += amount;
         }
 
+        /// <summary>Reset gold to 0 for a match replay (task 15). Server-only; called via
+        /// PlayerController.ResetForReplay so the reset value lives with the state that owns it.</summary>
+        [Server]
+        public void ResetForReplay() => _gold.Value = 0;
+
         /// <summary>
         /// Spend gold if affordable. Returns false (and changes nothing) if the amount is &lt;= 0 or
         /// exceeds the balance. Server-only. For the shop (task 12).

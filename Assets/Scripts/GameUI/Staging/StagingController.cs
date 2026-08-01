@@ -17,8 +17,8 @@ namespace GameUI.Staging
     /// class (Gunner/Support) and toggles Ready, and — on the host only — a Start button appears,
     /// enabled once everyone is ready. Start flips the match to Playing via
     /// <see cref="WaveManager.TryStartMatch"/> (host == server in FishNet host mode); the wave loop is
-    /// already waiting on that. When Playing, the panel hides and <see cref="PlayerLook"/> takes the
-    /// cursor back.
+    /// already waiting on that. When Playing, the panel hides and CursorController re-locks the cursor
+    /// (it is the single owner of cursor state — decision 0014).
     ///
     /// Placeholder UI built in code (no art / no scene wiring), same spirit as the tracer / heal-pulse
     /// visuals — task 18 replaces the look. Roster is polled (players may still be loading in).
@@ -69,12 +69,8 @@ namespace GameUI.Staging
 
             if (_panel == null || !_panel.activeSelf) return;
 
-            // While staging, we own the cursor (PlayerLook stays hands-off until Playing).
-            if (Cursor.lockState != CursorLockMode.None)
-            {
-                Cursor.lockState = CursorLockMode.None;
-                Cursor.visible = true;
-            }
+            // Cursor is owned solely by CursorController now (decision 0014) — it frees the cursor
+            // whenever the match isn't Playing (Lobby staging included), so we don't touch it here.
 
             if (Time.unscaledTime >= _nextRoster)
             {

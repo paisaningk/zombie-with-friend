@@ -107,7 +107,7 @@ namespace Game
         {
             base.OnStartServer();
             _cts = new CancellationTokenSource();
-            RunAsync(_cts.Token).Forget();
+            RunArmed(_cts.Token).Forget();
         }
 
         public override void OnStopServer()
@@ -119,15 +119,33 @@ namespace Game
 
         // ---- the match loop (server) ----
 
-        private async UniTaskVoid RunAsync(CancellationToken ct)
+        /// <summary>
+        /// One-time arm: wait for GameManager, subscribe to its state event ONCE (so re-invoking the
+        /// campaign on replay never double-subscribes — decision 0014), then launch the first campaign.
+        /// </summary>
+        private async UniTaskVoid RunArmed(CancellationToken ct)
         {
             try
             {
-                // Wait for GameManager, subscribe (to catch Lost), then wait until the match is live.
                 await UniTask.WaitUntil(() => GameManager.Instance != null, cancellationToken: ct);
-                _gm = GameManager.Instance;
-                _gm.OnGameStateChanged += HandleGameState;
+            }
+            catch (OperationCanceledException) { return; }
 
+            _gm = GameManager.Instance;
+            _gm.OnGameStateChanged += HandleGameState; // subscribed once for the object's lifetime
+            RunCampaign(ct).Forget();
+        }
+
+        /// <summary>
+        /// A single 5-wave campaign: wait until the match goes live → prep → run every wave (survival
+        /// bonus + revive between them, shop window between all but the LAST) → Won. Cancelled by a Lost
+        /// match or a replay re-arm. Re-invoked with a fresh token by <see cref="RestartCampaign"/> —
+        /// hence self-contained (no subscribe/GM-wait here; RunArmed owns those once).
+        /// </summary>
+        private async UniTaskVoid RunCampaign(CancellationToken ct)
+        {
+            try
+            {
                 await UniTask.WaitUntil(() => _gm.State == GameState.Playing, cancellationToken: ct);
 
                 if (_waves == null || _waves.WaveCount == 0)
@@ -146,15 +164,33 @@ namespace Game
                     if (_gm.State != GameState.Playing) return; // ended mid-wave (shouldn't reach here; Lost cancels)
                     _gm.AwardSurvivalBonus(_surviveBonus); // reward survivors BEFORE revive resurrects everyone
                     ReviveAll();
-                    await ShopWindow(ct);
+
+                    // Shop window BETWEEN waves only — skip it after the final wave so the game goes
+                    // straight to the Win screen instead of stalling on a ready/timer (decision 0014).
+                    if (i < _waves.WaveCount - 1)
+                        await ShopWindow(ct);
                 }
 
                 _gm.SetGameState(GameState.Won);
             }
             catch (OperationCanceledException)
             {
-                // Cancelled by scene teardown or a Lost match — expected, nothing to do.
+                // Cancelled by scene teardown, a Lost match, or a replay re-arm — expected.
             }
+        }
+
+        /// <summary>
+        /// Re-arm the loop for a replay (Play Again): the match returned to Lobby from a finished state,
+        /// so drop the old cancellation, reset the wave counter, and run a fresh campaign that waits for
+        /// the host to start again. Does NOT re-subscribe (RunArmed did that once). Server-only.
+        /// </summary>
+        private void RestartCampaign()
+        {
+            if (_cts != null) { _cts.Cancel(); _cts.Dispose(); }
+            _cts = new CancellationTokenSource();
+            SetCurrentWave(0);
+            _alive.Clear(); // Lost already despawned; Won leaves none — belt-and-suspenders.
+            RunCampaign(_cts.Token).Forget();
         }
 
         private async UniTask RunWave(Wave wave, CancellationToken ct)
@@ -348,10 +384,18 @@ namespace Game
         private void HandleGameState(GameState prev, GameState next)
         {
             if (!IsServerInitialized) return;
-            if (next != GameState.Lost) return;
 
-            _cts?.Cancel(); // break the loop out of its awaits
-            DespawnRemaining();
+            if (next == GameState.Lost)
+            {
+                _cts?.Cancel(); // break the loop out of its awaits
+                DespawnRemaining();
+            }
+            else if (next == GameState.Lobby && (prev == GameState.Won || prev == GameState.Lost))
+            {
+                // Play Again returned us to staging from a finished match — re-arm the campaign so the
+                // host can start the whole run over (decision 0014).
+                RestartCampaign();
+            }
         }
 
         private void DespawnRemaining()

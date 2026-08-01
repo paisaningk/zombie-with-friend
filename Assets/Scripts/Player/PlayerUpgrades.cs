@@ -89,6 +89,17 @@ namespace Player
             _fireRateLevel.Value = 0;
         }
 
+        /// <summary>Reset all upgrade levels to 0 for a match replay (task 15). Server-only; called via
+        /// PlayerController.ResetForReplay. Stat readers (damage/fireRate/maxHP multipliers) fall back to
+        /// their base values automatically once levels are 0.</summary>
+        [Server]
+        public void ResetForReplay()
+        {
+            _damageLevel.Value = 0;
+            _maxHpLevel.Value = 0;
+            _fireRateLevel.Value = 0;
+        }
+
         /// <summary>Owner asks to buy an upgrade (clicking a shop button). Server validates ownership.</summary>
         [ServerRpc]
         public void CmdBuy(UpgradeType type) => TryBuy(type);

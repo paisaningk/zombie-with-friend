@@ -38,9 +38,8 @@ namespace Player
             if (ownerCamera != null) ownerCamera.enabled = true;
             if (ownerListener != null) ownerListener.enabled = true;
 
-            // Cursor is NOT locked here: the player spawns into the staging screen (GameState.Lobby),
-            // which needs a free cursor to click class/ready (decision 0013). Update locks it once the
-            // match is live; StagingController owns the cursor while staging.
+            // The cursor is NOT this component's concern — CursorController is the single owner of it
+            // (decision 0014), derived from GameState. PlayerLook only reads look input while Playing.
             _input = new InputSystem_Actions();
             _input.Player.Enable();
         }
@@ -48,11 +47,6 @@ namespace Player
         public override void OnStopClient()
         {
             base.OnStopClient();
-            if (IsOwner)
-            {
-                Cursor.lockState = CursorLockMode.None;
-                Cursor.visible = true;
-            }
             if (_input != null)
             {
                 _input.Dispose();
@@ -65,16 +59,9 @@ namespace Player
             if (!IsOwner || _input == null) return;
 
             // Freeze look during the pre-match staging screen (and any non-live state). The cursor is
-            // left free for the staging UI; StagingController manages it while GameState == Lobby.
+            // handled entirely by CursorController (decision 0014); this only gates look input.
             if (GameManager.Instance == null || GameManager.Instance.State != GameState.Playing)
                 return;
-
-            // Match is live → own the cursor (lock, idempotent) and drive the camera.
-            if (Cursor.lockState != CursorLockMode.Locked)
-            {
-                Cursor.lockState = CursorLockMode.Locked;
-                Cursor.visible = false;
-            }
 
             Vector2 look = _input.Player.Look.ReadValue<Vector2>();
 

@@ -3,12 +3,12 @@
 บันทึกความคืบหน้าจริง (living doc) — อัปเดตทุกครั้งที่ปิด task
 ดูภาพรวม scope/กติกาที่ [CLAUDE.md](../CLAUDE.md) · เหตุผล design แต่ละ task ที่ [docs/decisions/](decisions/)
 
-> อัปเดตล่าสุด: **2026-08-01**
+> อัปเดตล่าสุด: **2026-08-02**
 
 ## สถานะรวม
 
-จบ **Phase 0–4** + **Task 14** — core loop + เศรษฐกิจ + shop + class ability + **class-select/ready (staging)** ครบ
-เหลือ **Phase 5**: gamestate เต็มระบบ (15) → result/IP/art (16)
+จบ **Phase 0–4** + **Task 14–15** — core loop + เศรษฐกิจ + shop + class ability + staging + **gamestate lifecycle เต็มระบบ** ครบ
+เหลือ **Task 16**: result screen UI + Direct IP + art
 
 ## Task board
 
@@ -28,7 +28,7 @@
 | 12 | Shop + ready-check | P4 | ✅ **เสร็จ (2026-08-01)** *(12a ready + 12b shop)* |
 | 13 | Support Heal Pulse | P4 | ✅ **เสร็จ (2026-08-01)** |
 | 14 | Lobby class select + ready | P5 | ✅ **เสร็จ (2026-08-01)** *(in-game staging)* |
-| 15 | GameState management | P5 | ⬜ |
+| 15 | GameState management | P5 | ✅ **เสร็จ (2026-08-02)** |
 | 16 | Result screen + IP UI + art | P5 | ⬜ |
 
 ---
@@ -354,3 +354,21 @@ class-select + ready ก่อนเริ่มแมตช์. ออกแบ
 **ยัง NOT verified:** multi-peer (roster/SyncVar เพื่อนข้ามเครื่อง, "N/N ready") · owner กดปุ่ม UI จริง + render uGUI (verify ผ่าน Cmd path — play-test โดยผู้ใช้)
 
 **เตรียมให้ต่อ:** **follow-up** `ClassData` SO → per-class stat (Gunner fire rate สูง, เสียบผ่าน multiplier แบบ PlayerUpgrades) · task 15 (GameState เต็มระบบ — staging ดึง `Lobby→Playing` มาแล้วบางส่วน · กลับ Lobby หลังจบ) · task 16 (result screen · class HUD `OnClassChanged` · roster ต่อยอด)
+
+### 2026-08-02 — Task 15: GameState management (end-of-match lifecycle) build + verified ✅
+
+ปิดปลายทาง Won/Lost ที่เคยเป็นทางตัน — **Play Again (replay in-place)** + **Exit to MainMenu** + รวมเจ้าของ cursor. ออกแบบผ่าน grill. เหตุผล+ผลเต็ม [decisions/0014](decisions/0014-gamestate-management.md)
+
+**Ownership (ตัดสิน):** GameManager = state authority (`RestartMatch`) · WaveManager = reactor ต่อ GameState ล้วน (Playing=go / Lost=cancel / **Lobby(จาก terminal)=re-arm**) · PlayerController (hub) = `ResetForReplay()` coordinate component ตัวเอง · **CursorController (ใหม่)** = คนเดียวที่เขียน `Cursor.*`
+
+**ไฟล์ใหม่:** `GameUI/CursorController.cs` (MonoBehaviour, subscribe GameState → `Apply()` Playing→Hide/อื่น→Show, `SetPaused()` เผื่อ pause) · decision 0014
+**แก้:** `GameManager` (+`RestartMatch()` guard Won/Lost → loop `ResetForReplay` → Lobby) · `PlayerController` (+`ResetForReplay()` hub) · `PlayerWallet`/`PlayerUpgrades` (+`ResetForReplay()`→0) · `WaveManager` (subscribe ครั้งเดียวใน `RunArmed`, แยก `RunCampaign` re-invoke ได้, `RestartCampaign` re-arm ตอน Lobby, **skip ShopWindow wave สุดท้าย**) · `PlayerLook`/`StagingController` (ถอด `Cursor.*` ทิ้ง) · `GameState.cs` (legal-transition graph comment) · `LobbyManager` (+`SceneReference _mainMenuScene` + `ReturnToMainMenuIfInGame` ทั้ง 2 disconnect path — แก้หนี้ disconnect-ค้าง)
+**wiring (MCP):** CursorController GO ใน SampleScene · LobbyManager `_mainMenuScene`=MainMenu (Init scene)
+
+**Decisions (grill):** C (replay in-place) เป็นหลัก + ปุ่ม Exit (teardown) · Play Again host-only / Exit host-all|client-self · reset gold+upgrades→0 (campaign fresh) · re-invoke RunCampaign fresh CTS (ไม่ใช่ outer-loop) · **3-ชั้น co-location reset** (GameManager→PlayerController→component) · CursorController single writer derive จาก GameState (กัน last-writer-wins ตอน pause) MonoBehaviour ไม่ใช่ static · skip shop ท้าย · per-site guard + ยาม RestartMatch Won/Lost · return-to-MainMenu ที่ LobbyManager
+
+**Runtime verified (host, MCP, parked player):** Cursor ทุก state (Lobby/Won/Lost=None, Playing=Locked) · **Won ถึง** (wave 5 เคลียร์) · **Play Again จาก Won reset ครบ** (gold 2940→0, dmgLv 3→0, hp→100, Lobby, wave 0) · **re-arm × 2 replays** (round2 หลัง Won + round3 หลัง Lost → wave 1 spawn 5, loop เดียวไม่ซ้อน) · **Lost + Play Again** (down→Lost, enemies despawn, Downed→Alive+full) · **guard RestartMatch** ตอน Playing no-op · **Exit teardown → MainMenu** + connection down · 0 error
+
+**ยัง NOT verified:** multi-peer (GameState/reset/cursor propagate, host-teardown เตะ client, client-self-leave) · owner กดปุ่ม result UI (=task 16) · skip-final-shop (by-construction, play-test)
+
+**เตรียมให้ต่อ (task 16):** result screen subscribe `OnGameStateChanged` (Won/Lose) · ปุ่ม Play Again → `GameManager.Instance.RestartMatch()` (host) · ปุ่ม Exit → `LobbyManager.Instance.HandleTransportDisconnect()` · HUD (`OnWaveChanged`/`OnGoldChanged`/`OnClassChanged`) · **pause menu (post-MVP):** `CursorController.SetPaused(true)`

@@ -296,6 +296,9 @@ MonoBehaviour:
   TugboatTransport: {fileID: 1635334329}
   CurrentTransportMode: 1
   NetworkManager: {fileID: 784042734}
+  _mainMenuScene:
+    asset: {fileID: 102900000, guid: 05b5348f78985f04f9ca2f8f077c411e, type: 3}
+    guid: 05b5348f78985f04f9ca2f8f077c411e
 --- !u!114 &1635334328
 MonoBehaviour:
   m_ObjectHideFlags: 0

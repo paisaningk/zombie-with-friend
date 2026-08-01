@@ -100,6 +100,25 @@ namespace Game
             _gameState.Value = next;
         }
 
+        /// <summary>
+        /// Play Again (task 15): reset the whole match back to the staging screen. Server-only; the
+        /// host triggers it from the result screen. Guarded to a finished match (Won/Lost) so it can't
+        /// yank everyone back to staging mid-fight. Resets every player (life/HP/gold/upgrades/ready)
+        /// then flips to Lobby — WaveManager reacts to that Lobby transition by re-arming its loop
+        /// (decision 0014). Players are reset BEFORE the state flip so CheckLose (guarded to Playing)
+        /// never fires spuriously while it runs.
+        /// </summary>
+        [Server]
+        public void RestartMatch()
+        {
+            if (_gameState.Value != GameState.Won && _gameState.Value != GameState.Lost) return;
+
+            for (int i = 0; i < _players.Count; i++)
+                _players[i]?.ResetForReplay();
+
+            SetGameState(GameState.Lobby);
+        }
+
         [Server]
         public void RegisterPlayer(PlayerController player)
         {

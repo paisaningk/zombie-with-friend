@@ -114,6 +114,22 @@ namespace Player
                 GameManager.Instance.UnregisterPlayer(this);
         }
 
+        /// <summary>
+        /// Reset this player to a fresh match state for a replay (task 15 — Play Again). Server-only.
+        /// The hub coordinates its own sub-components: each owns what "reset" means for its state
+        /// (co-location — GameManager just loops the registry calling this, knowing no internals).
+        /// Add a new resettable component? Wire it here — the one place its ref already lives.
+        /// </summary>
+        [Server]
+        public void ResetForReplay()
+        {
+            State?.SetState(PlayerLifeState.Alive);
+            if (Health != null) Health.SetHp(Health.Max);
+            Wallet?.ResetForReplay();
+            Upgrades?.ResetForReplay();
+            Ready?.ServerSetReady(false);
+        }
+
         // Fires once on start (prev == next == current) then once per real change, on every peer.
         private void HandleStateChanged(PlayerLifeState prev, PlayerLifeState next)
         {
