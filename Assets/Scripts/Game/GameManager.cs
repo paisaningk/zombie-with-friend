@@ -41,25 +41,39 @@ namespace Game
         public GameState State => _gameState.Value;
 
         /// <summary>
-        /// Server-only: true while the between-wave shop window is open (set by <see cref="WaveManager"/>).
-        /// The purchase RPC gates on this so upgrades can only be bought between waves (decision 0011).
-        /// Plain bool (not synced) — only the server's purchase validation reads it; a future shop UI
-        /// that needs it client-side can promote it to a SyncVar (task 16).
+        /// True while the between-wave shop window is open (set by <see cref="WaveManager"/>). The
+        /// purchase RPC gates on this so upgrades can only be bought between waves (decision 0011).
+        /// SyncVar (task 16 / decision 0015): the client-side shop UI shows/hides on it, so every peer
+        /// needs it — consumers subscribe to <see cref="OnShopOpenChanged"/> like OnGameStateChanged.
         /// </summary>
-        public bool ShopOpen { get; private set; }
+        private readonly SyncVar<bool> _shopOpen = new SyncVar<bool>();
+
+        /// <summary>(previous, next). Fires once on start (prev == next), then on every change.</summary>
+        public event Action<bool, bool> OnShopOpenChanged;
+
+        private bool _shopNotified;
+        private bool _hasShopNotified;
+
+        public bool ShopOpen => _shopOpen.Value;
 
         /// <summary>Open/close the shop window. Server-only. Called by WaveManager around its ShopWindow.</summary>
         [Server]
-        public void SetShopOpen(bool open) => ShopOpen = open;
+        public void SetShopOpen(bool open)
+        {
+            if (_shopOpen.Value == open) return;
+            _shopOpen.Value = open;
+        }
 
         private void Awake()
         {
             _gameState.OnChange += HandleGameStateSync;
+            _shopOpen.OnChange += HandleShopOpenSync;
         }
 
         private void OnDestroy()
         {
             _gameState.OnChange -= HandleGameStateSync;
+            _shopOpen.OnChange -= HandleShopOpenSync;
         }
 
         // Runs once per peer (server and client), so Instance is available on both.
@@ -73,7 +87,8 @@ namespace Game
                 return;
             }
             Instance = this;
-            Notify(_gameState.Value); // initial fire (all peers)
+            Notify(_gameState.Value);         // initial fire (all peers)
+            NotifyShopOpen(_shopOpen.Value);  // initial fire (all peers)
         }
 
         public override void OnStartServer()
@@ -214,6 +229,19 @@ namespace Game
             _notified = next;
             _hasNotified = true;
             OnGameStateChanged?.Invoke(prev, next);
+        }
+
+        // --- ShopOpen SyncVar → event plumbing (mirrors GameState) ---
+        private void HandleShopOpenSync(bool prev, bool next, bool asServer) => NotifyShopOpen(next);
+
+        private void NotifyShopOpen(bool next)
+        {
+            if (_hasShopNotified && _shopNotified == next) return;
+
+            bool prev = _hasShopNotified ? _shopNotified : next; // initial fire => prev == next
+            _shopNotified = next;
+            _hasShopNotified = true;
+            OnShopOpenChanged?.Invoke(prev, next);
         }
     }
 }

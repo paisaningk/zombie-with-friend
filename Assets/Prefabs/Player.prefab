@@ -264,6 +264,7 @@ GameObject:
   - component: {fileID: 1833939544930983548}
   - component: {fileID: 9177347999803828243}
   - component: {fileID: 1673695169657730033}
+  - component: {fileID: 5757196209435737237}
   m_Layer: 3
   m_Name: Player
   m_TagString: Player
@@ -743,3 +744,25 @@ MonoBehaviour:
   _radius: 6
   _cooldownSeconds: 15
   _effectDuration: 0.35
+--- !u!114 &5757196209435737237
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8446928096559664053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bc9c8f09bdda17e4aa69ae1592483f9b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameUI.HudPublisher
+  _componentIndexCache: 255
+  _addedNetworkObject: {fileID: 5738819235587161346}
+  _networkObjectCache: {fileID: 0}
+  _health: {fileID: 11400000, guid: f5f795823ce1bd444bf0265f5ba16c25, type: 2}
+  _gold: {fileID: 11400000, guid: e5907cfa9b559e443bd3da9ad7b348be, type: 2}
+  _ammo: {fileID: 11400000, guid: 7b3c558c20308c34fbf7f61d13bd4247, type: 2}
+  _wave: {fileID: 11400000, guid: 061ed0350fa566f48b096490c8291dcf, type: 2}
+  _class: {fileID: 11400000, guid: 51898a89a68e8fe4dac7d2248fe84b7a, type: 2}
+  _cooldown: {fileID: 11400000, guid: 12f5c1d29b81dc34496b624d1da693e7, type: 2}
+  _isSupport: {fileID: 11400000, guid: 869774707cf766c45839ff22cb7b5567, type: 2}

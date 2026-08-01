@@ -10,9 +10,10 @@ namespace GameUI
     /// stops touching it, which kills the last-writer-wins fights that appear once pause/menus arrive.
     ///
     /// Cursor state is DERIVED from a single truth, not commanded: locked/hidden only while the match
-    /// is actively played (<see cref="GameState.Playing"/>) and not paused; free otherwise (Lobby
-    /// staging, Won/Lost result screen). A future pause menu flips <see cref="SetPaused"/> — it sets
-    /// the truth and lets <see cref="Apply"/> decide, rather than poking the cursor directly.
+    /// is actively played (<see cref="GameState.Playing"/>), the shop is closed, and not paused; free
+    /// otherwise (Lobby staging, the between-wave shop, Won/Lost result screen). A future pause menu
+    /// flips <see cref="SetPaused"/> — it sets the truth and lets <see cref="Apply"/> decide, rather
+    /// than poking the cursor directly.
     /// </summary>
     public class CursorController : MonoBehaviour
     {
@@ -30,6 +31,7 @@ namespace GameUI
 
             _gm = GameManager.Instance;
             _gm.OnGameStateChanged += HandleGameState;
+            _gm.OnShopOpenChanged += HandleShopOpen;
             _subscribed = true;
             Apply();
         }
@@ -37,10 +39,14 @@ namespace GameUI
         private void OnDestroy()
         {
             if (_subscribed && _gm != null)
+            {
                 _gm.OnGameStateChanged -= HandleGameState;
+                _gm.OnShopOpenChanged -= HandleShopOpen;
+            }
         }
 
         private void HandleGameState(GameState prev, GameState next) => Apply();
+        private void HandleShopOpen(bool prev, bool next) => Apply();
 
         /// <summary>A future pause menu calls this — it sets the truth; Apply decides the cursor.</summary>
         public void SetPaused(bool paused)
@@ -53,7 +59,9 @@ namespace GameUI
 
         private void Apply()
         {
-            bool gameplay = _gm != null && _gm.State == GameState.Playing && !_paused;
+            // Locked only during live gameplay: playing, shop closed (the between-wave shop needs the
+            // cursor to click buy/ready), and not paused. Free everywhere else.
+            bool gameplay = _gm != null && _gm.State == GameState.Playing && !_gm.ShopOpen && !_paused;
             if (gameplay) Hide(); else Show();
         }
 

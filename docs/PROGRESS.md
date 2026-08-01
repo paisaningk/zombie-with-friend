@@ -7,8 +7,8 @@
 
 ## สถานะรวม
 
-จบ **Phase 0–4** + **Task 14–15** — core loop + เศรษฐกิจ + shop + class ability + staging + **gamestate lifecycle เต็มระบบ** ครบ
-เหลือ **Task 16**: result screen UI + Direct IP + art
+จบ **Phase 0–4** + **Task 14–15 + 16a** — core loop + เศรษฐกิจ + shop + staging + gamestate lifecycle + **in-game UI (HUD/Shop/Result)** ครบ → **เกมเล่นได้ครบ loop จริง**
+เหลือ **Task 16b** (Direct IP) + **16c** (art)
 
 ## Task board
 
@@ -29,7 +29,9 @@
 | 13 | Support Heal Pulse | P4 | ✅ **เสร็จ (2026-08-01)** |
 | 14 | Lobby class select + ready | P5 | ✅ **เสร็จ (2026-08-01)** *(in-game staging)* |
 | 15 | GameState management | P5 | ✅ **เสร็จ (2026-08-02)** |
-| 16 | Result screen + IP UI + art | P5 | ⬜ |
+| 16a | In-game UI (Result + HUD + Shop) | P5 | ✅ **เสร็จ (2026-08-02)** |
+| 16b | Direct IP connect UI | P5 | ⬜ |
+| 16c | Placeholder art pass | P5 | ⬜ |
 
 ---
 
@@ -372,3 +374,21 @@ class-select + ready ก่อนเริ่มแมตช์. ออกแบ
 **ยัง NOT verified:** multi-peer (GameState/reset/cursor propagate, host-teardown เตะ client, client-self-leave) · owner กดปุ่ม result UI (=task 16) · skip-final-shop (by-construction, play-test)
 
 **เตรียมให้ต่อ (task 16):** result screen subscribe `OnGameStateChanged` (Won/Lose) · ปุ่ม Play Again → `GameManager.Instance.RestartMatch()` (host) · ปุ่ม Exit → `LobbyManager.Instance.HandleTransportDisconnect()` · HUD (`OnWaveChanged`/`OnGoldChanged`/`OnClassChanged`) · **pause menu (post-MVP):** `CursorController.SetPaused(true)`
+
+### 2026-08-02 — Task 16a: In-game UI (Result + HUD + Shop) build + verified ✅
+
+จอในเกมครบ → **เกมเล่นได้ครบ loop จริง** (เห็น HP/gold/wave, ซื้อของได้, เห็นจอจบ). ออกแบบผ่าน grill. เหตุผล+ผลเต็ม [decisions/0015](decisions/0015-ingame-ui.md)
+
+**สถาปัตย์:** แยก controller ต่อ overlay (user เลือก B). **HUD = SOAP** (Obvious Soap เพิ่งลง — ลองใช้ตรงจุด data-binding), **Shop/Result = code-built uGUI** (interactive → onClick ตรง). กลไกพร้อมจาก task ก่อนหมด
+
+**ไฟล์ใหม่:** `GameUI/HudPublisher.cs` (owner-only NB บน player — ดัน SyncVar→SO variable) · `GameUI/ShopController.cs` (code-built, poll owner, 3 ปุ่มซื้อ+ready) · `GameUI/ResultController.cs` (code-built, Won/Lose banner+ปุ่ม, statics ล้วน) · `GameUI/BindActiveToBool.cs` (SOAP-style bind: ซ่อน cooldown เมื่อไม่ใช่ Support) · 7 SO assets `Data/HUD/*` (Float/Int/String/Bool) · decision 0015
+**แก้:** `GameManager` (`ShopOpen` bool→**`SyncVar<bool>`**+`OnShopOpenChanged` — client เปิดจอ Shop ได้) · `PlayerWeapon` (+`MagazineSize` accessor) · `CursorController` (free เมาส์เมื่อ `ShopOpen` ด้วย — Shop เปิดตอน Playing) · `PlayerLook` (freeze look เมื่อ ShopOpen)
+**wiring (MCP):** HudPublisher+7 SO ref บน Player.prefab · SampleScene: HUDCanvas (BindFillingImage→Hud_Health max1 · 5×BindTextMeshPro→Gold/Ammo/Wave/Class/Cooldown · BindActiveToBool cooldown) + ShopController(_shop=DefaultShop) + ResultController GO
+
+**SOAP↔network (key):** SO variable เป็น local asset ไม่ sync → **owner publisher** อ่าน SyncVar event/poll แล้วเขียน SO (IsOwner เท่านั้น) · composite text (ammo "27/30", wave "3/5") publisher format เป็น StringVariable · health = Normalized 0..1 เลี่ยง Max juggling
+
+**Runtime verified (host, MCP, parked player):** HUD end-to-end อ่าน TMP text จริง (Gold/Class/Wave "Wave 0/5"/Ammo "30/30"/Cooldown/HealthFill=1) · reactive (Gunner→cooldown ซ่อน, gold 0→250→950, dmg→fill 0.6) · ShopOpen→SyncVar→ShopPanel+cursor free · **ซื้อผ่านปุ่ม** (onClick→CmdBuy gold 1100→950, maxHpLv→1) · Ready toggle · Result Won"VICTORY"/Lost"DEFEAT"+PlayAgain(host) · 0 error
+
+**ยัง NOT verified:** multi-peer (SO per-client, SyncVar propagate, roster ข้ามเครื่อง) · คลิกเมาส์จริง (verify ผ่าน onClick.Invoke — play-test)
+
+**เตรียมให้ต่อ:** **16b** Direct IP (`JoinLobby` รับ IP จริง เลิก hardcode 127.0.0.1) · **16c** art (Synty models) · pause menu (post-MVP) `CursorController.SetPaused(true)`

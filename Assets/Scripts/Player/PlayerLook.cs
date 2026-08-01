@@ -58,9 +58,12 @@ namespace Player
         {
             if (!IsOwner || _input == null) return;
 
-            // Freeze look during the pre-match staging screen (and any non-live state). The cursor is
-            // handled entirely by CursorController (decision 0014); this only gates look input.
-            if (GameManager.Instance == null || GameManager.Instance.State != GameState.Playing)
+            // Freeze look whenever the cursor is free (staging, the between-wave shop, result screen) so
+            // moving the mouse to click UI doesn't swing the camera. The cursor itself is owned by
+            // CursorController (decision 0014); this mirrors its rule and only gates look input.
+            if (GameManager.Instance == null ||
+                GameManager.Instance.State != GameState.Playing ||
+                GameManager.Instance.ShopOpen)
                 return;
 
             Vector2 look = _input.Player.Look.ReadValue<Vector2>();

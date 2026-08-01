@@ -42,6 +42,8 @@ namespace Combat
 
         public int Ammo => _ammo.Value;
         public bool IsReloading => _reloading.Value;
+        /// <summary>Magazine capacity of the current weapon (0 if none) — for the ammo HUD "x / y".</summary>
+        public int MagazineSize => _weaponData != null ? _weaponData.magazineSize : 0;
         public Vector3 AimOrigin => _aimSource != null ? _aimSource.position : transform.position;
         public Vector3 AimDirection => _aimSource != null ? _aimSource.forward : transform.forward;
 
