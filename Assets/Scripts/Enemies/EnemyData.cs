@@ -38,6 +38,10 @@ namespace Enemies
         public NetworkObject projectilePrefab;
         public float projectileSpeed = 20f;
 
+        [Header("Economy")]
+        [Tooltip("Gold awarded on death, split equally among all connected players (task 11).")]
+        public int goldReward = 10;
+
         /// <summary>Seconds between attacks.</summary>
         public float AttackCooldown => attackRate > 0f ? 1f / attackRate : 0f;
 

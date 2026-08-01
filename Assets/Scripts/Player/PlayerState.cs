@@ -1,7 +1,6 @@
 using System;
 using FishNet.Object;
 using FishNet.Object.Synchronizing;
-using Game;
 using UnityEngine;
 
 namespace Player
@@ -57,27 +56,8 @@ namespace Player
             Notify(_state.Value);
         }
 
-        public override void OnStartServer()
-        {
-            base.OnStartServer();
-            if (GameManager.Instance != null)
-            {
-                GameManager.Instance.RegisterPlayer(this);
-            }
-            else
-            {
-                Debug.LogWarning("[PlayerState] GameManager.Instance is null on OnStartServer — " +
-                                 "player was not registered. Ensure a GameManager exists in the " +
-                                 "scene before players spawn.");
-            }
-        }
-
-        public override void OnStopServer()
-        {
-            base.OnStopServer();
-            if (GameManager.Instance != null)
-                GameManager.Instance.UnregisterPlayer(this);
-        }
+        // Registration with GameManager moved to PlayerController (task 11): the registry holds the
+        // player facade (PlayerController), not this bare state holder. See decision 0010.
 
         /// <summary>
         /// The single mutation point for player state. Server-only.

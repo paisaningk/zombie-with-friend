@@ -37,6 +37,10 @@ namespace Game
         [Tooltip("Seconds between a wave clearing (post-revive) and the next wave.")]
         [SerializeField] private float _interWaveDelay = 3f;
 
+        [Header("Economy")]
+        [Tooltip("Gold each player still Alive at wave clear receives (awarded BEFORE the revive).")]
+        [SerializeField] private int _surviveBonus = 200;
+
         // Synced 1-based wave number (0 = not started). Consumers react via OnWaveChanged.
         private readonly SyncVar<int> _currentWave = new SyncVar<int>();
 
@@ -111,6 +115,7 @@ namespace Game
                     await RunWave(_waves.waves[i], ct);
 
                     if (_gm.State != GameState.Playing) return; // ended mid-wave (shouldn't reach here; Lost cancels)
+                    _gm.AwardSurvivalBonus(_surviveBonus); // reward survivors BEFORE revive resurrects everyone
                     ReviveAll();
                     await UniTask.Delay(TimeSpan.FromSeconds(_interWaveDelay), cancellationToken: ct);
                 }
@@ -232,7 +237,8 @@ namespace Game
         {
             if (e != null) e.OnDied -= HandleEnemyDied;
             _alive.Remove(e);
-            // gold split on kill → task 12 hooks here.
+            if (e != null && _gm != null)
+                _gm.AwardGoldForKill(e.GoldReward); // split equally among all players (task 11)
         }
 
         // ---- between-wave revive ----
@@ -246,14 +252,13 @@ namespace Game
         {
             if (_gm == null || _gm.State != GameState.Playing) return;
 
-            IReadOnlyList<PlayerState> players = _gm.Players;
+            IReadOnlyList<PlayerController> players = _gm.Players;
             for (int i = 0; i < players.Count; i++)
             {
-                PlayerState ps = players[i];
-                if (ps == null) continue;
-                ps.SetState(PlayerLifeState.Alive);
-                if (ps.TryGetComponent(out PlayerHealth hp))
-                    hp.SetHp(hp.Max);
+                PlayerController pc = players[i];
+                if (pc == null) continue;
+                if (pc.State != null) pc.State.SetState(PlayerLifeState.Alive);
+                if (pc.Health != null) pc.Health.SetHp(pc.Health.Max);
             }
         }
 

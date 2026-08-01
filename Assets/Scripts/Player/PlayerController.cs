@@ -1,48 +1,85 @@
 using FishNet.Object;
+using Game;
 using UnityEngine;
 
 namespace Player
 {
     /// <summary>
-    /// Thin lifecycle coordinator for the player. It owns NO gameplay logic — HP lives in
-    /// PlayerHealth, locomotion in PlayerMovement, aiming in PlayerLook, firing in PlayerWeapon.
-    /// It only REACTS to <see cref="PlayerState"/> transitions: gating the input-driven components,
-    /// freezing the body when going down, and running the server-side bleed-out timer
-    /// (Downed → Dead). Central hook for revive (task 7) / wave-clear (task 11): they just call
-    /// <c>PlayerState.SetState(Alive)</c> and this re-enables everything + the bleed-out stops.
+    /// The player's root component — it plays two roles (see decision 0010):
     ///
-    /// Rule: Movement + Weapon are active ONLY while Alive (off in both Downed and Dead).
-    /// PlayerLook is intentionally left alone — a downed/dead player can still look around.
+    /// 1. HUB / facade. It caches every sibling sub-component and exposes them as properties
+    ///    (<see cref="State"/>, <see cref="Health"/>, <see cref="Wallet"/>, <see cref="Movement"/>,
+    ///    <see cref="Weapon"/>). External systems reference the player through this one handle
+    ///    instead of scattering GetComponent calls, and <see cref="GameManager"/>'s registry holds
+    ///    PlayerControllers — so it also registers/unregisters the player with GameManager.
+    ///
+    /// 2. Lifecycle coordinator. It owns NO gameplay logic (HP lives in PlayerHealth, gold in
+    ///    PlayerWallet, etc.) — it only REACTS to <see cref="PlayerState"/> transitions: gating the
+    ///    input-driven components, freezing the body when going down, and running the server-side
+    ///    bleed-out timer (Downed → Dead). Revive / wave-clear just call
+    ///    <c>State.SetState(Alive)</c> and this re-enables everything + the bleed-out stops.
+    ///
+    /// Rule: Movement + Weapon are active ONLY while Alive (off in both Downed and Dead). PlayerLook
+    /// is intentionally left alone — a downed/dead player can still look around.
     /// </summary>
     public class PlayerController : NetworkBehaviour
     {
         [Tooltip("Seconds a Downed player bleeds out before dying (server-authoritative).")]
         [SerializeField] private float _bleedOutSeconds = 30f;
 
-        private PlayerState _state;
-        private PlayerMovement _movement;
-        private Combat.PlayerWeapon _weapon;
-        private Rigidbody _rb;
+        // --- facade: cached sibling refs (add more as components grow) ---
+        public PlayerState State { get; private set; }
+        public PlayerHealth Health { get; private set; }
+        public PlayerWallet Wallet { get; private set; }
+        public PlayerMovement Movement { get; private set; }
+        public Combat.PlayerWeapon Weapon { get; private set; }
 
+        private Rigidbody _rb;
         private float _bleedOutEnd;
 
         private void Awake()
         {
-            _state = GetComponent<PlayerState>();
-            _movement = GetComponent<PlayerMovement>();
-            _weapon = GetComponent<Combat.PlayerWeapon>();
+            State = GetComponent<PlayerState>();
+            Health = GetComponent<PlayerHealth>();
+            Wallet = GetComponent<PlayerWallet>();
+            Movement = GetComponent<PlayerMovement>();
+            Weapon = GetComponent<Combat.PlayerWeapon>();
             _rb = GetComponent<Rigidbody>();
 
-            if (_state != null)
-                _state.OnStateChanged += HandleStateChanged;
+            if (State != null)
+                State.OnStateChanged += HandleStateChanged;
             else
                 Debug.LogWarning("[PlayerController] No PlayerState found; coordinator is inert.");
         }
 
         private void OnDestroy()
         {
-            if (_state != null)
-                _state.OnStateChanged -= HandleStateChanged;
+            if (State != null)
+                State.OnStateChanged -= HandleStateChanged;
+        }
+
+        // The player IS this PlayerController to the rest of the game — register the facade, not the
+        // bare state (moved here from PlayerState so the registry holds a full player handle).
+        public override void OnStartServer()
+        {
+            base.OnStartServer();
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.RegisterPlayer(this);
+            }
+            else
+            {
+                Debug.LogWarning("[PlayerController] GameManager.Instance is null on OnStartServer — " +
+                                 "player was not registered. Ensure a GameManager exists in the " +
+                                 "scene before players spawn.");
+            }
+        }
+
+        public override void OnStopServer()
+        {
+            base.OnStopServer();
+            if (GameManager.Instance != null)
+                GameManager.Instance.UnregisterPlayer(this);
         }
 
         // Fires once on start (prev == next == current) then once per real change, on every peer.
@@ -51,8 +88,8 @@ namespace Player
             bool alive = next == PlayerLifeState.Alive;
 
             // Gate input-driven components. Look is deliberately untouched.
-            if (_movement != null) _movement.enabled = alive;
-            if (_weapon != null) _weapon.enabled = alive;
+            if (Movement != null) Movement.enabled = alive;
+            if (Weapon != null) Weapon.enabled = alive;
 
             // Freeze horizontal motion when going down so the body doesn't slide (owner simulates;
             // no-op for a kinematic non-owner). Gravity (y) is preserved so it settles on the floor.
@@ -71,8 +108,8 @@ namespace Player
         private void Update()
         {
             if (!IsServerInitialized) return;
-            if (_state != null && _state.IsDowned && Time.time >= _bleedOutEnd)
-                _state.SetState(PlayerLifeState.Dead);
+            if (State != null && State.IsDowned && Time.time >= _bleedOutEnd)
+                State.SetState(PlayerLifeState.Dead);
         }
     }
 }

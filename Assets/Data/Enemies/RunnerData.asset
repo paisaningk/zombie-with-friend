@@ -21,3 +21,4 @@ MonoBehaviour:
   attackRate: 1.5
   projectilePrefab: {fileID: 0}
   projectileSpeed: 0
+  goldReward: 10

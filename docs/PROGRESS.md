@@ -7,8 +7,8 @@
 
 ## สถานะรวม
 
-จบ **Phase 0–3 (player lifecycle + enemy + wave loop ครบ)** — Task 9 (Enemy AI) + Task 10 (Wave) build+verified
-core game loop เล่นจบได้แล้ว (5 wave → Won / ทีมล้ม → Lost). เหลือ economy/shop (11–13) → lobby/gamestate/result (14–16)
+จบ **Phase 0–3 + currency** — Task 9 (Enemy) + 10 (Wave) + 11 (Currency) build+verified
+core loop + เศรษฐกิจครบ (kill→gold, survival bonus). เหลือ shop (12) → support ability (13) → lobby/gamestate/result (14–16)
 
 ## Task board
 
@@ -24,8 +24,8 @@ core game loop เล่นจบได้แล้ว (5 wave → Won / ที�
 | 8 | Lose condition — AnyPlayerAlive() | P2 | ✅ **เสร็จ (2026-07-31)** |
 | 9 | Enemy AI 3 types *(งานใหม่)* | P3 | ✅ **เสร็จ (2026-08-01)** |
 | 10 | Wave spawner + auto-revive | P3 | ✅ **เสร็จ (2026-08-01)** |
-| 11 | Currency split-on-kill | P4 | ⏭️ ถัดไป |
-| 12 | Shop + ready-check | P4 | ⬜ |
+| 11 | Currency split-on-kill | P4 | ✅ **เสร็จ (2026-08-01)** |
+| 12 | Shop + ready-check | P4 | ⏭️ ถัดไป |
 | 13 | Support Heal Pulse | P4 | ⬜ |
 | 14 | Lobby class select + ready | P5 | ⬜ |
 | 15 | GameState management | P5 | ⬜ |
@@ -252,7 +252,22 @@ build ตามดีไซน์ 0008 ครบ (ไม่มี decision เ�
 
 **เตรียมให้ต่อ:** task 10 (wave) ใช้ `Enemy.OnDied` นับ + spawn จาก fixed points + `WaveData` list · task 12 (gold) hook `OnDied` แบ่ง gold
 
-### 2026-08-01 — Task 10: Wave Spawner + Auto-revive build + verified ✅
+### 2026-08-01 — Task 11: Currency (split-on-kill + survival bonus) build + verified ✅
+
+gold ต่อผู้เล่น + **PlayerController → hub refactor**. ออกแบบผ่าน grill. เหตุผลเต็ม [decisions/0010](decisions/0010-currency.md)
+
+**ไฟล์ใหม่:** `Player/PlayerWallet.cs` (`SyncVar<int>` gold **OwnerOnly** + `OnGoldChanged` + `Add`/`TrySpend`)
+**แก้:** `EnemyData`(+goldReward Runner10/Tank30/Ranger20) · `Enemy`(+`GoldReward`, target→PlayerController) · **`PlayerController`→hub** (expose `State/Health/Wallet/...` + register เป็นตัวแทน player) · `PlayerState`(ถอด self-register) · `GameManager`(registry `PlayerState`→**`PlayerController`** + `AwardGoldForKill` แบ่ง floor + `AwardSurvivalBonus`) · `WaveManager`(hook kill + survival bonus ก่อน revive + `_surviveBonus=200`) · Player.prefab(+PlayerWallet, NB ตัวที่ 11)
+
+**Q8 facade:** component player เยอะ → `PlayerController` เป็น hub (accessor + coordinator), `GameManager.Players` เก็บ PlayerController — consumer แก้ 3 จุด (GameManager lose, WaveManager revive, Enemy target)
+
+**กติกา:** kill → `reward/N` floor แบ่งทุกคน connected (ไม่สน state, ไม่ track killer) · survival bonus +200 เฉพาะ Alive **ก่อน** auto-revive · gold owner-only เริ่ม 0
+
+**Runtime verified (host, MCP):** wallet gold=0 · **Runner kill +10 / Tank kill +30** (per-type) · **survival bonus +200** (5 kills+bonus=250) · registry refactor ไม่พัง — register + **lose** (player Dead→Lost) + wave/revive/target ครบ
+
+**ยัง NOT verified:** N>1 floor-split (เทสต์ N=1) · survival bonus ตัด Downed · owner-only sync remote · TrySpend (ทั้งหมดต้อง 2 peer / task 12)
+
+**เตรียมให้ต่อ:** task 12 (shop) ใช้ `PlayerWallet.TrySpend` + เสียบ ready-gate ที่ seam ก่อน `StartNextWave` · task 16 (HUD) subscribe `OnGoldChanged`
 
 wave progression ครบ loop (spawn→clear→revive→advance→Won/Lost). ออกแบบผ่าน grill. เหตุผล+ผลเต็ม [decisions/0009](decisions/0009-wave-spawner.md)
 

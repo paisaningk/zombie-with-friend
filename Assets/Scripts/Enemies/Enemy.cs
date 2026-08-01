@@ -43,9 +43,12 @@ namespace Enemies
         public float Normalized => Max > 0f ? Mathf.Clamp01(_health.Value / Max) : 0f;
         public bool IsDead => _health.Value <= 0f;
 
+        /// <summary>Gold this enemy is worth on death (split among players — task 11).</summary>
+        public int GoldReward => _data != null ? _data.goldReward : 0;
+
         // --- movement / target / attack (server-only) ---
         private FollowerEntity _follower;
-        private PlayerState _target;
+        private PlayerController _target;
         private float _nextRetarget;
         private float _nextAttackTime;
         private const float RetargetInterval = 0.5f;
@@ -102,7 +105,7 @@ namespace Enemies
             if (_data == null || _follower == null) return;
 
             // Re-pick a target periodically, or immediately if the current one died / went down.
-            if (Time.time >= _nextRetarget || _target == null || !_target.IsAlive)
+            if (Time.time >= _nextRetarget || _target == null || _target.State == null || !_target.State.IsAlive)
             {
                 _nextRetarget = Time.time + RetargetInterval;
                 _target = FindNearestAliveTarget();
@@ -129,20 +132,20 @@ namespace Enemies
             }
         }
 
-        private PlayerState FindNearestAliveTarget()
+        private PlayerController FindNearestAliveTarget()
         {
             GameManager gm = GameManager.Instance;
             if (gm == null) return null;
 
-            PlayerState best = null;
+            PlayerController best = null;
             float bestSqr = float.MaxValue;
             Vector3 pos = transform.position;
 
             var players = gm.Players;
             for (int i = 0; i < players.Count; i++)
             {
-                PlayerState p = players[i];
-                if (p == null || !p.IsAlive) continue;
+                PlayerController p = players[i];
+                if (p == null || p.State == null || !p.State.IsAlive) continue;
                 float sqr = (p.transform.position - pos).sqrMagnitude;
                 if (sqr < bestSqr) { bestSqr = sqr; best = p; }
             }
@@ -150,15 +153,15 @@ namespace Enemies
         }
 
         [Server]
-        private void Attack(PlayerState target)
+        private void Attack(PlayerController target)
         {
-            if (target == null || !target.IsAlive) return;
+            if (target == null || target.State == null || !target.State.IsAlive) return;
 
             if (_data.attackType == EnemyAttackType.Melee)
             {
                 // Server owns both sides — call the target's health directly, no RPC needed.
-                if (target.TryGetComponent(out PlayerHealth hp))
-                    hp.ApplyDamage(_data.damage);
+                if (target.Health != null)
+                    target.Health.ApplyDamage(_data.damage);
             }
             else
             {
@@ -167,7 +170,7 @@ namespace Enemies
         }
 
         [Server]
-        private void FireProjectile(PlayerState target)
+        private void FireProjectile(PlayerController target)
         {
             if (_data.projectilePrefab == null) return;
 

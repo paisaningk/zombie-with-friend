@@ -23,9 +23,10 @@ namespace Game
     {
         public static GameManager Instance { get; private set; }
 
-        // Server-only. On clients this stays empty; nothing reads it there.
-        private readonly List<PlayerState> _players = new List<PlayerState>();
-        public IReadOnlyList<PlayerState> Players => _players;
+        // Server-only. On clients this stays empty; nothing reads it there. Holds the player facade
+        // (PlayerController) so consumers reach State/Health/Wallet through one handle (decision 0010).
+        private readonly List<PlayerController> _players = new List<PlayerController>();
+        public IReadOnlyList<PlayerController> Players => _players;
 
         // Synced match state. Consumers (result screen, task 16) subscribe to OnGameStateChanged;
         // one event covers both Lost (task 8) and Won (task 10).
@@ -86,21 +87,22 @@ namespace Game
         }
 
         [Server]
-        public void RegisterPlayer(PlayerState player)
+        public void RegisterPlayer(PlayerController player)
         {
             if (player == null) return;
             if (!_players.Contains(player))
             {
                 _players.Add(player);
-                player.OnStateChanged += HandlePlayerStateChanged;
+                if (player.State != null)
+                    player.State.OnStateChanged += HandlePlayerStateChanged;
             }
         }
 
         [Server]
-        public void UnregisterPlayer(PlayerState player)
+        public void UnregisterPlayer(PlayerController player)
         {
-            if (player != null)
-                player.OnStateChanged -= HandlePlayerStateChanged;
+            if (player != null && player.State != null)
+                player.State.OnStateChanged -= HandlePlayerStateChanged;
             if (_players.Remove(player))
                 CheckLose(); // the last Alive player disconnecting can trigger a loss
         }
@@ -115,7 +117,7 @@ namespace Game
         private void CheckLose()
         {
             if (_gameState.Value != GameState.Playing) return;
-            if (_players.Count > 0 && !_players.Any(p => p != null && p.IsAlive))
+            if (_players.Count > 0 && !_players.Any(p => p != null && p.State != null && p.State.IsAlive))
                 SetGameState(GameState.Lost);
         }
 
@@ -123,7 +125,49 @@ namespace Game
         [Server]
         public bool AnyPlayerAlive()
         {
-            return _players.Count > 0 && _players.Any(p => p != null && p.IsAlive);
+            return _players.Count > 0 && _players.Any(p => p != null && p.State != null && p.State.IsAlive);
+        }
+
+        // --- economy (task 11) ---
+
+        /// <summary>
+        /// Split <paramref name="reward"/> equally among ALL connected players (regardless of
+        /// Alive/Downed/Dead — no kill credit). Integer floor; the remainder is dropped so everyone
+        /// gets exactly the same. Server-only. Called on every enemy kill via WaveManager.
+        /// </summary>
+        [Server]
+        public void AwardGoldForKill(int reward)
+        {
+            if (reward <= 0) return;
+            int n = _players.Count;
+            if (n <= 0) return;
+
+            int share = reward / n; // floor — equal split, remainder dropped
+            if (share <= 0) return;
+
+            for (int i = 0; i < n; i++)
+            {
+                PlayerController p = _players[i];
+                if (p != null && p.Wallet != null)
+                    p.Wallet.Add(share);
+            }
+        }
+
+        /// <summary>
+        /// Grant <paramref name="amount"/> to every player who is still Alive — a reward for
+        /// surviving the wave. MUST be called BEFORE wave-clear auto-revive, or everyone would be
+        /// Alive and the bonus would be meaningless. Server-only.
+        /// </summary>
+        [Server]
+        public void AwardSurvivalBonus(int amount)
+        {
+            if (amount <= 0) return;
+            for (int i = 0; i < _players.Count; i++)
+            {
+                PlayerController p = _players[i];
+                if (p != null && p.State != null && p.State.IsAlive && p.Wallet != null)
+                    p.Wallet.Add(amount);
+            }
         }
 
         // --- GameState SyncVar → event plumbing (mirrors PlayerState) ---
