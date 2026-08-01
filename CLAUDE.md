@@ -91,7 +91,7 @@
 
 **Lose:** event-driven — state → Downed/Dead แล้วเรียก `AnyPlayerAlive()`; ไม่มีใคร Alive → แพ้ทันที (ไม่รอ timer)
 
-**Wave:** fixed 5 waves จาก `WaveData` list, ระหว่าง wave ไม่มี timer — รอทุกคนกด Ready
+**Wave:** fixed 5 waves จาก `WaveData` list, ระหว่าง wave = shop window — รอทุกคนกด Ready **หรือ** timer หมด (default 60วิ, กัน AFK deadlock) อันไหนก่อนก็ขึ้น wave ถัดไป (task 12, decision 0011). Wave 1 ไม่ gate (ใช้ prep delay)
 
 **Economy:** gold ต่อคน, enemy ตาย → **แบ่งเท่ากันทุกคนที่ connected** ไม่สน state, ไม่ track kill credit. Shop: 3 upgrade ราคาคงที่ (Damage %, Max HP, Fire Rate)
 

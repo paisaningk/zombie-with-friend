@@ -260,6 +260,7 @@ GameObject:
   - component: {fileID: 6812398529465059314}
   - component: {fileID: 144987612181943736}
   - component: {fileID: 7346838354289565727}
+  - component: {fileID: 4868030049970023185}
   m_Layer: 3
   m_Name: Player
   m_TagString: Player
@@ -670,6 +671,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7e8360d43dd67c47b5b4c0730a89c50, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Player.PlayerWallet
+  _componentIndexCache: 255
+  _addedNetworkObject: {fileID: 5738819235587161346}
+  _networkObjectCache: {fileID: 0}
+--- !u!114 &4868030049970023185
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8446928096559664053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b559a656d7eff2748875b5b4403370d7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Player.PlayerReady
   _componentIndexCache: 255
   _addedNetworkObject: {fileID: 5738819235587161346}
   _networkObjectCache: {fileID: 0}

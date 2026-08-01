@@ -25,7 +25,7 @@ core loop + เศรษฐกิจครบ (kill→gold, survival bonus). เ
 | 9 | Enemy AI 3 types *(งานใหม่)* | P3 | ✅ **เสร็จ (2026-08-01)** |
 | 10 | Wave spawner + auto-revive | P3 | ✅ **เสร็จ (2026-08-01)** |
 | 11 | Currency split-on-kill | P4 | ✅ **เสร็จ (2026-08-01)** |
-| 12 | Shop + ready-check | P4 | ⏭️ ถัดไป |
+| 12 | Shop + ready-check | P4 | 🔵 **12a ready-check เสร็จ (2026-08-01)** · 12b shop ⏭️ |
 | 13 | Support Heal Pulse | P4 | ⬜ |
 | 14 | Lobby class select + ready | P5 | ⬜ |
 | 15 | GameState management | P5 | ⬜ |
@@ -268,6 +268,23 @@ gold ต่อผู้เล่น + **PlayerController → hub refactor**. อ
 **ยัง NOT verified:** N>1 floor-split (เทสต์ N=1) · survival bonus ตัด Downed · owner-only sync remote · TrySpend (ทั้งหมดต้อง 2 peer / task 12)
 
 **เตรียมให้ต่อ:** task 12 (shop) ใช้ `PlayerWallet.TrySpend` + เสียบ ready-gate ที่ seam ก่อน `StartNextWave` · task 16 (HUD) subscribe `OnGoldChanged`
+
+### 2026-08-01 — Task 12 grill + 12a Ready-check build + verified ✅
+
+grill ทั้ง task 12 (shop+ready) → **ซอยเป็น 12a (ready-check) + 12b (shop)**. เหตุผลเต็ม [decisions/0011](decisions/0011-shop-ready.md). 12a build+verify แล้ว
+
+**ไฟล์ใหม่:** `Player/PlayerReady.cs` (NetworkBehaviour, SyncVar `isReady` **all-read** + `[ServerRpc] CmdSetReady` + `[Server] ServerSetReady` + `OnReadyChanged` — mirror Wallet/Health) · decision 0011
+**แก้:** `Game/WaveManager.cs` — แทน `_interWaveDelay` ด้วย **shop window**: หลัง survival+`ReviveAll` → `ResetAllReady` → `await ShopWindow` = `WhenAny(ทุกคน ready, Delay(_shopTimer))` (default 60วิ, linked-CTS ยกเลิก branch แพ้) · `PlayerController.cs` (+`Ready` accessor hub) · Player.prefab (+PlayerReady, NB ตัวที่ 12) · CLAUDE.md (wave rule มี timer แล้ว)
+
+**Decisions (grill):** ready-gate ระหว่าง wave (Wave1 คง prepDelay) · **WhenAny(ready, timer)** — user ขอ timer 1 นาที (ปรับได้) กัน AFK deadlock (**ขัด MVP เดิม "ไม่มี timer" → อัปเดต doc แล้ว**) · `PlayerReady` component แยก (reuse lobby task14) all-read (ทีมเห็น) · reset ทุก shop window · ซื้อได้เฉพาะร้านเปิด (a) → 12b เพิ่ม `GameManager.ShopOpen` · **weapon swap = post-MVP** (ตัด MVP, ต้องเคลียร์ projectile weapon ก่อน)
+
+**Runtime verified (host, MCP):** spawn `IsReady=False` · `ServerSetReady(true)`→`AllReady=True` · `ResetAllReady`→คืน False · **shop window timeout path** (wave 1→2, player ไม่ ready, 5วิ timer → advance = AFK guard) · **shop window ready path** (`CmdSetReady(true)` → wave 2→3 ก่อน timer 120วิ) · player parked (kinematic y40) + bulk-kill กัน Lost · compile clean
+
+**ยัง NOT verified:** multi-peer (isReady propagation ไป client, "2/N ready") · owner กดปุ่มจริง (inject ไม่ได้ → verify ผ่าน CmdSetReady path)
+
+**เตรียมให้ 12b:** `WaveManager` เปิด/ปิด `GameManager.ShopOpen` รอบ `ShopWindow` seam · purchase RPC เช็ก ShopOpen
+
+### 2026-08-01 — Task 10: Wave spawner + auto-revive build + verified ✅
 
 wave progression ครบ loop (spawn→clear→revive→advance→Won/Lost). ออกแบบผ่าน grill. เหตุผล+ผลเต็ม [decisions/0009](decisions/0009-wave-spawner.md)
 

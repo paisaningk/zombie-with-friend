@@ -31,6 +31,7 @@ namespace Player
         public PlayerState State { get; private set; }
         public PlayerHealth Health { get; private set; }
         public PlayerWallet Wallet { get; private set; }
+        public PlayerReady Ready { get; private set; }
         public PlayerMovement Movement { get; private set; }
         public Combat.PlayerWeapon Weapon { get; private set; }
 
@@ -42,6 +43,7 @@ namespace Player
             State = GetComponent<PlayerState>();
             Health = GetComponent<PlayerHealth>();
             Wallet = GetComponent<PlayerWallet>();
+            Ready = GetComponent<PlayerReady>();
             Movement = GetComponent<PlayerMovement>();
             Weapon = GetComponent<Combat.PlayerWeapon>();
             _rb = GetComponent<Rigidbody>();

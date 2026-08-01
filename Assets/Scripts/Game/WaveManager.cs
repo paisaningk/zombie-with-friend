@@ -34,8 +34,10 @@ namespace Game
         [Header("Pacing")]
         [Tooltip("Seconds after the match becomes Playing before wave 1 starts.")]
         [SerializeField] private float _prepDelay = 5f;
-        [Tooltip("Seconds between a wave clearing (post-revive) and the next wave.")]
-        [SerializeField] private float _interWaveDelay = 3f;
+        [Tooltip("Max seconds the between-wave shop window stays open. The next wave starts as soon " +
+                 "as everyone is ready OR this elapses (whichever first) — the timer guards against " +
+                 "an AFK player deadlocking the match. Wave 1 is NOT gated (uses prep delay).")]
+        [SerializeField] private float _shopTimer = 60f;
 
         [Header("Economy")]
         [Tooltip("Gold each player still Alive at wave clear receives (awarded BEFORE the revive).")]
@@ -117,7 +119,7 @@ namespace Game
                     if (_gm.State != GameState.Playing) return; // ended mid-wave (shouldn't reach here; Lost cancels)
                     _gm.AwardSurvivalBonus(_surviveBonus); // reward survivors BEFORE revive resurrects everyone
                     ReviveAll();
-                    await UniTask.Delay(TimeSpan.FromSeconds(_interWaveDelay), cancellationToken: ct);
+                    await ShopWindow(ct);
                 }
 
                 _gm.SetGameState(GameState.Won);
@@ -260,6 +262,51 @@ namespace Game
                 if (pc.State != null) pc.State.SetState(PlayerLifeState.Alive);
                 if (pc.Health != null) pc.Health.SetHp(pc.Health.Max);
             }
+        }
+
+        // ---- between-wave shop window (task 12a) ----
+
+        /// <summary>
+        /// The between-wave pause (see decision 0011): reset everyone to not-ready, then wait until
+        /// every connected player is ready OR <see cref="_shopTimer"/> elapses — whichever first. The
+        /// timer keeps an AFK player from deadlocking the match. This is the seam where the shop lives;
+        /// task 12b opens/closes <c>GameManager.ShopOpen</c> around this so purchases are only valid here.
+        /// </summary>
+        private async UniTask ShopWindow(CancellationToken ct)
+        {
+            ResetAllReady();
+
+            // Link a CTS so the losing branch is cancelled once the other wins (UniTask drops the
+            // cancellation of the un-awaited branch silently — no unobserved exception).
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            await UniTask.WhenAny(
+                UniTask.WaitUntil(AllReady, cancellationToken: linked.Token),
+                UniTask.Delay(TimeSpan.FromSeconds(Mathf.Max(0f, _shopTimer)), cancellationToken: linked.Token));
+            linked.Cancel();
+        }
+
+        private void ResetAllReady()
+        {
+            IReadOnlyList<PlayerController> players = _gm.Players;
+            for (int i = 0; i < players.Count; i++)
+            {
+                PlayerController pc = players[i];
+                if (pc != null && pc.Ready != null)
+                    pc.Ready.ServerSetReady(false);
+            }
+        }
+
+        /// <summary>True when players exist and every connected one is ready (predicate for the wait).</summary>
+        private bool AllReady()
+        {
+            IReadOnlyList<PlayerController> players = _gm.Players;
+            if (players.Count == 0) return false; // no one to advance the match — let the timer handle it
+            for (int i = 0; i < players.Count; i++)
+            {
+                PlayerController pc = players[i];
+                if (pc == null || pc.Ready == null || !pc.Ready.IsReady) return false;
+            }
+            return true;
         }
 
         // ---- Lost handling ----
