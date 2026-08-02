@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0016 — Weapon System Flow</title>
+<style>
+  body{margin:0;padding:24px;background:#fafafa;}
+  @media (prefers-color-scheme:dark){body{background:#141414;}}
+</style>
+</head>
+<body>
+<h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);">ระบบ Weapon 3 ชั้น (template SO → synced WeaponSlot → runtime WeaponInstance) และ flow การซื้อ สลับ ยิง และ effect ระหว่าง client กับ host</h2>
+<div class="ws">
+  <style>
+    .ws{
+      --ink:#1a1a1a; --sub:#666; --line:#d0d0d0; --card:#f7f7f5; --card2:#eee4;
+      --tmpl:#e8f0ff; --tmplbd:#9cc0ff; --sync:#fff2d9; --syncbd:#f0c069;
+      --run:#e6f6ec; --runbd:#7fc79b; --srv:#ffe3e0; --srvbd:#ec8a80;
+      --accent:#c0392b;
+      font-family:ui-sans-serif,system-ui,-apple-system,sans-serif;
+      color:var(--ink); line-height:1.45; max-width:900px; margin:0 auto;
+    }
+    @media (prefers-color-scheme:dark){
+      .ws{--ink:#e8e8e8;--sub:#9a9a9a;--line:#3a3a3a;--card:#1e1e1e;--card2:#242424;
+        --tmpl:#1a2740;--tmplbd:#3d5c8f;--sync:#3a2f16;--syncbd:#7a5e28;
+        --run:#16301f;--runbd:#2f6b45;--srv:#3a1f1c;--srvbd:#7a3d36;--accent:#ff7b6b;}
+    }
+    .ws *{box-sizing:border-box;}
+    .ws h3{font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--sub);margin:0 0 8px;}
+    .ws .sec{margin:0 0 22px;}
+    .ws .layer{display:flex;align-items:stretch;gap:10px;margin-bottom:8px;}
+    .ws .tag{flex:0 0 74px;display:flex;flex-direction:column;justify-content:center;
+      font-size:10.5px;color:var(--sub);text-align:right;padding-right:4px;}
+    .ws .tag b{color:var(--ink);font-size:11px;}
+    .ws .box{border-radius:9px;border:1px solid var(--line);background:var(--card);
+      padding:9px 11px;flex:1;}
+    .ws .box .t{font-weight:650;font-size:13px;}
+    .ws .box .d{font-size:11px;color:var(--sub);margin-top:2px;}
+    .ws .box code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;
+      background:rgba(128,128,128,.14);padding:1px 4px;border-radius:4px;}
+    .ws .row2{display:flex;gap:10px;}
+    .ws .row2>.box{flex:1;}
+    .ws .l-tmpl{background:var(--tmpl);border-color:var(--tmplbd);}
+    .ws .l-sync{background:var(--sync);border-color:var(--syncbd);}
+    .ws .l-run{background:var(--run);border-color:var(--runbd);}
+    .ws .arrow{display:flex;align-items:center;gap:7px;margin:2px 0 6px 84px;font-size:11px;color:var(--sub);}
+    .ws .arrow::before{content:"\25BC";color:var(--accent);font-size:10px;}
+    .ws .flow{display:flex;flex-direction:column;gap:0;}
+    .ws .step{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-top:1px dashed var(--line);}
+    .ws .step:first-child{border-top:none;}
+    .ws .who{flex:0 0 92px;font-size:10.5px;font-weight:700;padding-top:2px;}
+    .ws .who.cl{color:#2d7d46;} .ws .who.sv{color:var(--accent);}
+    @media (prefers-color-scheme:dark){.ws .who.cl{color:#67c78a;}}
+    .ws .stxt{font-size:12px;flex:1;}
+    .ws .stxt code{font-family:ui-monospace,Menlo,monospace;font-size:11px;
+      background:rgba(128,128,128,.14);padding:1px 4px;border-radius:4px;}
+    .ws .stxt small{color:var(--sub);}
+    .ws .badge{display:inline-block;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:20px;
+      border:1px solid var(--srvbd);background:var(--srv);color:var(--accent);vertical-align:middle;}
+    .ws .legend{font-size:10.5px;color:var(--sub);margin-top:6px;}
+    .ws .legend b{color:var(--accent);}
+    .ws .net{text-align:center;font-size:10px;color:var(--accent);letter-spacing:.1em;
+      border-top:1px dashed var(--srvbd);border-bottom:1px dashed var(--srvbd);
+      padding:3px;margin:3px 0;background:var(--srv);border-radius:5px;}
+  </style>
+
+  <div class="sec">
+    <h3>3 ชั้นข้อมูล — ช่อง Primary (ตัวอย่าง: Shotgun + Explosive)</h3>
+    <div class="layer">
+      <div class="tag"><b>ชั้น 1</b>Template<br>(static, แชร์)</div>
+      <div class="row2">
+        <div class="box l-tmpl"><div class="t">WeaponData SO</div><div class="d">stats only &middot; <code>id 1 = Shotgun</code></div></div>
+        <div class="box l-tmpl"><div class="t">AttachmentData SO</div><div class="d">modifier + effects &middot; <code>id 2 = Explosive</code></div></div>
+      </div>
+    </div>
+    <div class="arrow">ซื้อ/แต่ง &rarr; server เขียนเลข id</div>
+    <div class="layer">
+      <div class="tag"><b>ชั้น 2</b>Synced<br>(owner-only)</div>
+      <div class="box l-sync">
+        <div class="t"><code>SyncList&lt;WeaponSlot&gt;</code> + <code>activeSlot</code></div>
+        <div class="d">ตัวเลขล้วน ข้ามเน็ต &middot; <code>{ weaponId:1, mod:[2,-1,-1], ammo:6 }</code></div>
+      </div>
+    </div>
+    <div class="arrow">OnChange &rarr; rebuild (ทำในทุกเครื่อง)</div>
+    <div class="layer">
+      <div class="tag"><b>ชั้น 3</b>Runtime<br>(cache/เครื่อง)</div>
+      <div class="box l-run">
+        <div class="t">WeaponInstance[ ]</div>
+        <div class="d"><code>template</code>=Shotgun &middot; <code>mods</code>=[Explosive] &middot; <code>effects</code>=[AoE] &middot; <code>profile</code>={dmg48,pellets8,pierce0} &middot; <code>Ammo</code>&rarr;อ่านชั้น2</div>
+      </div>
+    </div>
+    <div class="legend">ยิงอ่าน <b>.profile</b> &middot; effect อ่าน <b>.effects</b> &middot; HUD อ่าน <b>.template/.mods</b> — ก้อนเดียวจบ (ไม่แตก parallel cache)</div>
+  </div>
+
+  <div class="sec">
+    <h3>Flow: กดยิง &rarr; โดน &rarr; effect</h3>
+    <div class="flow">
+      <div class="step"><div class="who cl">OWNER client</div><div class="stxt">กดยิง &rarr; client-gate (<code>ammo&gt;0</code> + cooldown) &rarr; เดา tracer ให้ลื่น <small>(predict)</small></div></div>
+      <div class="net">&#x254C;&#x254C;&#x254C; CmdReportHit(target, point, dir) ข้ามเน็ต &#x254C;&#x254C;&#x254C;</div>
+      <div class="step"><div class="who sv">HOST server</div><div class="stxt"><span class="badge">AUTH</span> consume ammo (<code>_slots[active].ammo--</code>) + validate cooldown</div></div>
+      <div class="step"><div class="who sv">HOST server</div><div class="stxt"><code>profile.damage</code> &rarr; <code>target.ReceiveHit()</code> &rarr; คืน <code>bool killed</code></div></div>
+      <div class="step"><div class="who sv">HOST server</div><div class="stxt"><b>OnHitDealt</b>: เดิน <code>.effects</code> &rarr; Explosive/Chain <small>(damage เรียก ApplyDamage ตรง — กัน recursion)</small></div></div>
+      <div class="step"><div class="who sv">HOST server</div><div class="stxt">ถ้า <code>killed</code> &rarr; <b>OnKill</b>: Heal-Ammo on kill <small>(local attribution — ปืนรู้เองว่าฆ่า)</small></div></div>
+      <div class="net">&#x254C;&#x254C;&#x254C; ObserversRpc &rarr; ทุกเครื่องเล่น FX (boom / สายฟ้า) &#x254C;&#x254C;&#x254C;</div>
+    </div>
+  </div>
+
+  <div class="sec" style="margin-bottom:0;">
+    <h3>Flow: ซื้อ / สลับ (สั้น)</h3>
+    <div class="flow">
+      <div class="step"><div class="who cl">OWNER</div><div class="stxt"><code>CmdBuyWeapon(id, slot)</code> &rarr; HOST <span class="badge">AUTH</span> เช็ค ShopOpen+gold &rarr; <code>_slots[slot] = {id, ammo:magSize, mod:[-1,-1,-1]}</code> <small>(เขียนทับทั้งก้อน &rarr; ammo reset atomic ไม่ค้าง)</small></div></div>
+      <div class="step"><div class="who cl">OWNER</div><div class="stxt">กด 1/2 &rarr; <code>CmdSwap(slot)</code> &rarr; HOST เซ็ต <code>activeSlot</code> + ช่องเดิม <code>reloading=false</code> <small>(swap ยกเลิก reload &middot; equip instant)</small></div></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

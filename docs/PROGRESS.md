@@ -8,7 +8,8 @@
 ## สถานะรวม
 
 จบ **Phase 0–4** + **Task 14–15 + 16a** — core loop + เศรษฐกิจ + shop + staging + gamestate lifecycle + **in-game UI (HUD/Shop/Result)** ครบ → **เกมเล่นได้ครบ loop จริง**
-เหลือ **Task 16b** (Direct IP) + **16c** (art)
+เหลือ **Task 16b** (Direct IP) + **16c** (art) เพื่อปิด MVP
+**Phase 6 (post-MVP):** ออกแบบระบบ Weapon เสร็จแล้ว (W1–W5, decision 0016) — build หลังปิด MVP + LAN verify
 
 ## Task board
 
@@ -32,6 +33,13 @@
 | 16a | In-game UI (Result + HUD + Shop) | P5 | ✅ **เสร็จ (2026-08-02)** |
 | 16b | Direct IP connect UI | P5 | ⬜ |
 | 16c | Placeholder art pass | P5 | ⬜ |
+| W1 | Arsenal foundation (2-slot + swap) | P6 | 🔵 ออกแบบแล้ว |
+| W2 | Projectile weapon (ปิดหนี้ task 5) | P6 | 🔵 ออกแบบแล้ว |
+| W3 | Attachment system (3 mod slots) | P6 | 🔵 ออกแบบแล้ว |
+| W4 | Shop integration (ปืน/attachment) | P6 | 🔵 ออกแบบแล้ว |
+| W5 | Effect-hook layer + 3 ตัวอย่าง | P6 | 🔵 ออกแบบแล้ว |
+
+> **Phase 6 (Weapon system) = post-MVP** — design ครบผ่าน grill ([decision 0016](decisions/0016-weapon-system.md)), build **หลังปิด MVP** (16b + LAN verify + 16c). ต่อด้วย Skill system + Ping (ยังไม่ออกแบบ)
 
 ---
 
@@ -392,3 +400,15 @@ class-select + ready ก่อนเริ่มแมตช์. ออกแบ
 **ยัง NOT verified:** multi-peer (SO per-client, SyncVar propagate, roster ข้ามเครื่อง) · คลิกเมาส์จริง (verify ผ่าน onClick.Invoke — play-test)
 
 **เตรียมให้ต่อ:** **16b** Direct IP (`JoinLobby` รับ IP จริง เลิก hardcode 127.0.0.1) · **16c** art (Synty models) · pause menu (post-MVP) `CursorController.SetPaused(true)`
+
+### 2026-08-03 — Phase 6: Weapon system — ออกแบบแล้ว (grill) ยังไม่ build 🔵
+
+grill ออกแบบระบบ Weapon ("โมปืน") ทั้งก้อนเสร็จ — **บันทึกดีไซน์ที่ [decision 0016](decisions/0016-weapon-system.md)** + รูป flow ([assets/0016-weapon-system-flow.html](decisions/assets/0016-weapon-system-flow.html)). สรุปย่อ:
+- **ขอบเขต (C):** arsenal 2 ช่อง (Primary/Secondary) + swap + attachment 3 ช่อง/กระบอก · **per-run** (reset ทุกแมตช์) · ซื้อจากร้าน · universal
+- **สถาปัตย์ 3 ชั้น:** `WeaponData` SO (template stats-only) → `SyncList<WeaponSlot>` (ตัวเลข id+ammo, owner-only, ข้ามเน็ต) → `WeaponInstance[]` (runtime cache: template+mods+effects+profile, rebuild ตอน sync เปลี่ยน)
+- **mod:** ตัวเลข + behavior · stack = รวม% คูณครั้งเดียว × upgrade เดิม · shot behavior → `WeaponProfile` (fixed vocabulary, server-auth+predict)
+- **effect layer (ของแปลก):** `WeaponEffect` SO รันฝั่ง server ล้วน (OnHitDealt/OnKill) — ปลอดภัยเพราะไม่มี prediction · 3 ตัวอย่าง: Explosive AoE / Chain lightning / Heal-Ammo on kill · local attribution (`ReceiveHit` คืน bool killed) · recursion guard (effect damage → `ApplyDamage` ตรง)
+- **ปิดหนี้:** player-projectile weapon (task 5) ใน W2 (เครื่องยนต์ verify แล้วผ่าน Ranger)
+- **sub-task:** W1 arsenal · W2 projectile · W3 attachment · W4 shop · W5 effect layer
+
+**สถานะ: design เท่านั้น** — build หลังปิด MVP (16b + LAN verify + 16c). **ถัดไป:** Skill system (generalize ability, ยืมโครงนี้) + Ping (ยังไม่ออกแบบ)
