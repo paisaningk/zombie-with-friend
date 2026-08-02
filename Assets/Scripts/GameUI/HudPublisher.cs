@@ -25,6 +25,7 @@ namespace GameUI
         [Header("SOAP variables (shared assets — the HUD binds to these)")]
         [SerializeField] private FloatVariable _health;   // normalized 0..1 (BindFillingImage max = 1)
         [SerializeField] private IntVariable _gold;
+        [SerializeField] private IntVariable _enemies;    // enemies left to kill this wave
         [SerializeField] private StringVariable _ammo;    // "27 / 30" or "RELOADING"
         [SerializeField] private StringVariable _wave;    // "Wave 3 / 5"
         [SerializeField] private StringVariable _class;   // "Gunner" / "Support"
@@ -63,10 +64,12 @@ namespace GameUI
                     ? "RELOADING"
                     : $"{_weaponSrc.Ammo} / {_weaponSrc.MagazineSize}");
 
-            if (_wave != null)
             {
                 WaveManager wm = WaveManager.Instance;
-                SetString(_wave, wm != null ? $"Wave {wm.CurrentWave} / {wm.WaveCount}" : "");
+                if (_wave != null)
+                    SetString(_wave, wm != null ? $"Wave {wm.CurrentWave} / {wm.WaveCount}" : "");
+                if (_enemies != null)
+                    SetInt(_enemies, wm != null ? wm.EnemiesRemaining : 0);
             }
 
             if (_classSrc != null)
@@ -88,6 +91,7 @@ namespace GameUI
             // change). SOAP also resets runtime values on play-mode exit, but this covers in-play teardown.
             SetFloat(_health, 0f);
             SetInt(_gold, 0);
+            SetInt(_enemies, 0);
             SetString(_ammo, "");
             SetString(_wave, "");
             SetString(_class, "");

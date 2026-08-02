@@ -59,6 +59,18 @@ namespace Game
         public int CurrentWave => _currentWave.Value;
         public int WaveCount => _waves != null ? _waves.WaveCount : 0;
 
+        // Synced count of enemies still to kill THIS wave (0 between waves). Set to the wave's total at
+        // its start, decremented per kill — the HUD polls it (task 16). No event: only the HUD reads it.
+        private readonly SyncVar<int> _enemiesRemaining = new SyncVar<int>();
+        public int EnemiesRemaining => _enemiesRemaining.Value;
+
+        [Server]
+        private void SetEnemiesRemaining(int n)
+        {
+            int v = Mathf.Max(0, n);
+            if (_enemiesRemaining.Value != v) _enemiesRemaining.Value = v;
+        }
+
         // --- server-only runtime state ---
         private readonly List<Enemy> _alive = new List<Enemy>();
         private CancellationTokenSource _cts;
@@ -189,6 +201,7 @@ namespace Game
             if (_cts != null) { _cts.Cancel(); _cts.Dispose(); }
             _cts = new CancellationTokenSource();
             SetCurrentWave(0);
+            SetEnemiesRemaining(0);
             _alive.Clear(); // Lost already despawned; Won leaves none — belt-and-suspenders.
             RunCampaign(_cts.Token).Forget();
         }
@@ -196,6 +209,7 @@ namespace Game
         private async UniTask RunWave(Wave wave, CancellationToken ct)
         {
             Queue<NetworkObject> queue = BuildSpawnQueue(wave);
+            SetEnemiesRemaining(queue.Count); // total to kill this wave (counts down per death)
             int maxAlive = Mathf.Max(1, wave.maxAlive);
             float interval = Mathf.Max(0.01f, wave.spawnInterval);
 
@@ -302,6 +316,7 @@ namespace Game
         {
             if (e != null) e.OnDied -= HandleEnemyDied;
             _alive.Remove(e);
+            SetEnemiesRemaining(_enemiesRemaining.Value - 1); // one fewer to kill this wave (HUD)
             if (e != null && _gm != null)
                 _gm.AwardGoldForKill(e.GoldReward); // split equally among all players (task 11)
         }
@@ -408,6 +423,7 @@ namespace Game
                 e.DespawnByManager(); // silent (no OnDied) — the match is over
             }
             _alive.Clear();
+            SetEnemiesRemaining(0); // match over — clear the HUD counter
         }
 
         // ---- currentWave SyncVar → event plumbing (mirrors GameManager) ----

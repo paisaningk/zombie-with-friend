@@ -1,0 +1,10 @@
+﻿fileFormatVersion: 2
+guid: a1d708df8b59405b8692b667623cd489
+timeCreated: 1746103191
+AssetOrigin:
+  serializedVersion: 1
+  productId: 232107
+  packageName: Soap - ScriptableObject Architecture Pattern
+  packageVersion: 3.8.2
+  assetPath: Assets/Obvious/Soap/Examples/Content/Scripts/AutoRotatorWithSingleton.cs
+  uploadId: 946106
