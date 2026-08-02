@@ -31,7 +31,8 @@ Task 16 เดิม = "Result + IP + art" (bundle). ซอยเอาเฉพ
 - **`GameManager`** — `ShopOpen` bool → `SyncVar<bool>` (private) + `OnShopOpenChanged` event (dedupe/initial-fire แบบ GameState) + `SetShopOpen` เขียน SyncVar. `RestartMatch`/reset ไม่แตะ (WaveManager คุมเปิด/ปิด)
 - **`PlayerWeapon`** — +`public int MagazineSize` (ammo "x / y" ใน HUD)
 - **`HudPublisher`** (ใหม่, `NetworkBehaviour` บน Player.prefab, owner-only) — Update (owner): poll 6 ค่า เขียน SO **เมื่อเปลี่ยน** (guard equality กัน event spam). SO refs serialized. clear/zero SO ตอน `OnStopClient` (owner) กัน HUD ค้างข้าม despawn
-- **SO assets** (`Assets/Data/HUD/`): `Hud_Health`(Float 0..1) · `Hud_Gold`(Int) · `Hud_Ammo`(String) · `Hud_Wave`(String) · `Hud_Class`(String) · `Hud_Cooldown`(Float) · `Hud_IsSupport`(Bool, ซ่อน cooldown ถ้าไม่ใช่ Support)
+- **SO assets** (`Assets/Data/HUD/`): `Hud_Health`(Float 0..1) · `Hud_Gold`(Int) · `Hud_Enemies`(Int) · `Hud_Ammo`(String) · `Hud_Wave`(String) · `Hud_Class`(String) · `Hud_Cooldown`(Float) · `Hud_IsSupport`(Bool, ซ่อน cooldown ถ้าไม่ใช่ Support)
+- **Enemies-remaining counter** (follow-up, user-requested): `WaveManager` +`SyncVar<int> _enemiesRemaining` + `EnemiesRemaining` (no event — HUD polls) — set = queue size ตอน wave เริ่ม, `-1` ต่อ kill (`HandleEnemyDied`), reset 0 ตอน replay/Lost. HudPublisher เขียน `Hud_Enemies`, HUD text "Enemies: N"
 - **HUD canvas** (SampleScene): Image+`BindFillingImage`(Hud_Health,max1) · TMP+`BindTextMeshPro` ต่อ Gold/Ammo/Wave/Class · cooldown Image/TMP+Bind(Hud_Cooldown) — code update UI = 0 บรรทัด
 - **`ShopController`** (ใหม่, client-side scene MonoBehaviour, code-built uGUI) — subscribe `GameManager.OnShopOpenChanged` → show/hide · 3 ปุ่ม upgrade (label cost+lv/max, poll owner `Upgrades.LevelOf`) → `CmdBuy` · ปุ่ม Ready → `CmdSetReady` · poll owner แบบ Staging
 - **`ResultController`** (ใหม่, client-side scene MonoBehaviour, code-built uGUI) — subscribe `GameManager.OnGameStateChanged` → Won/Lost show · banner WIN/LOSE · host(`IsServerStarted`): Play Again→`RestartMatch` / Exit→`HandleTransportDisconnect` · client: Exit + "waiting for host"
@@ -60,6 +61,7 @@ host flow (Tugboat loopback → SampleScene), player parked kinematic y=40:
 
 - **HUD end-to-end (SOAP: SyncVar→publisher→SO→Bind→UI):** อ่าน TMP text จริง — Gold "Gold: 0" · Class "Support" · Wave "Wave 0 / 5" · Ammo "Ammo  30 / 30" · Cooldown "CD 0s" · HealthFill.fillAmount=1 (normalized→max1) ✓
 - **HUD reactive:** SetClass Gunner → Class "Gunner" + **cooldown widget ซ่อน** (BindActiveToBool←Hud_IsSupport) · gold +250 → "Gold: 250" · dmg 40 → HealthFill **0.6** ✓
+- **Enemies-remaining counter (follow-up):** wave 1 เริ่ม → `EnemiesRemaining=5` HUD "Enemies: 5" · ฆ่า 2 → **3** HUD "Enemies: 3" · เคลียร์ wave → **0** HUD "Enemies: 0" ✓
 - **ShopOpen→SyncVar:** SetShopOpen(true) → ShopPanel active · **cursor=None** (CursorController free ตอน Playing+ShopOpen) · PlayerLook freeze ✓
 - **Shop UI:** 3 ปุ่ม "DAMAGE+/MAXHP+/FIRERATE+  Lv 0/5 — $150" (poll owner + ShopData) · gold display · **ซื้อผ่านปุ่ม** (onClick→CmdBuy): gold 1100→950, maxHpLevel 0→1 · **Ready ปุ่ม** → IsReady=True, label→"Cancel Ready" · HUD gold reactive → "Gold: 950" ✓
 - **Result:** force Won → ResultPanel active, banner **"VICTORY"**, PlayAgain visible (host), cursor None · force Lost → banner **"DEFEAT"** · กลับ Playing → ResultPanel hidden ✓

@@ -761,6 +761,7 @@ MonoBehaviour:
   _networkObjectCache: {fileID: 0}
   _health: {fileID: 11400000, guid: f5f795823ce1bd444bf0265f5ba16c25, type: 2}
   _gold: {fileID: 11400000, guid: e5907cfa9b559e443bd3da9ad7b348be, type: 2}
+  _enemies: {fileID: 11400000, guid: 5b0627c47b048b14d9cd3d5751986be8, type: 2}
   _ammo: {fileID: 11400000, guid: 7b3c558c20308c34fbf7f61d13bd4247, type: 2}
   _wave: {fileID: 11400000, guid: 061ed0350fa566f48b096490c8291dcf, type: 2}
   _class: {fileID: 11400000, guid: 51898a89a68e8fe4dac7d2248fe84b7a, type: 2}
