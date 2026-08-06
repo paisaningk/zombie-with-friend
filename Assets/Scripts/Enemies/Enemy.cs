@@ -189,11 +189,17 @@ namespace Enemies
 
         // ---- damage / death ----
 
-        /// <summary>Combat pipeline entry (player hitscan/projectile). Server-only; only the damage is used.</summary>
-        public void ReceiveHit(in HitInfo hit)
+        /// <summary>
+        /// Combat pipeline entry (player hitscan/projectile). Server-only; only the damage is used.
+        /// Returns true when this hit killed the enemy — local attribution for on-kill weapon effects
+        /// (decision 0016, W5).
+        /// </summary>
+        public bool ReceiveHit(in HitInfo hit)
         {
-            if (!IsServerInitialized) return;
+            if (!IsServerInitialized) return false;
+            bool aliveBefore = _health.Value > 0f;
             ApplyDamage(hit.Damage);
+            return aliveBefore && _health.Value <= 0f;
         }
 
         /// <summary>Reduce HP (ignored if &lt;= 0 or already dead), clamped at 0. Reaching 0 dies. Server-only.</summary>
@@ -235,6 +241,11 @@ namespace Enemies
 
         private void CacheFlashColor()
         {
+            // Art pass (task 16c): the placeholder cube renderer is disabled and the visible body
+            // is a child Synty model. Fall back to the first enabled child renderer so the hit-flash
+            // lands on whatever is actually visible, without per-prefab rewiring of _flashRenderer.
+            if (_flashRenderer == null || !_flashRenderer.enabled)
+                _flashRenderer = FindVisibleRenderer();
             if (_flashRenderer == null) return;
             Material mat = _flashRenderer.material; // instance (placeholder art; fine for MVP)
             _colorId = mat.HasProperty(BaseColorId) ? BaseColorId : Shader.PropertyToID("_Color");
@@ -243,6 +254,16 @@ namespace Enemies
                 _baseColor = mat.GetColor(_colorId);
                 _canFlash = true;
             }
+        }
+
+        // Returns the first enabled renderer under this enemy (the visible Synty model), skipping
+        // the disabled placeholder cube renderer on the root.
+        private Renderer FindVisibleRenderer()
+        {
+            var rends = GetComponentsInChildren<Renderer>(true);
+            foreach (var r in rends)
+                if (r != null && r.enabled) return r;
+            return null;
         }
 
         private void HandleHealthChange(float prev, float next, bool asServer)

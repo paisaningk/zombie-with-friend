@@ -8,10 +8,5 @@ namespace Combat
     {
         [Header("Hitscan")]
         public float range = 100f;
-
-        public override void Fire(PlayerWeapon owner)
-        {
-            owner.FireHitscan(range);
-        }
     }
 }

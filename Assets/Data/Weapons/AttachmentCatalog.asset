@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cbf49ad15c715aa46b0b9889d6efa845, type: 3}
+  m_Name: AttachmentCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::Combat.AttachmentCatalog
+  _attachments:
+  - {fileID: 11400000, guid: 79d4261db1201904097cb67c4d4af9ce, type: 2}
+  - {fileID: 11400000, guid: 84f1eeb173f8bfd4195655637be26cee, type: 2}
+  - {fileID: 11400000, guid: b8d2c0c73600e7548a8080a2809acc8c, type: 2}

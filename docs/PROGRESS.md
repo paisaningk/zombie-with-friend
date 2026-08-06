@@ -3,12 +3,13 @@
 บันทึกความคืบหน้าจริง (living doc) — อัปเดตทุกครั้งที่ปิด task
 ดูภาพรวม scope/กติกาที่ [CLAUDE.md](../CLAUDE.md) · เหตุผล design แต่ละ task ที่ [docs/decisions/](decisions/)
 
-> อัปเดตล่าสุด: **2026-08-02**
+> อัปเดตล่าสุด: **2026-08-03**
 
 ## สถานะรวม
 
-จบ **Phase 0–4** + **Task 14–15 + 16a** — core loop + เศรษฐกิจ + shop + staging + gamestate lifecycle + **in-game UI (HUD/Shop/Result)** ครบ → **เกมเล่นได้ครบ loop จริง**
-เหลือ **Task 16b** (Direct IP) + **16c** (art) เพื่อปิด MVP
+จบ **Phase 0–4** + **Task 14–15 + 16a + 16b** — core loop + เศรษฐกิจ + shop + staging + gamestate lifecycle + **in-game UI** + **Direct IP** ครบ → **เกมเล่นได้ครบ loop จริง + multi-peer LAN verified ครั้งแรก**
+**Task 16b (Direct IP): ✅ G-a ผ่าน** (2 peer ต่อ LAN IP `192.168.1.71` จริง, เล่นได้ปกติ) — เจอ+แก้ **บั๊ก multi-peer ค้างเดิม** (FishNet SceneCondition, ดูล่าง)
+**Task 16c (art): build เสร็จ** — Synty pawn แทน cube + แต่งฉาก, รอ play-review → **MVP build ครบทุก task (1–16c) เหลือ verify play + G-b**
 **Phase 6 (post-MVP):** ออกแบบระบบ Weapon เสร็จแล้ว (W1–W5, decision 0016) — build หลังปิด MVP + LAN verify
 
 ## Task board
@@ -31,13 +32,13 @@
 | 14 | Lobby class select + ready | P5 | ✅ **เสร็จ (2026-08-01)** *(in-game staging)* |
 | 15 | GameState management | P5 | ✅ **เสร็จ (2026-08-02)** |
 | 16a | In-game UI (Result + HUD + Shop) | P5 | ✅ **เสร็จ (2026-08-02)** |
-| 16b | Direct IP connect UI | P5 | ⬜ |
-| 16c | Placeholder art pass | P5 | ⬜ |
-| W1 | Arsenal foundation (2-slot + swap) | P6 | 🔵 ออกแบบแล้ว |
-| W2 | Projectile weapon (ปิดหนี้ task 5) | P6 | 🔵 ออกแบบแล้ว |
-| W3 | Attachment system (3 mod slots) | P6 | 🔵 ออกแบบแล้ว |
-| W4 | Shop integration (ปืน/attachment) | P6 | 🔵 ออกแบบแล้ว |
-| W5 | Effect-hook layer + 3 ตัวอย่าง | P6 | 🔵 ออกแบบแล้ว |
+| 16b | Direct IP connect UI | P5 | ✅ **เสร็จ (2026-08-03)** — G-a ผ่าน (LAN 2 peer จริง) + แก้บั๊ก SceneCondition |
+| 16c | Placeholder art pass | P5 | 🟡 **build+static verified (2026-08-03)** — รอ play-review (visual/nav/2-peer) |
+| W1 | Arsenal foundation (2-slot + swap) | P6 | 🟡 **build+static verified** — รอ runtime play-test |
+| W2 | Projectile weapon (ปิดหนี้ task 5) | P6 | 🟡 **build+static verified** — PlayerProjectile wired |
+| W3 | Attachment system (3 mod slots) | P6 | 🟡 **build+static verified** — resolve fold ผ่าน smoke test |
+| W4 | Shop integration (ปืน/attachment) | P6 | 🟡 **build+wired** — ปุ่มซื้อปืน/mod ในร้าน รอ play-test |
+| W5 | Effect-hook layer + 3 ตัวอย่าง | P6 | 🟡 **build+static verified** — 3 effect assets พร้อม |
 
 > **Phase 6 (Weapon system) = post-MVP** — design ครบผ่าน grill ([decision 0016](decisions/0016-weapon-system.md)), build **หลังปิด MVP** (16b + LAN verify + 16c). ต่อด้วย Skill system + Ping (ยังไม่ออกแบบ)
 
@@ -412,3 +413,123 @@ grill ออกแบบระบบ Weapon ("โมปืน") ทั้งก�
 - **sub-task:** W1 arsenal · W2 projectile · W3 attachment · W4 shop · W5 effect layer
 
 **สถานะ: design เท่านั้น** — build หลังปิด MVP (16b + LAN verify + 16c). **ถัดไป:** Skill system (generalize ability, ยืมโครงนี้) + Ping (ยังไม่ออกแบบ)
+
+### 2026-08-03 — Task 16b: Direct IP connect — build + static verify ✅ (รอ G-a)
+
+ทำให้เข้าห้องด้วย Direct IP (LAN) ได้จริง — ปิดหนี้ hardcode `127.0.0.1` + await-connection + error UI. ออกแบบผ่าน grill 12 decisions + advisor. เหตุผลเต็ม [decisions/0017](decisions/0017-direct-ip.md)
+
+**แก้ (4 ไฟล์):**
+- `Networking/TransportProvider/TugboatTransprotProvider.cs` — `_joinAddress` field (default 127.0.0.1) · `ConnectionAddress` คืน field · `JoinLobby(addr)` เขียน field (A1 — typed IP เป็น source-of-truth เดียว, host self-connect คง loopback)
+- `Networking/LobbyManager.cs` — **await-real join** (`AwaitClientJoin`: subscribe `OnAuthenticated`/`OnClientConnectionState` **ก่อน** `StartConnection` กัน success-race + `UniTaskCompletionSource` + `.Timeout(10s)` backstop) · `_isJoining` flag กัน Stopped ตอน join-fail ชน mid-game-drop handler · `GetHostDisplayAddress()` + LAN IPv4 resolver · host-side `Debug.Log` ตอน client connect/disconnect
+- `GameUI/MainMenu/JoinPanel.cs` — validate `IPAddress.TryParse` IPv4-only ก่อน connect · disable ปุ่ม+"Connecting..." · **error label subscribe `OnError`** (เดิมไม่มีใคร subscribe → error มองไม่เห็น)
+- `GameUI/MainMenu/LobbyPanel.cs` — host: seed LAN IP ลง `IpInputField` (แก้ได้) · client: read-only host IP · copy จาก field แทน 127.0.0.1
+
+**Decisions (grill, 12 ข้อ):** A1 IP-through-transport · B3 best-guess LAN IP แก้ได้+copy · C1 await-real · T1 พึ่ง LiteNetLib ~5.5วิ + backstop 10 · F1 connecting-feedback · D1 TryParse IPv4 · E1 label-only rename · **E1a error-label in-scope** (advisor จับ: `OnError` ไม่มี UI subscriber) · **I1 force IPv4-only** (advisor: dual-stack trap) · H1 host เห็น client ตอน staging + log · G-a/G-b verify ladder
+
+**บั๊กเจอตอน static verify + แก้:** LAN IP resolver เดิม (score by range+type) **เดาผิดบนเครื่อง dev** — Hyper-V `vEthernet (Internal Switch)` (`192.168.217.1`) รายงานเป็น Ethernet+192.168 → tie กับ LAN จริง (`192.168.1.71`) → คืน virtual → **แก้: เพิ่ม default-gateway เป็นสัญญาณหลัก (+10)** เพราะ virtual switch ไม่มี gateway → LAN จริงชนะ (score 14 vs 4). ยืนยัน ranking ถูกผ่าน MCP
+
+**Wiring (MCP):** Tugboat `_enableIpv6=false` (Init scene, saved) · MainMenu: +ErrorText (JoinPanel) +IpInputField (LobbyPanel) + label "Copy IP"/placeholder (saved)
+
+**Static verified (MCP):** compile errors=0 · resolver ranking LAN จริงชนะ virtual · code path await-flow ถูก · host loopback ไม่ regression
+
+**ยัง NOT verified — G-a (ผู้ใช้ทำ ปิด task):** 2 instance (MPM/2 build) client พิมพ์ **LAN IP จริง** (ไม่ใช่ 127.0.0.1) → ต่อ+เล่นได้ · error path (IP ผิด → เห็น error บนจอ ปุ่มคืนสภาพ) · **ถ้าต่อไม่ติดทั้งที่ IP ถูก → สงสัย IPv6 dual-stack ก่อน** · G-b (2 เครื่องจริง) ปิด MVP
+
+**เตรียมต่อ:** 16c (art) ปิด MVP · Phase 6 weapon (build หลัง LAN verify)
+
+### 2026-08-03 — Task 16b: G-a LAN test ผ่าน + แก้บั๊ก multi-peer (FishNet SceneCondition) ✅
+
+**G-a (LAN 2 peer จริง):** client ต่อ LAN IP `192.168.1.71` (ไม่ใช่ loopback) สำเร็จ + เล่นได้ปกติ → **Direct IP ทำงานสมบูรณ์ + multi-peer verified ครั้งแรกของโปรเจกต์**
+
+**บั๊กที่เจอตอน G-a (multi-peer ค้างเดิม ไม่เกี่ยว 16b):** client เข้าเกมแล้ว console ขึ้น `SceneId of ... not found in SceneObjects` (GameManager + WaveManager) → **manager ไม่ spawn บน client = เกมพัง**
+
+**Root cause:** NetworkManager ไม่มี `ObserverManager` ใน scene → FishNet auto-add ตอน runtime ด้วย `_defaultConditions` ว่าง → ตามโค้ด `ObserverManager.AddDefaultConditions`: condition ว่าง = **ทุก object ถูก observe โดยทุก client ไม่ว่าอยู่ scene ไหน** → client ที่ยังอยู่ lobby (ยังไม่โหลด SampleScene) ได้ spawn ของ scene object ใน SampleScene → หา SceneId ไม่เจอ → drop → manager ไม่เกิด. โผล่ครั้งแรกเพราะทุก task ก่อนหน้า verify แค่ host เดี่ยว (object local อยู่แล้ว ไม่ส่งข้ามเน็ต)
+
+**Fix (scene/asset เท่านั้น ไม่แตะโค้ด):**
+- สร้าง `Assets/Data/DefaultSceneCondition.asset` (FishNet `SceneCondition`)
+- เพิ่ม `ObserverManager` component ลง NetworkManager (Init scene) + set `_defaultConditions = [DefaultSceneCondition]`
+- SceneCondition = `connection.Scenes.Contains(object.scene)` → object sync เฉพาะ client ที่โหลด scene เดียวกัน → client ในลอบบี้ไม่ได้รับ spawn ของ SampleScene, พอโหลด scene แล้วค่อยได้ = ถูกต้อง (แถม late-join ไม่พัง)
+
+**Red herrings ที่ลองก่อน (ไม่ใช่สาเหตุ):** SceneId reserialize (ไม่ช่วย — id ปกติ, เป็นเรื่อง observation ไม่ใช่ id · SampleScene SceneId เปลี่ยนไปตอน reserialize แต่ไม่กระทบ), DontDestroyOnLoad, inactive object, duplicate instance, SampleScene pre-open in editor
+
+**บทเรียน:** multi-peer scene game บน FishNet **ต้องมี SceneCondition** เสมอ ไม่งั้น object ข้าม scene รั่วไปหา client ที่ไม่ได้อยู่ scene นั้น → เก็บเป็น convention สำหรับ scene object ใหม่ทุกตัว
+
+**ยัง NOT verified:** G-b (2 เครื่องจริง + firewall) — ปิด MVP ภายหลัง
+
+### 2026-08-03 — Task 16c: Placeholder art pass — build + static verify ✅ (รอ play-review)
+
+เลิกเป็น cube → Synty static pawn + แต่งฉาก. ออกแบบผ่าน grill 9 decisions. เหตุผลเต็ม [decisions/0018](decisions/0018-placeholder-art.md)
+
+**สลับ visual (prefab, ไม่แตะ collider/logic ตาม Q5):**
+- **Player** cube → `SM_Pawn_Weapon_Male_01` (ถือปืน) เป็น child · cube renderer ปิด · muzzle `Cube (1)` transform คงอยู่
+- **Runner/Tank/Ranger** cube → `SM_Pawn_Run/Idle/Weapon_Male_01` · root scale เดิม (0.8/1.6/1.0) แยกขนาดให้ฟรี · material `Texture_04/07/02` แยกสี · cube renderer ปิด
+
+**โค้ด (2 จุด, visual-only):**
+- `Enemies/Enemy.cs` — `CacheFlashColor` fallback: ถ้า `_flashRenderer` null/disabled → `FindVisibleRenderer()` (enabled renderer แรก = pawn) → hit-flash เด้งบนโมเดลที่เห็น ไม่ใช่ cube ที่ซ่อน
+- `Player/PlayerLook.cs` — owner-hide (P2): serialized `bodyModel` + OnStartClient (IsOwner) ปิด renderer ทั้งหมดของ body → เจ้าของไม่เห็นตัวเอง (FP), คนอื่นเห็น · **ไม่มี viewmodel** (ตัด MVP)
+
+**Arena (SampleScene):** floor grid มีอยู่แล้ว (`Global_Grid_09`) · +4 กำแพงขอบ cube (±20, grid mat, BoxCollider) · +6 cover prop (crate/barrel/barrier, ±12) · **A* rescan** (`AstarPath.active.Scan()`) · saved
+
+**เลือกตัวละคร (build-time correction):** grill Q4 เลือก rigged Character (Male_Face/Dummy) แต่เจอตอน build ว่า **pack ไม่มี animation/controller** → rigged จะ T-pose → สลับเป็น **static SM_Pawn** (ท่าเดียว ไม่มี rig = ไม่มี T-pose, ตรง S1) · pose บอก role (ถือปืน/วิ่ง/ยืน)
+
+**MCP note:** interpreter รอบนี้ flaky หนัก (null/hang เยอะ, instance component access + prefab-ref wiring พัง) — pattern ที่ reliable: `LoadPrefabContents`+`SaveAsPrefabAsset(out ok)` (structural + ref set), single-purpose `ApplyPrefabInstance` (add/property เดี่ยว, combined นัก null). verify ทุกอย่างด้วย asset-read
+
+**Static verified (asset-read):** ทั้ง 4 prefab มี SyntyModel + cube renderer ปิด + material ถูก · bodyModel=SyntyModel wired · compile errors=0 · arena saved + A* scanned
+
+**ยัง NOT verified — play-review (Q9, ผู้ใช้):** pawn โผล่แทน cube · สี 04/07/02 ดูโอเค · เท้าจม/ลอย (pivot pawn vs collider) · **owner-hide 2-peer** (เจ้าของซ่อน/คนอื่นเห็น) · **enemy nav หลังแต่งฉาก** (จุดเสี่ยงสุด — A* rescan + cover ไม่บล็อค) · hit-flash บนโมเดล
+
+**เตรียมต่อ:** ปรับสี/scale/pose ตาม review · G-b (2 เครื่อง) ปิด MVP · Phase 6 Weapon build
+
+### 2026-08-03 — Hygiene: ลบ dead test code ✅
+
+เก็บกวาด prototype/test code ที่ CLAUDE.md ระบุ "ไม่ใช่ production" (ถามยืนยัน scope กับ user ก่อนลบ)
+
+**ลบ:** `Networking/Test/` (PlayerCubeCreator/SyncMaterialColor/DespawnAfterTime — 3 NetworkBehaviour ทดลอง) + `poop.prefab` (test ore) + `Bullet.prefab` (old projectile) · component `PlayerCubeCreator` ถอดจาก Player.prefab
+
+**เคลียร์ ref (เก็บของจริงไว้):** `SpawnOre.Ore`→null (เก็บ SpawnOre, ore feature อยู่นอก MVP แต่ไม่ลบ) · `DefaultLauncher.projectilePrefab`→null (เก็บ SO, Phase 6 W2 สร้าง projectile ใหม่)
+
+**ไม่แตะ:** SpawnOre, DefaultLauncher SO, `EmptyNetworkBehaviour` (FishNet built-in ไม่ใช่ test)
+
+**วิธี (MCP flaky):** ref clearing = แก้ YAML ตรงๆ (reflection/SerializedObject ผ่าน interpreter คืน null เชื่อไม่ได้) · deletion = `AssetDatabase.DeleteAsset` (auto-update DefaultPrefabObjects) · verify compile errors=0 ไม่มี missing ref
+
+### 2026-08-03 — Phase 6 W1: Arsenal foundation — build + static verify ✅ (รอ runtime)
+
+refactor weapon เดี่ยว → arsenal 2 ช่อง + swap ตามสถาปัตย์ 3 ชั้น (decision 0016). ปรึกษา advisor ก่อน build (จับ 5 จุด: SyncList idiom, guard read, timer array, OnChange batch, คง HUD signature)
+
+**ไฟล์ใหม่ (Combat/):** `WeaponSlot.cs` (struct value-type + IEquatable: weaponId+ammo+mod×3, per-slot ammo) · `WeaponCatalog.cs` (SO, id=index, resolve id→WeaponData ทุกเครื่องเหมือนกัน) · `WeaponProfile.cs` (resolved stats) · `WeaponInstance.cs` (runtime cache + `Resolve(template, upgrades)` fold multiplier)
+**refactor:** `PlayerWeapon.cs` — `SyncList<WeaponSlot>` + `SyncVar<int> activeSlot` + `_reloading` (owner-only) · `WeaponInstance[2]` cache · timer per-slot (`_nextClientFire[2]`/`_nextServerFire[2]`, ไม่ sync) · OnChange handler (Add/Clear/Complete→rebuild all, Set→identity-skip ammo-only) · rebuild on OnUpgradesChanged · fire path ขับด้วย `ActiveInstance.profile` · swap key 1/2 → `CmdSwap` (cancel reload 7a) · **คง `Ammo`/`MagazineSize`/`IsReloading` signature → active slot (HudPublisher ไม่พัง)**
+
+**FishNet facts (verify):** SyncList indexer `set` = force=true = dirty เสมอ (`_slots[i]=copy` ยิง OnChange แน่) · delegate `(op,index,old,new,asServer)` · `SyncList(SyncTypeSettings)` รับ owner-only
+
+**Wiring:** `WeaponCatalog.asset` [DefaultRifle=id0, DefaultLauncher=id1] · Player.prefab PlayerWeapon `_catalog`+`_startingLoadout=[0,1]` (LoadPrefabContents pattern)
+
+**Static verified:** compile errors=0 · `Resolve` ถูก (rifle dmg25/cd0.125/mag30/hitscan/range100 · launcher dmg40/cd0.33/mag10/projectile) · wiring persisted
+
+**ยัง NOT verified — runtime (play-test):** spawn → 2 slot · swap 1↔2 เปลี่ยน activeSlot · ammo/reload/cooldown แยกช่อง · swap cancel reload · damage server-auth · hitscan (slot0=rifle) ยิงโดน · **launcher (slot1) projPrefab=null → ยิงกินกระสุนแต่ไม่เกิด projectile จนกว่า W2** (progression ตั้งใจ)
+
+**เตรียม W2:** `PlayerProjectile` prefab (clone EnemyProjectile, damageMask=Enemy) → เข้า catalog id1 (DefaultLauncher.projectilePrefab) → launcher ยิงโดนจริง (ปิดหนี้ task 5)
+
+### 2026-08-07 — Phase 6 W2–W5: projectile + attachment + shop + effect layer — build + static verified ✅
+
+build ต่อจาก W1 จนครบทั้ง Phase 6 (decision 0016). compile errors=0 · resolve chain verified ผ่าน editor smoke test
+
+**W2 — Projectile (ปิดหนี้ task 5):** `Prefabs/PlayerProjectile.prefab` (clone EnemyProjectile, `damageMask=Enemy(512)`) → wire เข้า `DefaultLauncher.projectilePrefab` · fire path `profile.isProjectile` ของ W1 ขับให้อยู่แล้ว (ไม่มีโค้ดใหม่)
+
+**W3 — Attachment:** `AttachmentData.cs` (flat/pct damage, pctFireRate, flatMagazine + behavior forceFullAuto/addPellets/addSpread/addPierce + `WeaponEffect[]`) · `AttachmentCatalog.cs` (id=index) · `WeaponInstance.Resolve` ขยายเป็น `(template, slot, attachmentCatalog, upgrades)` fold Q10b `(base+Σflat)×(1+Σpct)×upgradeMult` · `WeaponProfile` +pelletCount/spread/pierceCount/effects · **fire path multi-pellet + pierce** (`FireHitscanShot`: RaycastAll เรียงระยะ, cone scatter, ส่ง target array ครั้งเดียว → server consume 1 นัด)
+
+**W4 — Shop:** `WeaponData`/`AttachmentData` +displayName/cost · `PlayerWeapon.CmdBuyWeapon`/`TryBuyWeapon` (เขียนทับ WeaponSlot ทั้ง entry = ammo reset atomic) + `CmdEquipAttachment`/`TryEquipAttachment` (validate ShopOpen + gold ผ่าน `PlayerWallet.TrySpend`) · `ShopController` +หมวด WEAPONS/ATTACHMENTS (reuse MakeButton/LocalPlayer เดิม)
+
+**W5 — Effect layer:** `WeaponEffect.cs` (abstract SO + `EffectContext` struct) hook `OnHitDealt`/`OnKill` server-only · **`IHitReceiver.ReceiveHit` → คืน `bool killed`** (local attribution) แก้ implementer ครบ 3 (Enemy=HP→0, PlayerHealth=Alive→Downed, KnockbackReceiver=false) · `PlayerWeapon.EffectDamage` (ApplyDamage ตรง = **recursion guard**) + `EffectHealShooter`/`EffectRefillAmmo` + `RpcEffectBurst`/`RpcEffectBeam` · **3 effect:** ExplosiveEffect (OverlapSphere AoE) · ChainLightningEffect (jump หา nearest, damage fraction) · HealAmmoOnKillEffect
+
+**ตัด legacy:** `WeaponData.Fire(PlayerWeapon)` abstract strategy hook (fire path ใช้ fixed vocabulary + profile แทน ตาม Q11) — subclass ไม่ต้อง override อีก
+
+**Assets:** `WeaponCatalog` [DefaultRifle=0, DefaultLauncher=1] · `AttachmentCatalog` [ShotgunChoke=0 (+5 pellets/spread6/−40%dmg), ExplosiveRounds=1 (−20% fireRate + AoE), VampireRounds=2 (+5 dmg + heal/ammo on kill)] · 3 effect assets (damageMask=Enemy) · Player.prefab `_catalog`+`_attachments`+loadout[0,1] · ShopController catalogs wired
+
+**Static verified — `Tools/Horde/Weapon Resolve Smoke Test`** (editor menu, ทำเพราะ MCP interpreter เรียก method ที่มี `in` param ไม่ได้):
+```
+rifle (plain):              dmg=25  cd=0.125 pellets=1 effects=0
+rifle + ShotgunChoke:       dmg=15  cd=0.125 pellets=6 spread=6      ← stat+behavior fold
+rifle + Explosive+Vampire:  dmg=30  cd=0.156 effects=2                ← Q10b stack + effect layer
+launcher:                   dmg=40  projectile=True projPrefab=PlayerProjectile ← W2
+```
+
+**ยัง NOT verified — runtime play-test (ทำทีเดียวตอนท้าย ตามที่ user เลือก):** swap 1/2 + ammo/reload แยกช่อง · ยิง rifle โดน enemy · **launcher ยิงโดนจริง** (ปิดหนี้ task 5) · ซื้อปืน/mod ในร้าน (gold หัก, slot เขียนทับ, ammo reset) · shotgun 6 นัดกระจาย · **explosive AoE / chain / heal-on-kill ทำงาน + ไม่ recurse** · multi-peer (SyncList owner-only propagate)

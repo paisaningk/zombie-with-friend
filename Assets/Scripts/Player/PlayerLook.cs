@@ -21,6 +21,8 @@ namespace Player
         [SerializeField] private Transform cameraHolder;
         [SerializeField] private Camera ownerCamera;
         [SerializeField] private AudioListener ownerListener;
+        [Tooltip("Body model hidden for the owner (first-person). Remote players still see it.")]
+        [SerializeField] private GameObject bodyModel;
 
         [Header("Look (owner)")]
         [SerializeField] private float sensitivity = 0.1f; // degrees per mouse unit
@@ -37,6 +39,13 @@ namespace Player
 
             if (ownerCamera != null) ownerCamera.enabled = true;
             if (ownerListener != null) ownerListener.enabled = true;
+
+            // First-person: hide the owner's own body model so it doesn't clip into the camera
+            // (decision P2, task 16c). Non-owners returned above, so remote players still see the
+            // full body. No viewmodel/hands (cut from MVP).
+            if (bodyModel != null)
+                foreach (Renderer r in bodyModel.GetComponentsInChildren<Renderer>(true))
+                    r.enabled = false;
 
             // The cursor is NOT this component's concern — CursorController is the single owner of it
             // (decision 0014), derived from GameState. PlayerLook only reads look input while Playing.

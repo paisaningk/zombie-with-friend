@@ -2,7 +2,13 @@
 
 public interface IHitReceiver
 {
-    void ReceiveHit(in HitInfo hit);
+    /// <summary>
+    /// Apply a hit. Returns TRUE when this hit killed/downed the receiver — local attribution for
+    /// on-kill weapon effects (decision 0016, W5): the shooter learns "this shot got the kill" without
+    /// threading an attacker through the whole damage pipeline. Receivers with no death concept
+    /// (knockback-only) return false.
+    /// </summary>
+    bool ReceiveHit(in HitInfo hit);
 }
 
 public readonly struct HitInfo

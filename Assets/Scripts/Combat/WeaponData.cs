@@ -11,6 +11,12 @@ namespace Combat
     /// </summary>
     public abstract class WeaponData : ScriptableObject
     {
+        [Header("Shop")]
+        [Tooltip("Display name in the shop.")]
+        public string displayName = "Weapon";
+        [Tooltip("Gold cost to buy this weapon (decision 0016, W4).")]
+        public int cost = 500;
+
         [Header("Shared stats")]
         public float damage = 10f;
         [Tooltip("Rounds per second.")]
@@ -22,10 +28,8 @@ namespace Combat
 
         public float Cooldown => fireRate > 0f ? 1f / fireRate : 0f;
 
-        /// <summary>
-        /// Executes one shot on the owner/client. Called once per trigger pull AFTER PlayerWeapon
-        /// has gated ammo/cooldown locally. Drives the owner's networked fire primitives.
-        /// </summary>
-        public abstract void Fire(PlayerWeapon owner);
+        // NOTE (Phase 6, decision 0016 Q11): the old `abstract Fire(PlayerWeapon)` strategy hook is gone.
+        // Shot mechanics are now a fixed vocabulary resolved into a WeaponProfile (hitscan vs projectile,
+        // pellets, pierce…) that PlayerWeapon's fire path reads; "weird" behaviour lives in WeaponEffect.
     }
 }

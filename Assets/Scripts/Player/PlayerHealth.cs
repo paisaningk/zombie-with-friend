@@ -81,10 +81,13 @@ namespace Player
         /// deliberately ignored. No-op off-server. Callers guard with IsServerInitialized (as
         /// NetworkProjectile does), and we re-check here for safety.
         /// </summary>
-        public void ReceiveHit(in HitInfo hit)
+        public bool ReceiveHit(in HitInfo hit)
         {
-            if (!IsServerInitialized) return;
+            if (!IsServerInitialized) return false;
+            bool aliveBefore = _state != null && _state.IsAlive;
             ApplyDamage(hit.Damage);
+            // "Killed" for a player = this hit put them Down (decision 0016, W5 local attribution).
+            return aliveBefore && _state != null && !_state.IsAlive;
         }
 
         /// <summary>

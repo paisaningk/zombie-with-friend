@@ -15,7 +15,8 @@ namespace Bullet
             _rb = GetComponent<Rigidbody>();
         }
 
-        public void ReceiveHit(in HitInfo hit)
+        // Knockback-only receiver: no health, so it never reports a kill (decision 0016, W5).
+        public bool ReceiveHit(in HitInfo hit)
         {
             // ทิศผลัก: ไปตามทิศกระสุน (หรือจะใช้ (transform.position - shooterPos) ก็ได้)
             var dir = hit.Direction;
@@ -31,6 +32,7 @@ namespace Bullet
 
             // ใส่แรงแบบ impulse
             _rb.AddForce(impulse, ForceMode.Impulse);
+            return false;
         }
     }
 }

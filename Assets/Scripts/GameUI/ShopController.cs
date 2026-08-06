@@ -25,6 +25,20 @@ namespace GameUI
         [SerializeField] private ShopData _shop;
         [SerializeField] private float _refresh = 0.3f;
 
+        [Header("Arsenal (Phase 6 W4)")]
+        [Tooltip("Weapons offered for sale (same catalog the players resolve ids through).")]
+        [SerializeField] private Combat.WeaponCatalog _weapons;
+        [Tooltip("Attachments offered for sale.")]
+        [SerializeField] private Combat.AttachmentCatalog _attachments;
+        [Tooltip("Weapon ids listed in the shop (index in the weapon catalog).")]
+        [SerializeField] private int[] _weaponsForSale = { 1 };
+        [Tooltip("Attachment ids listed in the shop (index in the attachment catalog).")]
+        [SerializeField] private int[] _attachmentsForSale = { 0, 1, 2 };
+        [Tooltip("Which arsenal slot a bought weapon goes into (0 = Primary, 1 = Secondary).")]
+        [SerializeField] private int _buyIntoSlot = 1;
+        [Tooltip("Which mod socket (0..2) a bought attachment goes into.")]
+        [SerializeField] private int _equipIntoSocket = 0;
+
         private static readonly UpgradeType[] Upgrades =
             { UpgradeType.Damage, UpgradeType.MaxHp, UpgradeType.FireRate };
 
@@ -35,6 +49,8 @@ namespace GameUI
         private TextMeshProUGUI _goldText;
         private TextMeshProUGUI _readyLabel;
         private readonly TextMeshProUGUI[] _upgradeLabels = new TextMeshProUGUI[3];
+        private TextMeshProUGUI[] _weaponLabels;
+        private TextMeshProUGUI[] _attachmentLabels;
 
         private float _nextRefresh;
 
@@ -85,6 +101,21 @@ namespace GameUI
 
         private void OnBuy(UpgradeType type) => LocalPlayer()?.Upgrades?.CmdBuy(type);
 
+        // Phase 6 W4: the server validates shop window / id / gold and rewrites the slot atomically.
+        private void OnBuyWeapon(int weaponId)
+        {
+            PlayerController local = LocalPlayer();
+            Combat.PlayerWeapon weapon = local != null ? local.GetComponent<Combat.PlayerWeapon>() : null;
+            if (weapon != null) weapon.CmdBuyWeapon(weaponId, _buyIntoSlot);
+        }
+
+        private void OnBuyAttachment(int attachmentId)
+        {
+            PlayerController local = LocalPlayer();
+            Combat.PlayerWeapon weapon = local != null ? local.GetComponent<Combat.PlayerWeapon>() : null;
+            if (weapon != null) weapon.CmdEquipAttachment(attachmentId, _buyIntoSlot, _equipIntoSocket);
+        }
+
         private void OnToggleReady()
         {
             PlayerController local = LocalPlayer();
@@ -118,6 +149,26 @@ namespace GameUI
                 label.text = level >= max
                     ? $"{Name(type)}\nLv {level}/{max}  (MAX)"
                     : $"{Name(type)}\nLv {level}/{max}  —  ${cost}";
+            }
+
+            if (_weaponLabels != null && _weapons != null)
+            {
+                for (int i = 0; i < _weaponLabels.Length && i < _weaponsForSale.Length; i++)
+                {
+                    Combat.WeaponData w = _weapons.Get(_weaponsForSale[i]);
+                    if (_weaponLabels[i] != null)
+                        _weaponLabels[i].text = w != null ? $"{w.displayName}  —  ${w.cost}" : "(empty)";
+                }
+            }
+
+            if (_attachmentLabels != null && _attachments != null)
+            {
+                for (int i = 0; i < _attachmentLabels.Length && i < _attachmentsForSale.Length; i++)
+                {
+                    Combat.AttachmentData a = _attachments.Get(_attachmentsForSale[i]);
+                    if (_attachmentLabels[i] != null)
+                        _attachmentLabels[i].text = a != null ? $"{a.displayName}  —  ${a.cost}" : "(empty)";
+                }
             }
 
             if (_readyLabel != null)
@@ -194,6 +245,31 @@ namespace GameUI
                 UpgradeType type = Upgrades[i];
                 Button btn = MakeButton(col.transform, "", () => OnBuy(type), out TextMeshProUGUI label, 96);
                 _upgradeLabels[i] = label;
+            }
+
+            // --- arsenal (Phase 6 W4): weapons then attachments ---
+            if (_weapons != null && _weaponsForSale != null && _weaponsForSale.Length > 0)
+            {
+                MakeText(col.transform, "— WEAPONS —", 22, FontStyles.Bold, 32);
+                _weaponLabels = new TextMeshProUGUI[_weaponsForSale.Length];
+                for (int i = 0; i < _weaponsForSale.Length; i++)
+                {
+                    int id = _weaponsForSale[i];
+                    MakeButton(col.transform, "", () => OnBuyWeapon(id), out TextMeshProUGUI label, 72);
+                    _weaponLabels[i] = label;
+                }
+            }
+
+            if (_attachments != null && _attachmentsForSale != null && _attachmentsForSale.Length > 0)
+            {
+                MakeText(col.transform, "— ATTACHMENTS —", 22, FontStyles.Bold, 32);
+                _attachmentLabels = new TextMeshProUGUI[_attachmentsForSale.Length];
+                for (int i = 0; i < _attachmentsForSale.Length; i++)
+                {
+                    int id = _attachmentsForSale[i];
+                    MakeButton(col.transform, "", () => OnBuyAttachment(id), out TextMeshProUGUI label, 72);
+                    _attachmentLabels[i] = label;
+                }
             }
 
             MakeButton(col.transform, "Ready", OnToggleReady, out _readyLabel, 80);

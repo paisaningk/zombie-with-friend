@@ -618,7 +618,7 @@ MonoBehaviour:
   <PrefabId>k__BackingField: 65535
   <SpawnableCollectionId>k__BackingField: 0
   <AssetPathHash>k__BackingField: 0
-  SceneId: 870831951
+  SceneId: 4293058003
   SerializedTransformProperties:
     Position: {x: 0, y: 0, z: 0}
     Rotation: {x: 0, y: 0, z: 0, w: 0}
@@ -1755,7 +1755,7 @@ MonoBehaviour:
   _componentIndexCache: 255
   _addedNetworkObject: {fileID: 1342462653}
   _networkObjectCache: {fileID: 0}
-  Ore: {fileID: -1614414077979194434, guid: 5e2f94fbada7c604c82c6dc4d89143d6, type: 3}
+  Ore: {fileID: 0}
   SpawnPoint: {fileID: 1440388558}
   InteractPrompt: {fileID: 1136658395}
   InteractKey: 101
@@ -2188,7 +2188,7 @@ MonoBehaviour:
   <PrefabId>k__BackingField: 65535
   <SpawnableCollectionId>k__BackingField: 0
   <AssetPathHash>k__BackingField: 0
-  SceneId: 4226995582
+  SceneId: 3085884770
   SerializedTransformProperties:
     Position: {x: 0, y: 0, z: 0}
     Rotation: {x: 0, y: 0, z: 0, w: 0}
@@ -2805,7 +2805,7 @@ MonoBehaviour:
   <PrefabId>k__BackingField: 65535
   <SpawnableCollectionId>k__BackingField: 0
   <AssetPathHash>k__BackingField: 0
-  SceneId: 1945097539
+  SceneId: 2146359211
   SerializedTransformProperties:
     Position: {x: 0, y: 0, z: 0}
     Rotation: {x: 0, y: 0, z: 0, w: 0}

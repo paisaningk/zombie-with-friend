@@ -11,7 +11,14 @@ namespace Networking.TransportProvider
     public class TugboatTransprotProvider : MonoBehaviour, ITransportProvider
     {
         [SerializeField] private Multipass multipass;
-        public string ConnectionAddress => "127.0.0.1";
+
+        // The address the local client will connect to. Defaults to loopback so the HOST
+        // (which calls CreateLobby but never JoinLobby) always self-connects on 127.0.0.1 —
+        // reliable, no NIC dependency. A joining CLIENT overwrites this via JoinLobby with the
+        // typed host IP, and ConnectionAddress then reports it. One provider instance is either
+        // host or client, never both, so the two paths never collide (task 16b, decision A1).
+        private string _joinAddress = "127.0.0.1";
+        public string ConnectionAddress => _joinAddress;
         public string LobbyName => "LOCAL";
         
         // Tugboat is a direct-IP transport with no lobby service: GetPlayersInLobby has
@@ -31,7 +38,11 @@ namespace Networking.TransportProvider
         public UniTask<bool> JoinLobby(string address, CancellationToken ct = default)
         {
             multipass.SetClientTransport<Tugboat>();
-            return UniTask.FromResult(true); // address = IP ที่พิมพ์
+            // Store the typed host IP so ConnectionAddress reports it and the client connects
+            // there instead of loopback (task 16b, decision A1). Host never calls this, so its
+            // _joinAddress stays at the loopback default.
+            _joinAddress = address;
+            return UniTask.FromResult(true);
         }
 
         public void         Disconnect()        { }

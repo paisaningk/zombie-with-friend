@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b936409cc121b5347b46bf1349630dab, type: 3}
+  m_Name: ExplosiveRounds
+  m_EditorClassIdentifier: Assembly-CSharp::Combat.AttachmentData
+  displayName: Explosive Rounds
+  cost: 600
+  flatDamage: 0
+  pctDamage: 0
+  pctFireRate: -0.2
+  flatMagazine: 0
+  forceFullAuto: 0
+  addPellets: 0
+  addSpread: 0
+  addPierce: 0
+  effects:
+  - {fileID: 11400000, guid: b63bf4f34bf4e4e4d959c0f5ee0be6bf, type: 2}

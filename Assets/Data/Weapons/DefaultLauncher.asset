@@ -17,5 +17,5 @@ MonoBehaviour:
   magazineSize: 10
   reloadTime: 2
   fullAuto: 0
-  projectilePrefab: {fileID: 6294629343607866315, guid: 2514e2137e748b6448f8f0ca08a7caad, type: 3}
+  projectilePrefab: {fileID: 8768050461284538309, guid: 268c53aa1ff435141bb9f4f34a81ed2a, type: 3}
   projectileSpeed: 30

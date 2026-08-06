@@ -15,6 +15,7 @@ namespace GameUI.MainMenu
         public string MenuScene;
         public string GameScene;
         public TMP_Text LobbyNameText;
+        public TMP_InputField IpInputField; // host: editable LAN IP to share · client: connected IP (task 16b, B3)
         public ButtonFx StartGameButton;
         public ButtonFx CopyCodeButton;
         public ButtonFx ExitLobbyButton;
@@ -49,7 +50,11 @@ namespace GameUI.MainMenu
             cts?.Cancel();
             cts = new CancellationTokenSource();
 
-            GUIUtility.systemCopyBuffer = LobbyManager.Instance.GetCode();
+            // Copy the shareable IP shown in the field (which the host may have corrected), not the
+            // host's own loopback self-connect address (task 16b, B3).
+            GUIUtility.systemCopyBuffer = IpInputField != null
+                ? IpInputField.text
+                : LobbyManager.Instance.GetCode();
 
             ShowCopiedFeedback(cts.Token).Forget();
         }
@@ -58,7 +63,16 @@ namespace GameUI.MainMenu
         {
             LobbyNameText.text = lobbyCode;
 
-            StartGameButton.gameObject.SetActive(LobbyManager.Instance.IsHost());
+            bool isHost = LobbyManager.Instance.IsHost();
+            StartGameButton.gameObject.SetActive(isHost);
+
+            if (IpInputField != null)
+            {
+                // Host shows its best-guess LAN IP, editable so it can be corrected when the guess
+                // picks a VPN/virtual adapter. Client shows the host IP it connected to, read-only.
+                IpInputField.text = isHost ? LobbyManager.Instance.GetHostDisplayAddress() : lobbyCode;
+                IpInputField.interactable = isHost;
+            }
         }
 
         [Button]

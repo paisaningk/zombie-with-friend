@@ -1,6 +1,8 @@
 # 0016 — Weapon System (arsenal + swap + attachment + effect layer)
 
-> Phase 6 (post-MVP) · ตัดสิน 2026-08-03 (ผ่าน grill session) · สถานะ: **ออกแบบแล้ว · ยังไม่ build 🔵**
+> Phase 6 (post-MVP) · ตัดสิน 2026-08-03 (ผ่าน grill session) · สถานะ: **build ครบ W1–W5 + static verified (2026-08-07) 🟡 รอ runtime play-test**
+>
+> **build note:** ทำตามดีไซน์นี้ครบ ไม่มี decision เปลี่ยน · จุดที่ต่างจากเอกสาร: ตัด `WeaponData.Fire()` abstract strategy hook ทิ้ง (Q11 บอกว่า fire path เป็น fixed vocabulary + profile แล้ว hook เดิมจึงเป็น dead code) · verify ผ่าน editor smoke test `Tools/Horde/Weapon Resolve Smoke Test` เพราะ MCP interpreter เรียก method ที่มี `in` parameter ไม่ได้ · รายละเอียดผลดู [PROGRESS log 2026-08-07](../PROGRESS.md)
 
 บันทึกว่า "ทำไมจะสร้างเป็นรูปนี้" ก่อนลงมือ — ถ้าจะเปลี่ยนโครง อ่านนี่ก่อน. build จริง **หลังปิด MVP** (16b Direct IP + LAN verify + 16c art)
 
