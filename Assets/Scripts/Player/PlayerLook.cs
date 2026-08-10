@@ -31,11 +31,27 @@ namespace Player
         private InputSystem_Actions _input;
         private float _pitch;
 
+        // Yaw is accumulated from input each frame and pushed to the Rigidbody in FixedUpdate.
+        // Writing transform.rotation directly fights the Rigidbody's Interpolate mode (PlayerMovement
+        // enables it): Unity re-drives the transform from the interpolated physics pose every rendered
+        // frame, so a manual write gets reverted → the view snaps back. MoveRotation goes through the
+        // physics pose instead, so interpolation smooths it rather than undoing it.
+        private Rigidbody _rb;
+        private float _yaw;
+
+        private void Awake()
+        {
+            _rb = GetComponent<Rigidbody>();
+        }
+
         public override void OnStartClient()
         {
             base.OnStartClient();
             if (!IsOwner)
                 return; // non-owner: camera/listener stay disabled (prefab default), no input
+
+            // Seed from the spawn rotation so the first FixedUpdate doesn't snap the player to yaw 0.
+            _yaw = transform.eulerAngles.y;
 
             if (ownerCamera != null) ownerCamera.enabled = true;
             if (ownerListener != null) ownerListener.enabled = true;
@@ -77,14 +93,25 @@ namespace Player
 
             Vector2 look = _input.Player.Look.ReadValue<Vector2>();
 
-            // Yaw: rotate the body (synced via NetworkTransform on the root).
-            if (!Mathf.Approximately(look.x, 0f))
-                transform.Rotate(Vector3.up, look.x * sensitivity, Space.Self);
+            // Yaw: accumulate here (frame-rate input), applied to the body in FixedUpdate so the
+            // Rigidbody's interpolation carries it instead of overwriting it. Synced via NetworkTransform.
+            _yaw += look.x * sensitivity;
 
             // Pitch: rotate the camera holder locally, clamped (not synced). Mouse up = look up.
+            // The holder is a child, not the Rigidbody, so physics never touches it — safe in Update.
             _pitch = Mathf.Clamp(_pitch - look.y * sensitivity, -pitchClamp, pitchClamp);
             if (cameraHolder != null)
                 cameraHolder.localRotation = Quaternion.Euler(_pitch, 0f, 0f);
+
+            // No Rigidbody (shouldn't happen on the player prefab): fall back to a direct write.
+            if (_rb == null)
+                transform.rotation = Quaternion.Euler(0f, _yaw, 0f);
+        }
+
+        private void FixedUpdate()
+        {
+            if (!IsOwner || _rb == null || _input == null) return;
+            _rb.MoveRotation(Quaternion.Euler(0f, _yaw, 0f));
         }
     }
 }
