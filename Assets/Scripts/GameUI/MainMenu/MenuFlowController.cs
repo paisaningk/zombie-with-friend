@@ -31,6 +31,11 @@ namespace GameUI.MainMenu
             MainMenu.OpenPanel();
             JoinPanel.ClosePanel();
             LobbyPanel.ClosePanel();
+
+            // Surface why we're back here. The reason is consumed (read-and-cleared), so it shows once
+            // after a drop and not again on a normal Back. Empty on the initial Start() call and when
+            // the player left on purpose (task L1, decision 0019).
+            MainMenu.ShowNotice(LobbyManager.Instance.ConsumeDisconnectReason());
         }
 
         [Button]

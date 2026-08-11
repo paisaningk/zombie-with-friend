@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using FishNet;
+using FishNet.Connection;
 using FishNet.Managing.Scened;
 using GameUI.Component;
 using Networking;
@@ -20,9 +21,14 @@ namespace GameUI.MainMenu
         public ButtonFx CopyCodeButton;
         public ButtonFx ExitLobbyButton;
 
+        [Tooltip("Where the roster card is built. Leave empty to build it directly under Panel.")]
+        public RectTransform RosterRoot;
+
         public Action OnExitLobby;
 
         private CancellationTokenSource cts;
+
+        private LobbyRosterView roster;
 
 
         public void Start()
@@ -30,6 +36,39 @@ namespace GameUI.MainMenu
             StartGameButton.onClick.AddListener(StartGame);
             ExitLobbyButton.onClick.AddListener(ExitLobby);
             CopyCodeButton.onClick.AddListener(CopyCode);
+
+            roster = new LobbyRosterView();
+            roster.Build(RosterRoot != null ? RosterRoot : Panel.transform, LobbyManager.MaxPlayers);
+
+            // Subscribed for the panel's lifetime, not per-open: the roster changes while the panel is
+            // closed too (a guest joining before the host opens it), and LobbyManager is the one holding
+            // the FishNet registration, so there is no dangling network handler either way.
+            LobbyManager.Instance.OnRosterChanged += RefreshRoster;
+            RefreshRoster();
+        }
+
+        private void OnDestroy()
+        {
+            if (LobbyManager.Instance != null)
+                LobbyManager.Instance.OnRosterChanged -= RefreshRoster;
+        }
+
+        private void RefreshRoster()
+        {
+            if (roster == null) return;
+
+            LobbyManager lobby = LobbyManager.Instance;
+            roster.Refresh(lobby.Roster, lobby.RosterMaxPlayers, LocalClientId());
+        }
+
+        // -1 while there is no live client connection; the view then just skips the "(คุณ)" tag.
+        private static int LocalClientId()
+        {
+            NetworkConnection conn = InstanceFinder.ClientManager != null
+                ? InstanceFinder.ClientManager.Connection
+                : null;
+
+            return conn != null && conn.ClientId >= 0 ? conn.ClientId : -1;
         }
         private void StartGame()
         {
@@ -61,7 +100,10 @@ namespace GameUI.MainMenu
 
         public void Setup(string lobbyCode)
         {
-            LobbyNameText.text = lobbyCode;
+            // Header is a fixed title now — the room's address lives in the IP field below it, where
+            // it can be copied. It used to print the raw lobby code, which read as "LOCAL" on Tugboat
+            // and told the player nothing (task L1).
+            LobbyNameText.text = "L O B B Y";
 
             bool isHost = LobbyManager.Instance.IsHost();
             StartGameButton.gameObject.SetActive(isHost);

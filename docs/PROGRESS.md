@@ -3,7 +3,7 @@
 บันทึกความคืบหน้าจริง (living doc) — อัปเดตทุกครั้งที่ปิด task
 ดูภาพรวม scope/กติกาที่ [CLAUDE.md](../CLAUDE.md) · เหตุผล design แต่ละ task ที่ [docs/decisions/](decisions/)
 
-> อัปเดตล่าสุด: **2026-08-03**
+> อัปเดตล่าสุด: **2026-08-11**
 
 ## สถานะรวม
 
@@ -39,6 +39,7 @@
 | W3 | Attachment system (3 mod slots) | P6 | 🟡 **build+static verified** — resolve fold ผ่าน smoke test |
 | W4 | Shop integration (ปืน/attachment) | P6 | 🟡 **build+wired** — ปุ่มซื้อปืน/mod ในร้าน รอ play-test |
 | W5 | Effect-hook layer + 3 ตัวอย่าง | P6 | 🟡 **build+static verified** — 3 effect assets พร้อม |
+| L1 | Lobby roster + ชื่อผู้เล่น + จัดหน้า LobbyPanel | post-MVP | 🟡 **build + verified (host เดี่ยว)** — **2-peer ยังไม่ผ่าน** (MPPM virtual player ไม่เข้า play mode) |
 
 > **Phase 6 (Weapon system) = post-MVP** — design ครบผ่าน grill ([decision 0016](decisions/0016-weapon-system.md)), build **หลังปิด MVP** (16b + LAN verify + 16c). ต่อด้วย Skill system + Ping (ยังไม่ออกแบบ)
 
@@ -533,3 +534,27 @@ launcher:                   dmg=40  projectile=True projPrefab=PlayerProjectile 
 ```
 
 **ยัง NOT verified — runtime play-test (ทำทีเดียวตอนท้าย ตามที่ user เลือก):** swap 1/2 + ammo/reload แยกช่อง · ยิง rifle โดน enemy · **launcher ยิงโดนจริง** (ปิดหนี้ task 5) · ซื้อปืน/mod ในร้าน (gold หัก, slot เขียนทับ, ammo reset) · shotgun 6 นัดกระจาย · **explosive AoE / chain / heal-on-kill ทำงาน + ไม่ recurse** · multi-peer (SyncList owner-only propagate)
+
+### 2026-08-11 — Task L1: Lobby roster + ชื่อผู้เล่น + จัดหน้า LobbyPanel ใหม่ 🟡
+
+งาน post-MVP ตามที่ผู้ใช้ขอ ("หน้า lobby แย่ไปหน่อย ไม่เห็นว่าใครอยู่ในห้อง"). ออกแบบผ่าน grill 12 คำถาม. เหตุผล+ผลเต็ม [decisions/0019](decisions/0019-lobby-roster.md)
+
+**ปมที่เปิด:** menu scene ไม่ใช่ FishNet scene → roster ที่ sync ในเมนูทำด้วย spawned NetworkObject ไม่ได้ (เหตุผลที่ [0013](decisions/0013-lobby-class-ready-staging.md) ย้าย coordination ไป in-game staging) → **task นี้แก้ด้วย FishNet Broadcast** ซึ่งไม่ต้องมี NetworkObject/scene ownership
+
+**ไฟล์ใหม่:** `Networking/LobbyRoster.cs` (3 broadcast struct + `LobbyRosterEntry`) · `GameUI/MainMenu/LobbyRosterView.cs` (การ์ด roster สร้างด้วยโค้ด 4 สลอต) · `DevTool/DevLobbyRosterTest.cs` (harness 2 peer, **inert** จนกว่าจะเปิด define `L1_ROSTER_TEST`)
+**แก้:** `LobbyManager` (roster + ชื่อ + PlayerPrefs + sanitize + cap transport + disconnect reason) · `LobbyPanel` (RosterRoot + header คงที่) · `MainMenuPanel` (ช่องชื่อ + NoticeText) · `MenuFlowController` (consume reason) · `StagingController` (`Player {id}` → ชื่อจริง) · scene `MainMenu.unity` (layout ใหม่ + wire)
+
+**Decisions (grill):** LobbyPanel ไม่ใช่ staging · ชื่อพิมพ์เอง+PlayerPrefs · roster ถือแค่ presence+ชื่อ+HOST (ready/class คงอยู่ staging ตาม 0013) · cap 4 + "x/4" ไม่มี kick · ชื่อกรอกที่ MainMenu ล็อกตอนเข้าห้อง · Broadcast ไม่ใช่ Authenticator · รายชื่อแนวตั้ง 4 แถว · แยกข้อความ host-ปิดห้อง · Start กดได้ตลอดแม้คนเดียว
+
+**Runtime verified (host เดี่ยว, play mode จริง ผ่านปุ่มจริง):** name round-trip ครบวง (PlayerPrefs → broadcast → server → rebuild → roster โชว์ `kao`) · **`ServerManager.Clients.Count=1` ตอน host เดี่ยว → loopback client ของ host นับเป็น connection จริง** · **cap semantics: host กิน 1 ใน 4 สลอต → `_maximumClients=4` = 4 คนรวม host** ตรงกับป้าย "x/4" · UI ถูกครบ (`1/4`, `● kao (you) HOST`, 3 แถว empty, title, IP, Start เฉพาะ host) · layout ไม่ทับกัน (screenshot) · compile 0 error
+
+**✅ ปิดข้อเสี่ยงอันดับ 1:** `LobbyRosterEntry[]` **deserialize ผ่าน socket จริง** — log `[Lobby] roster received over the wire — 1/4 entries` มี stack trace `ClientSocket.IterateIncoming → Tugboat → ClientManager.ParseBroadcast → ServerBroadcastHandler<LobbyRosterBroadcast>` → FishNet codegen สร้าง serializer ให้ array ของ custom struct ได้จริง (client ของ host รับผ่าน Tugboat loopback เหมือน peer จริง ไม่ได้ลัดวงจร)
+
+**3 บั๊กเจอตอน verify + แก้:** (1) `VerticalLayoutGroup.childControlHeight=false` → แถวใช้ความสูงดิบ 100 → ล้นการ์ดไปทับปุ่ม (2) `MainMenuPanel.Start` ล้าง notice แข่งกับ `MenuFlowController.Start` → ข้อความ "Host closed the lobby" หายเงียบบน path drop กลางเกม (3) **broadcast ตอนคนเข้ายิงก่อน authenticate** → FishNet ข้าม connection ที่ยังไม่ auth + log warning → roster ไปไม่ถึง client ที่เพิ่งเข้ามาเอง → ย้ายไปผูก `ServerManager.OnAuthenticationResult` (0 warning แล้ว)
+
+**⚠️ TMP font ไม่มี glyph ไทย** — play test พิสูจน์ว่าไทยเรนเดอร์เป็นกล่อง □□□ → string ใหม่ทั้งหมดใช้อังกฤษ + เปลี่ยน `"การเชื่อมต่อหลุด"` → `"Connection lost"` · **ข้อความไทยใน JoinPanel ยังเป็นกล่องอยู่ (พังมาก่อน task นี้)** — แก้จริงต้องใส่ TMP font ไทย = task 18
+
+**❌ ยัง NOT verified — 2 peer (เกณฑ์ปิดงานที่ user เลือก ยังไม่ผ่าน):** MPPM virtual player ไม่ยอมเข้า play mode ตาม main editor → roster 2+ แถว + ชื่อของอีกคน · notice host-ปิดห้องฝั่ง client (flush ทัน StopConnection ไหม) · ชื่อรอดเข้า staging ฝั่ง client · คนที่ 5 ต่อไม่ติดจริง · `OnAuthenticationResult` กับ remote connection
+วิธีรัน: เปิด define `L1_ROSTER_TEST` แล้วอ่าน `[L1TEST]` ใน Console + `Library/VP/<clone>/Logs/Editor.log`
+
+**นอก scope แต่บันทึกไว้:** `GamePlayerSpawner` มี spawn point แค่ 2 จุด แต่ประกาศรองรับ 4 คน → เทส 3–4 คนจะ spawn ซ้อนกัน

@@ -1,6 +1,7 @@
 using System.Text;
 using FishNet;
 using Game;
+using Networking;
 using Player;
 using TMPro;
 using UnityEngine;
@@ -134,7 +135,16 @@ namespace GameUI.Staging
                 if (!ready) allReady = false;
 
                 string dot = ready ? "<color=#5EE06B>●</color>" : "<color=#E05E5E>○</color>";
-                _sb.AppendLine($"{dot}  Player {pc.OwnerId}  <color=#9FB4FF>[{cls}]</color>  {(ready ? "READY" : "...")}");
+
+                // Display name comes from the menu-lobby roster (task L1). LobbyManager is
+                // dontDestroyOnLoad, so the ClientId→name map survives the scene load that brought us
+                // here; OwnerId and ClientId are the same id space. Falls back to "Player {id}" when
+                // the game scene was entered outside the menu flow (dev bootstrap).
+                string label = LobbyManager.Instance != null
+                    ? LobbyManager.Instance.GetPlayerName(pc.OwnerId)
+                    : $"Player {pc.OwnerId}";
+
+                _sb.AppendLine($"{dot}  {label}  <color=#9FB4FF>[{cls}]</color>  {(ready ? "READY" : "...")}");
             }
 
             if (_rosterText != null) _rosterText.text = _sb.ToString();

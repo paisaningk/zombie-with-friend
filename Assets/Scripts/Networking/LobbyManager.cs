@@ -11,6 +11,7 @@ using FishNet;
 using FishNet.Connection;
 using FishNet.Managing;
 using FishNet.Transporting;
+using FishNet.Transporting.Tugboat;
 using Networking.TransportProvider;
 using Sirenix.OdinInspector;
 using UnityEngine;
@@ -65,6 +66,231 @@ namespace Networking
 
         private CancellationTokenSource cts;
 
+        // ============ Lobby roster (task L1, decision 0019) ============
+
+        /// <summary>
+        /// Room capacity. Drives BOTH the "x/4" the UI prints and the transport's real refusal point
+        /// (see <see cref="ApplyMaxPlayersToTransport"/>) — a single constant so the label can never
+        /// promise a capacity the server doesn't enforce.
+        /// </summary>
+        public const int MaxPlayers = 4;
+
+        public const int MaxNameLength = 16;
+        private const string PlayerNamePrefsKey = "player.displayName";
+
+        // Server-side: ClientId → sanitized display name, populated by PlayerNameBroadcast.
+        private readonly Dictionary<int, string> serverNames = new Dictionary<int, string>();
+
+        // Last roster this peer knows about. On the server it is the authored snapshot; on a client
+        // it is whatever the server last broadcast. Survives the menu→game scene load because this
+        // manager is dontDestroyOnLoad — which is what lets in-game staging show real names.
+        private LobbyRosterEntry[] roster = Array.Empty<LobbyRosterEntry>();
+        private int rosterMaxPlayers = MaxPlayers;
+
+        // Set by LobbyClosedBroadcast so the disconnect that follows can be reported as "host closed
+        // the room" rather than the generic "connection lost". Consumed once, by the menu.
+        private string pendingDisconnectReason;
+
+        public IReadOnlyList<LobbyRosterEntry> Roster => roster;
+        public int RosterMaxPlayers => rosterMaxPlayers;
+
+        /// <summary>Fires on every roster change, on server and client alike. UI subscribes to this.</summary>
+        public event Action OnRosterChanged;
+
+        /// <summary>
+        /// Display name for a ClientId, from the last roster this peer received. Falls back to
+        /// "Player {id}" so a row is never blank — used by the menu roster and by in-game staging.
+        /// </summary>
+        public string GetPlayerName(int clientId)
+        {
+            foreach (LobbyRosterEntry entry in roster)
+            {
+                if (entry.ClientId == clientId)
+                    return entry.Name;
+            }
+
+            return FallbackName(clientId);
+        }
+
+        /// <summary>
+        /// Reads and clears the reason the last connection ended. Empty when the player left on
+        /// purpose or nothing has gone wrong — the menu shows a notice only for a non-empty reason.
+        /// </summary>
+        public string ConsumeDisconnectReason()
+        {
+            string reason = pendingDisconnectReason;
+            pendingDisconnectReason = null;
+            return reason;
+        }
+
+        // ---- local player name (PlayerPrefs) ----
+
+        public static string GetLocalPlayerName() => SanitizeName(PlayerPrefs.GetString(PlayerNamePrefsKey, string.Empty));
+
+        public static void SetLocalPlayerName(string name)
+        {
+            PlayerPrefs.SetString(PlayerNamePrefsKey, SanitizeName(name));
+            PlayerPrefs.Save();
+        }
+
+        /// <summary>
+        /// Trims, length-caps, and strips angle brackets. The bracket strip matters: roster rows are
+        /// TMP labels, so an unsanitized name could inject rich-text tags and repaint other players'
+        /// rows. Applied on the server too — never trust the client's copy.
+        /// </summary>
+        public static string SanitizeName(string raw)
+        {
+            if (string.IsNullOrWhiteSpace(raw)) return string.Empty;
+
+            string trimmed = raw.Trim().Replace("<", string.Empty).Replace(">", string.Empty);
+            if (trimmed.Length > MaxNameLength)
+                trimmed = trimmed.Substring(0, MaxNameLength);
+
+            return trimmed;
+        }
+
+        private static string FallbackName(int clientId) => $"Player {clientId}";
+
+        private string ResolveName(int clientId)
+        {
+            return serverNames.TryGetValue(clientId, out string stored) && !string.IsNullOrEmpty(stored)
+                ? stored
+                : FallbackName(clientId);
+        }
+
+        // ---- roster broadcast plumbing ----
+
+        /// <summary>
+        /// Caps the transport at <see cref="MaxPlayers"/> connections. Must run BEFORE
+        /// ServerManager.StartConnection — Tugboat passes its value into the socket at start.
+        ///
+        /// Tugboat counts client SOCKETS, and under loopback the host's own client is a real socket,
+        /// so this value is total players including the host, not "host + N guests".
+        /// </summary>
+        private void ApplyMaxPlayersToTransport()
+        {
+            var tugboat = NetworkManager.TransportManager.GetTransport<Tugboat>();
+            if (tugboat == null)
+            {
+                Debug.LogWarning("[Lobby] No Tugboat transport found — room capacity is NOT enforced.");
+                return;
+            }
+
+            tugboat.SetMaximumClients(MaxPlayers);
+        }
+
+        /// <summary>
+        /// Rebuilds the roster from FishNet's own connection table and pushes it to every client.
+        /// Called on connect, disconnect, and on receiving a name — the last one is what makes a row
+        /// that first rendered as "Player 2" self-correct to the real name instead of staying wrong.
+        /// </summary>
+        private void RebuildAndBroadcastRoster()
+        {
+            if (NetworkManager == null || !NetworkManager.ServerManager.Started) return;
+
+            int hostId = ResolveHostClientId();
+            var entries = new List<LobbyRosterEntry>();
+
+            // Read ServerManager.Clients rather than our own connectedPlayers list: it is FishNet's
+            // authoritative table, so the roster can't drift from who is actually connected.
+            foreach (var pair in NetworkManager.ServerManager.Clients)
+            {
+                if (pair.Value == null) continue;
+
+                entries.Add(new LobbyRosterEntry
+                {
+                    ClientId = pair.Key,
+                    Name = ResolveName(pair.Key),
+                    IsHost = pair.Key == hostId,
+                });
+            }
+
+            // Safety net: do NOT assume the host's own loopback client appears as a server connection.
+            // If it ever doesn't, a two-player room would render "1/4" with no HOST row — exactly the
+            // bug this feature exists to kill. Adding it explicitly is correct either way.
+            if (hostId >= 0 && !entries.Exists(e => e.ClientId == hostId))
+            {
+                entries.Add(new LobbyRosterEntry
+                {
+                    ClientId = hostId,
+                    Name = ResolveName(hostId),
+                    IsHost = true,
+                });
+            }
+
+            // Host first, then join order, so rows don't reshuffle as players come and go.
+            entries.Sort((a, b) => a.IsHost != b.IsHost
+                ? (a.IsHost ? -1 : 1)
+                : a.ClientId.CompareTo(b.ClientId));
+
+            roster = entries.ToArray();
+            rosterMaxPlayers = MaxPlayers;
+
+            // Fire locally as well as broadcasting: on a host the two are the same process, and if the
+            // host client is only present via the safety net above the broadcast would never reach it.
+            // Refreshing the roster UI is idempotent, so the duplicate fire is harmless.
+            OnRosterChanged?.Invoke();
+
+            NetworkManager.ServerManager.Broadcast(new LobbyRosterBroadcast
+            {
+                Entries = roster,
+                MaxPlayers = MaxPlayers,
+            });
+        }
+
+        /// <summary>ClientId of the host's own client, or -1 when this peer isn't a host.</summary>
+        private int ResolveHostClientId()
+        {
+            if (NetworkManager == null || !NetworkManager.IsHostStarted) return -1;
+
+            NetworkConnection local = NetworkManager.ClientManager.Connection;
+            return local != null && local.ClientId >= 0 ? local.ClientId : -1;
+        }
+
+        // Client side: announce our name the moment the connection is live. The server may already
+        // have broadcast a roster listing us by fallback name; it re-broadcasts on receipt.
+        // Server side: the connection is authenticated by now (FishNet fires this after SendAuthenticated),
+        // so a broadcast actually reaches it — including the newcomer itself.
+        private void OnServerAuthenticationResult(NetworkConnection conn, bool authenticated)
+        {
+            if (authenticated) RebuildAndBroadcastRoster();
+        }
+
+        private void OnClientAuthenticated()
+        {
+            NetworkManager.ClientManager.Broadcast(new PlayerNameBroadcast { Name = GetLocalPlayerName() });
+        }
+
+        // Channel is fully qualified throughout: UniTask ships a Cysharp.Threading.Tasks.Channel and
+        // both namespaces are imported here.
+        private void OnServerReceiveName(NetworkConnection conn, PlayerNameBroadcast msg,
+            FishNet.Transporting.Channel channel)
+        {
+            serverNames[conn.ClientId] = SanitizeName(msg.Name);
+            RebuildAndBroadcastRoster();
+        }
+
+        private void OnClientReceiveRoster(LobbyRosterBroadcast msg, FishNet.Transporting.Channel channel)
+        {
+            roster = msg.Entries ?? Array.Empty<LobbyRosterEntry>();
+            rosterMaxPlayers = msg.MaxPlayers > 0 ? msg.MaxPlayers : MaxPlayers;
+
+            // Logged because this line arriving with the right count is the proof that FishNet's
+            // codegen produced a working serializer for LobbyRosterEntry[] — the highest-risk part of
+            // the roster (decision 0019). A client whose roster is empty checks here first.
+            Debug.Log($"[Lobby] roster received over the wire — {roster.Length}/{rosterMaxPlayers} entries");
+
+            OnRosterChanged?.Invoke();
+        }
+
+        private void OnClientReceiveLobbyClosed(LobbyClosedBroadcast msg, FishNet.Transporting.Channel channel)
+        {
+            // Arrives just before the disconnect packet; the Stopped handler below reads it.
+            // English because the TMP font asset in this project has no Thai glyphs — Thai renders as
+            // tofu boxes on the menu notice (verified in the L1 play test, decision 0019).
+            pendingDisconnectReason = "Host closed the lobby";
+        }
+
         // ============ Public Methods (UI เรียก) ============
         public async UniTask<bool> OnCreateLobby()
         {
@@ -80,6 +306,10 @@ namespace Networking
                 }
 
                 Debug.Log("Create Lobby");
+
+                // Before StartConnection — Tugboat hands its cap to the socket at start time, so a
+                // later change wouldn't apply to this session (task L1).
+                ApplyMaxPlayersToTransport();
 
                 NetworkManager.ServerManager.StartConnection();
                 NetworkManager.ClientManager.StartConnection(currentTransport.ConnectionAddress);
@@ -100,6 +330,10 @@ namespace Networking
                     NetworkManager.ServerManager.StopConnection(true);
                     return false;
                 }
+
+                // Seed the roster so the host sees its own row immediately, without waiting for the
+                // name round-trip to come back and rebuild it.
+                RebuildAndBroadcastRoster();
 
                 return true;
             }
@@ -334,6 +568,14 @@ namespace Networking
             NetworkManager.ServerManager.OnRemoteConnectionState += OnPlayerConnected;
             NetworkManager.ClientManager.OnClientConnectionState += OnClientConnectionState;
 
+            // Roster broadcasts are registered HERE, not on the lobby panel: this manager is
+            // dontDestroyOnLoad, so no handler can dangle when ReplaceOption.All destroys the menu
+            // scene mid-match-start (task L1, decision 0019).
+            NetworkManager.ServerManager.OnAuthenticationResult += OnServerAuthenticationResult;
+            NetworkManager.ServerManager.RegisterBroadcast<PlayerNameBroadcast>(OnServerReceiveName);
+            NetworkManager.ClientManager.RegisterBroadcast<LobbyRosterBroadcast>(OnClientReceiveRoster);
+            NetworkManager.ClientManager.RegisterBroadcast<LobbyClosedBroadcast>(OnClientReceiveLobbyClosed);
+            NetworkManager.ClientManager.OnAuthenticated += OnClientAuthenticated;
 
             // subscribe Steam transport events
             SteamTransport.OnPlayerListChanged += HandlePlayerListChanged;
@@ -345,6 +587,12 @@ namespace Networking
         {
             NetworkManager.ServerManager.OnRemoteConnectionState -= OnPlayerConnected;
             NetworkManager.ClientManager.OnClientConnectionState -= OnClientConnectionState;
+
+            NetworkManager.ServerManager.OnAuthenticationResult -= OnServerAuthenticationResult;
+            NetworkManager.ServerManager.UnregisterBroadcast<PlayerNameBroadcast>(OnServerReceiveName);
+            NetworkManager.ClientManager.UnregisterBroadcast<LobbyRosterBroadcast>(OnClientReceiveRoster);
+            NetworkManager.ClientManager.UnregisterBroadcast<LobbyClosedBroadcast>(OnClientReceiveLobbyClosed);
+            NetworkManager.ClientManager.OnAuthenticated -= OnClientAuthenticated;
 
             SteamTransport.OnPlayerListChanged -= HandlePlayerListChanged;
             SteamTransport.OnDisconnect -= HandleTransportDisconnect;
@@ -362,19 +610,24 @@ namespace Networking
             if (args.ConnectionState == RemoteConnectionState.Started)
             {
                 connectedPlayers.Add(conn);
-                // Host-side visibility that a client arrived. The menu lobby has no synced roster
-                // (coordination lives in in-game staging, decision 0013) — this log is the host's
-                // signal during Direct-IP testing (task 16b, decision H1).
                 Debug.Log($"[Lobby] Client connected (ClientId {conn.ClientId}) — total {connectedPlayers.Count}");
             }
             else
             {
                 connectedPlayers.Remove(conn);
+                serverNames.Remove(conn.ClientId); // drop the name with the connection, so a reused id can't inherit it
                 Debug.Log($"[Lobby] Client disconnected (ClientId {conn.ClientId}) — total {connectedPlayers.Count}");
             }
 
             if (!currentTransport.SupportsLobby)
                 OnPlayerListChanged?.Invoke(GetPlayerList());
+
+            // Only rebuild on DISCONNECT here. A connection that just Started has not authenticated
+            // yet, and Broadcast skips unauthenticated connections (and logs a warning for each one) —
+            // so broadcasting now would never reach the very client that just arrived. The join-side
+            // rebuild happens in OnServerAuthenticationResult instead (task L1).
+            if (args.ConnectionState != RemoteConnectionState.Started)
+                RebuildAndBroadcastRoster();
         }
 
         private void OnClientConnectionState(ClientConnectionStateArgs args)
@@ -396,8 +649,15 @@ namespace Networking
             // ต้องแจ้ง error ไม่ให้เด้งกลับเมนูเงียบๆ ใช้ OnErrorLog เพื่อให้มี Debug.LogError จริง
             // (ยิง OnError ให้ UI ที่ subscribe ด้วย — ตอนนี้ยังไม่มี element แสดง ค่อยต่อทีหลัง)
             connectedPlayers.Clear();
+            ClearRoster();
             currentTransport?.Disconnect();
-            OnErrorLog("การเชื่อมต่อหลุด");
+
+            // A LobbyClosedBroadcast may have set a specific reason moments ago; only fall back to
+            // the generic wording when the host didn't tell us why (task L1, decision 0019).
+            if (string.IsNullOrEmpty(pendingDisconnectReason))
+                pendingDisconnectReason = "Connection lost";
+
+            OnErrorLog(pendingDisconnectReason);
             OnDisconnect?.Invoke();
             ReturnToMainMenuIfInGame(); // dropped mid-game → don't strand the player in the game scene
         }
@@ -407,12 +667,24 @@ namespace Networking
             isIntentionalDisconnect = true;
 
             if (IsHost())
+            {
+                // Tell the guests why they are about to be dropped, so they get "host closed the room"
+                // instead of "connection lost". Queued before StopConnection on purpose: that call ends
+                // in IterateOutgoing, which flushes this message together with the disconnect packet.
+                // Excludes our own client — the host doesn't need to be told it closed its own room.
+                NetworkManager.ServerManager.BroadcastExcept(NetworkManager.ClientManager.Connection,
+                    new LobbyClosedBroadcast { Reason = 0 });
+
                 NetworkManager.ServerManager.StopConnection(true);
+            }
             else
+            {
                 NetworkManager.ClientManager.StopConnection();
+            }
 
             currentTransport?.Disconnect();
             connectedPlayers.Clear();
+            ClearRoster();
             OnDisconnect?.Invoke();
             ReturnToMainMenuIfInGame(); // Exit to MainMenu from the in-game result screen (task 15)
         }
@@ -431,6 +703,13 @@ namespace Networking
             if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == menu) return;
 
             UnityEngine.SceneManagement.SceneManager.LoadScene(menu);
+        }
+
+        private void ClearRoster()
+        {
+            serverNames.Clear();
+            roster = Array.Empty<LobbyRosterEntry>();
+            OnRosterChanged?.Invoke();
         }
 
         private void HandlePlayerListChanged(List<string> players)
